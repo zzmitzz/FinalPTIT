@@ -1,0 +1,55 @@
+import bcrypt from 'bcrypt'
+import createModel from './base'
+
+const Organizer = createModel(
+    'Organizer',
+    'organizers',
+    {
+        name: {
+            type: String,
+            required: true,
+        },
+        email: {
+            type: String,
+            trim: true,
+            lowercase: true,
+            required: true,
+        },
+        phone: {
+            type: String,
+            trim: true,
+            lowercase: true,
+            required: true,
+        },
+        password: {
+            type: String,
+            required: true,
+            set(password) {
+                const salt = bcrypt.genSaltSync(15)
+                return bcrypt.hashSync(password, salt)
+            },
+        },
+        deleted: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
+    },
+    {
+        toJSON: {
+            virtuals: false,
+            transform(doc, ret) {
+                // eslint-disable-next-line no-unused-vars
+                const {password, deleted, ...result} = ret
+                return result
+            },
+        },
+        methods: {
+            verifyPassword(password) {
+                return bcrypt.compareSync(password, this.password)
+            },
+        },
+    }
+)
+
+export default Organizer

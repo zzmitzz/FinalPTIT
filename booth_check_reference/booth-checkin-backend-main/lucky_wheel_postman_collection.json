@@ -1,0 +1,437 @@
+{
+    "info": {
+        "_postman_id": "ef7b8e6c-1b23-4567-89ab-cdef01234567",
+        "name": "Lucky Wheel API Tests",
+        "description": "A collection for testing the Lucky Wheel API endpoints",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Get All Lucky Wheels",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheels",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheels"
+                    ]
+                },
+                "description": "Get all lucky wheels for an event"
+            },
+            "response": []
+        },
+        {
+            "name": "Create Lucky Wheel (LUCKY_PRIZE)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"Test Lucky Wheel - Prize Only\",\n    \"type\": \"LUCKY_PRIZE\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel"
+                    ]
+                },
+                "description": "Create a new lucky wheel with LUCKY_PRIZE type"
+            },
+            "response": []
+        },
+        {
+            "name": "Create Lucky Wheel (LUCKY_CHECKED_IN)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"Test Lucky Wheel - Checked In\",\n    \"type\": \"LUCKY_CHECKED_IN\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel"
+                    ]
+                },
+                "description": "Create a new lucky wheel with LUCKY_CHECKED_IN type"
+            },
+            "response": []
+        },
+        {
+            "name": "Get Lucky Wheel",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}"
+                    ]
+                },
+                "description": "Get a specific lucky wheel by ID"
+            },
+            "response": []
+        },
+        {
+            "name": "Update Lucky Wheel",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"Updated Test Lucky Wheel\",\n    \"type\": \"LUCKY_PRIZE\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}"
+                    ]
+                },
+                "description": "Update an existing lucky wheel"
+            },
+            "response": []
+        },
+        {
+            "name": "Set Lucky Wheel Prizes",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"prizes\": [\n        {\n            \"prize_id\": \"{{lw_prize_id}}\",\n            \"quantity\": 10\n        }\n    ]\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}/prizes",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}",
+                        "prizes"
+                    ]
+                },
+                "description": "Set prizes and quantities for a lucky wheel"
+            },
+            "response": []
+        },
+        {
+            "name": "Get Lucky Wheel Prizes",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}/prizes",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}",
+                        "prizes"
+                    ]
+                },
+                "description": "Get prizes and their remaining quantities for a lucky wheel"
+            },
+            "response": []
+        },
+        {
+            "name": "Spin Lucky Wheel (LUCKY_PRIZE)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"registration_id\": \"{{registration_id}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}/spin",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}",
+                        "spin"
+                    ]
+                },
+                "description": "Spin a lucky wheel with LUCKY_PRIZE type"
+            },
+            "response": []
+        },
+        {
+            "name": "Spin Lucky Wheel (LUCKY_CHECKED_IN)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_checked_in_id}}/spin",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_checked_in_id}}",
+                        "spin"
+                    ]
+                },
+                "description": "Spin a lucky wheel with LUCKY_CHECKED_IN type"
+            },
+            "response": []
+        },
+        {
+            "name": "Get Lucky Wheel History",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}/history",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}",
+                        "history"
+                    ],
+                    "query": [
+                        {
+                            "key": "page",
+                            "value": "1",
+                            "disabled": true
+                        },
+                        {
+                            "key": "per_page",
+                            "value": "20",
+                            "disabled": true
+                        },
+                        {
+                            "key": "sort_order",
+                            "value": "desc",
+                            "disabled": true
+                        }
+                    ]
+                },
+                "description": "Get the history of lucky wheel spins"
+            },
+            "response": []
+        },
+        {
+            "name": "Delete Lucky Wheel",
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{organizer_token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/events/{{event_id}}/lucky-wheel/{{lucky_wheel_id}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "events",
+                        "{{event_id}}",
+                        "lucky-wheel",
+                        "{{lucky_wheel_id}}"
+                    ]
+                },
+                "description": "Delete a lucky wheel"
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3456",
+            "type": "string"
+        },
+        {
+            "key": "event_id",
+            "value": "YOUR_EVENT_ID",
+            "type": "string"
+        },
+        {
+            "key": "organizer_token",
+            "value": "YOUR_AUTH_TOKEN",
+            "type": "string"
+        },
+        {
+            "key": "lucky_wheel_id",
+            "value": "LUCKY_WHEEL_ID_AFTER_CREATION",
+            "type": "string"
+        },
+        {
+            "key": "lucky_wheel_checked_in_id",
+            "value": "LUCKY_WHEEL_CHECKED_IN_ID_AFTER_CREATION",
+            "type": "string"
+        },
+        {
+            "key": "lw_prize_id",
+            "value": "YOUR_PRIZE_ID",
+            "type": "string"
+        },
+        {
+            "key": "registration_id",
+            "value": "YOUR_REGISTRATION_ID",
+            "type": "string"
+        }
+    ]
+}
