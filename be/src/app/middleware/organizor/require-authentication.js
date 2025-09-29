@@ -3,9 +3,9 @@ import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
 import {tokenBlocklist} from '@/app/services/auth.service'
 import {TOKEN_TYPE} from '@/configs'
 import {abort, getToken, verifyToken} from '@/utils/helpers'
-import * as adminRepository from '@/db/admin_reporistory'
+import * as organizorRepo from '@/db/organizor_repo'
 
-async function requireAuthentication(req, res, next) {
+async function requireOrganizerAuthentication(req, res, next) {
     try {
         const token = getToken(req.headers)
 
@@ -13,9 +13,9 @@ async function requireAuthentication(req, res, next) {
             const allowedToken = _.isUndefined(await tokenBlocklist.get(token))
             if (allowedToken) {
                 const {user_id} = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
-                const admin = await adminRepository.findAdminById(user_id)
-                if (admin) {
-                    req.currentUser = admin
+                const organizer = await organizorRepo.findOrganizerById(user_id)
+                if (organizer) {
+                    req.currentOrganizer = organizer
                     next()
                     return
                 }
@@ -32,4 +32,4 @@ async function requireAuthentication(req, res, next) {
     abort(401)
 }
 
-export default requireAuthentication
+export default requireOrganizerAuthentication 

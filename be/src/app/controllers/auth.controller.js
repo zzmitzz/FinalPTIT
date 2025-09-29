@@ -1,7 +1,6 @@
-import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE} from '@/configs'
+import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE, LOGIN_EXPIRE_IN} from '@/configs'
 import {abort, generateToken, getToken} from '@/utils/helpers'
 import * as authService from '../services/auth.service'
-import * as userService from '../services/user.service'
 
 export async function login(req, res) {
     const validLogin = await authService.checkValidLogin(req.body)
@@ -36,7 +35,7 @@ export async function updateProfile(req, res) {
 }
 
 export async function changePassword(req, res) {
-    await userService.resetPassword(req.currentUser, req.body.new_password)
+    await authService.resetPassword(req.currentUser._id, req.body.new_password)
     res.status(201).jsonify('Cập nhật mật khẩu thành công.')
 }
 
@@ -50,7 +49,7 @@ export function forgotPassword(req, res) {
 }
 
 export async function resetPassword(req, res) {
-    await userService.resetPassword(req.currentUser, req.body.new_password)
+    await authService.resetPassword(req.currentUser._id, req.body.new_password)
     await authService.blockToken(req.params.token)
     res.status(201).jsonify('Cập nhật mật khẩu thành công.')
 }

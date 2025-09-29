@@ -42,6 +42,18 @@ export const findAdminByEmail = async (email) => {
     }
 }
 
+// Add: Find admin by phone
+export const findAdminByPhone = async (phone) => {
+    const query = 'SELECT * FROM admins WHERE phone = $1'
+    
+    try {
+        const result = await pool.query(query, [phone])
+        return result.rows[0] || null
+    } catch (error) {
+        throw new Error(`Failed to find admin by phone: ${error.message}`)
+    }
+}
+
 // Get all admins with pagination
 export const findAllAdmins = async (page = 1, limit = 10) => {
     const offset = (page - 1) * limit

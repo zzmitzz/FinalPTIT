@@ -1,9 +1,11 @@
-import authRouter from './auth.router'
-import userRouter from './user.router'
+import adminRouter from './admin'
+import organizorRouter from './organizor'
+import registrationsRouter from './registrations'
 
 function route(app) {
-    app.use('/auth', authRouter)
-    app.use('/users', userRouter)
+    app.use('/admin', adminRouter)
+    app.use('/organizor', organizorRouter)
+    app.use('/registrations', registrationsRouter)
 }
 
 export default route

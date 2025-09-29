@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import {User} from '../../models'
+import * as adminRepository from '@/db/admin_reporistory'
 import {
     MAX_STRING_SIZE,
     VALIDATE_FULL_NAME_REGEX,
@@ -31,7 +31,7 @@ export const register = Joi.object({
         .custom(
             (value, helpers) =>
                 new AsyncValidate(value, async function () {
-                    const user = await User.findOne({email: value})
+                    const user = await adminRepository.findAdminByEmail(value)
                     return !user ? value : helpers.error('any.exists')
                 })
         ),
@@ -54,7 +54,7 @@ export const register = Joi.object({
         .custom(
             (value, helpers) =>
                 new AsyncValidate(value, async function () {
-                    const user = await User.findOne({phone: value})
+                    const user = await adminRepository.findAdminByPhone(value)
                     return !user ? value : helpers.error('any.exists')
                 })
         ),
@@ -87,7 +87,7 @@ export const updateProfile = Joi.object({
         .custom(
             (value, helpers) =>
                 new AsyncValidate(value, async function (req) {
-                    const user = await User.findOne({email: value, _id: {$ne: req.currentUser._id}})
+                    const user = await adminRepository.findAdminByEmail(value)
                     return !user ? value : helpers.error('any.exists')
                 })
         ),
@@ -100,7 +100,7 @@ export const updateProfile = Joi.object({
         .custom(
             (value, helpers) =>
                 new AsyncValidate(value, async function (req) {
-                    const user = await User.findOne({phone: value, _id: {$ne: req.currentUser._id}})
+                    const user = await adminRepository.findAdminByPhone(value)
                     return !user ? value : helpers.error('any.exists')
                 })
         ),
@@ -156,7 +156,7 @@ export const forgotPassword = Joi.object({
         .custom(
             (value, helpers) =>
                 new AsyncValidate(value, async function (req) {
-                    const user = await User.findOne({email: value})
+                    const user = await adminRepository.findAdminByEmail(value)
                     req.currentUser = user
                     return user ? value : helpers.message('{{#label}} không tồn tại.')
                 })

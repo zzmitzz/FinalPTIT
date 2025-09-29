@@ -3,7 +3,9 @@ import path from 'path'
 import serveFavicon from 'serve-favicon'
 import helmet from 'helmet'
 import multer from 'multer'
-import {APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR} from './configs'
+import swaggerJsDoc from 'swagger-jsdoc'
+import swaggerUi from 'swagger-ui-express'
+import {APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR, swaggerOptions} from './configs'
 
 import {jsonify, sendMail} from './handlers/response.handler'
 import corsHandler from './handlers/cors.handler'
@@ -41,6 +43,13 @@ function createApp() {
     app.use(multer({storage: multer.memoryStorage()}).any())
     app.use(formDataHandler)
     app.use(initLocalsHandler)
+
+    // Swagger documentation
+    const swaggerDocs = swaggerJsDoc(swaggerOptions)
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
+        customSiteTitle: 'Event Management API Documentation',
+        customCss: '.swagger-ui .topbar { display: none }',
+    }))
 
     route(app)
 

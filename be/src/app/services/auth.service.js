@@ -1,27 +1,27 @@
 import moment from 'moment'
 import jwt from 'jsonwebtoken'
-import {User} from '@/models'
-import {cache, LOGIN_EXPIRE_IN, LINK_STATIC_URL, TOKEN_TYPE} from '@/configs'
-import {FileUpload} from '@/utils/classes'
+import bcrypt from 'bcrypt'
+import * as adminRepository from '@/db/admin_reporistory'
+import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '@/configs'
 import {generateToken} from '@/utils/helpers'
 
 export const tokenBlocklist = cache.create('token-block-list')
 
 export async function checkValidLogin({email, password}) {
-    const user = await User.findOne({email: email})
+    const admin = await adminRepository.findAdminByEmail(email)
 
-    if (user) {
-        const verified = user.verifyPassword(password)
+    if (admin) {
+        const verified = await bcrypt.compare(password, admin.password)
         if (verified) {
-            return user
+            return admin
         }
     }
 
     return false
 }
 
-export function authToken(user) {
-    const accessToken = generateToken({user_id: user._id}, TOKEN_TYPE.AUTHORIZATION, LOGIN_EXPIRE_IN)
+export function authToken(admin) {
+    const accessToken = generateToken({user_id: admin._id}, TOKEN_TYPE.AUTHORIZATION, LOGIN_EXPIRE_IN)
     const decode = jwt.decode(accessToken)
     const expireIn = decode.exp - decode.iat
     return {
@@ -31,13 +31,10 @@ export function authToken(user) {
     }
 }
 
-export async function register({avatar, ...requestBody}) {
-    if (avatar instanceof FileUpload) {
-        requestBody.avatar = avatar.save()
-    }
-
-    const user = new User(requestBody)
-    return await user.save()
+export async function register({name, email, phone = '', password}) {
+    const passwordHash = await bcrypt.hash(password, 10)
+    const admin = await adminRepository.createAdmin({name, email, phone, password: passwordHash})
+    return admin
 }
 
 export async function blockToken(token) {
@@ -48,22 +45,15 @@ export async function blockToken(token) {
 }
 
 export async function profile(userId) {
-    const user = await User.findOne({_id: userId})
-    user.avatar = user.avatar && LINK_STATIC_URL + user.avatar
-    return user
+    const admin = await adminRepository.findAdminById(userId)
+    return admin
 }
 
-export async function updateProfile(currentUser, {name, email, phone, avatar}) {
-    currentUser.name = name
-    currentUser.email = email
-    currentUser.phone = phone
-    if (avatar instanceof FileUpload) {
-        if (currentUser.avatar) {
-            FileUpload.remove(currentUser.avatar)
-        }
-        avatar = avatar.save('images')
-        currentUser.avatar = avatar
-    }
+export async function updateProfile(currentUser, {name, email, phone}) {
+    await adminRepository.updateAdminById(currentUser._id, {name, email, phone})
+}
 
-    await currentUser.save()
+export async function resetPassword(userId, newPassword) {
+    const passwordHash = await bcrypt.hash(newPassword, 10)
+    await adminRepository.updateAdminById(userId, {password: passwordHash})
 }
