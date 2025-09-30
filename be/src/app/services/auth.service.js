@@ -1,9 +1,9 @@
 import moment from 'moment'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import * as adminRepository from '@/db/admin_reporistory'
-import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '@/configs'
-import {generateToken} from '@/utils/helpers'
+import * as adminRepository from '../../configs/postgre_sql.ts'
+import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '../../configs'
+import {generateToken} from '../../utils/helpers/token.helper.js'
 
 export const tokenBlocklist = cache.create('token-block-list')
 
