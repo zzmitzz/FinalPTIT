@@ -2,7 +2,7 @@ import {Router} from 'express'
 import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import requireOrganizerAuthentication from '@/app/middleware/organizor/require-authentication'
-import * as organizorAuthService from '@/app/services/organizor_auth.service'
+import * as organizorAuthService from '@/app/services/organizor/organizor_auth.service'
 import * as authRequest from '@/app/requests/organizor/auth.request'
 
 const authRouter = Router()

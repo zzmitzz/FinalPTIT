@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
-import {tokenBlocklist} from '@/app/services/auth.service'
+import {tokenBlocklist} from '@/app/services/admin/auth.service'
 import {TOKEN_TYPE} from '@/configs'
 import {abort, getToken, verifyToken} from '@/utils/helpers'
 import * as registrationRepo from '@/db/registration_repository'

@@ -1,6 +1,6 @@
 import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE, LOGIN_EXPIRE_IN} from '@/configs'
 import {abort, generateToken, getToken} from '@/utils/helpers'
-import * as authService from '../services/auth.service'
+import * as authService from '../services/admin/auth.service'
 
 export async function login(req, res) {
     const validLogin = await authService.checkValidLogin(req.body)

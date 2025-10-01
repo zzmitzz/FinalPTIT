@@ -157,3 +157,18 @@ export const JOI_DEFAULT_OPTIONS = {
 export const VALIDATE_PHONE_REGEX = /^(0[235789])[0-9]{8}$/
 export const VALIDATE_PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_])/
 export const VALIDATE_FULL_NAME_REGEX = /^[a-zA-ZÀ-ỹ ]+$/
+
+
+export const EVENT_STATUS = {
+    WAITING: 'waiting',
+    APPROVED: 'approved',
+    REJECTED: 'rejected',
+}
+
+export const EVENT_STATE = {
+    PENDING: 'pending',
+    NOT_STARTED: 'not_started',
+    ONGOING: 'ongoing',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled',
+}
