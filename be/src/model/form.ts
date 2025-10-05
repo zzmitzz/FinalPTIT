@@ -22,7 +22,7 @@ const Form = sequelize.define('forms', {
         allowNull: false,
         references: {
             model: 'events',
-            key: 'id'
+            key: '_id'
         }
     },
     title: {

@@ -48,7 +48,7 @@ const FormFields = sequelize.define('form_fields', {
         allowNull: false,
         references: {
             model: 'forms',
-            key: 'id'
+            key: '_id'
         }
     },
     is_primary_key: {

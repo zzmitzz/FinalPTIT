@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize')
+import { DataTypes } from 'sequelize'
 const sequelize = require('../configs/postgre_sql.js')
 
 interface PermissionTypeAttributes {
