@@ -2,8 +2,8 @@ import { Router } from 'express'
 import { asyncHandler } from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import * as organizerDetailsController from '@/app/controllers/organizer/organizer-details.controller'
-import * as organizerDetailsRequest from '@/app/requests/organizor/organizer-details.request'
-import requireOrganizerAuthentication from '@/app/middleware/organizor/require-authentication'
+import * as organizerDetailsRequest from '@/app/requests/organizer/organizer-details.request'
+import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
 
 const organizerDetailsRouter = Router()
 

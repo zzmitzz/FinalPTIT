@@ -1,15 +1,15 @@
 import {Router} from 'express'
 import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
-import requireOrganizerAuthentication from '@/app/middleware/organizor/require-authentication'
-import * as organizorAuthService from '@/app/services/organizor/organizor_auth.service'
-import * as authRequest from '@/app/requests/organizor/auth.request'
+import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import * as organizerAuthService from '@/app/services/organizer/organizer_auth.service'
+import * as authRequest from '@/app/requests/organizer/auth.request'
 import * as authController from '@/app/controllers/organizer/auth.controller'
 const authRouter = Router()
 
 /**
  * @swagger
- * /organizor/auth/login:
+ * /organizer/auth/login:
  *   post:
  *     summary: Organizer login
  *     description: Authenticate organizer user with email and password
@@ -53,7 +53,7 @@ authRouter.post(
 
 /**
  * @swagger
- * /organizor/auth/register:
+ * /organizer/auth/register:
  *   post:
  *     summary: Organizer registration
  *     description: Register a new organizer user
@@ -106,7 +106,7 @@ authRouter.post(
 
 /**
  * @swagger
- * /organizor/auth/me:
+ * /organizer/auth/me:
  *   get:
  *     summary: Get organizer profile
  *     description: Get current organizer user profile information
@@ -148,14 +148,14 @@ authRouter.get(
     '/me',
     asyncHandler(requireOrganizerAuthentication),
     asyncHandler(async function (req, res) {
-        const profile = await organizorAuthService.profile(req.currentOrganizer._id)
+        const profile = await organizerAuthService.profile(req.currentOrganizer._id)
         res.jsonify(profile)
     })
 )
 
 /**
  * @swagger
- * /organizor/auth/me:
+ * /organizer/auth/me:
  *   put:
  *     summary: Update organizer profile
  *     description: Update current organizer user profile information
@@ -194,14 +194,14 @@ authRouter.put(
     asyncHandler(requireOrganizerAuthentication),
     asyncHandler(validate(authRequest.updateProfile)),
     asyncHandler(async function (req, res) {
-        await organizorAuthService.updateProfile(req.currentOrganizer, req.body)
+        await organizerAuthService.updateProfile(req.currentOrganizer, req.body)
         res.status(201).jsonify('Cập nhật thông tin cá nhân thành công.')
     })
 )
 
 /**
  * @swagger
- * /organizor/auth/change-password:
+ * /organizer/auth/change-password:
  *   patch:
  *     summary: Change organizer password
  *     description: Change current organizer user password
@@ -239,7 +239,7 @@ authRouter.patch(
     asyncHandler(requireOrganizerAuthentication),
     asyncHandler(validate(authRequest.changePassword)),
     asyncHandler(async function (req, res) {
-        await organizorAuthService.resetPassword(req.currentOrganizer._id, req.body.new_password)
+        await organizerAuthService.resetPassword(req.currentOrganizer._id, req.body.new_password)
         res.status(201).jsonify('Cập nhật mật khẩu thành công.')
     })
 )

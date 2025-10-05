@@ -3,7 +3,7 @@ import { asyncHandler } from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import * as eventController from '@/app/controllers/organizer/event.controller'
 import * as eventRequest from '@/app/requests/organizer/event.request'
-import requireOrganizerAuthentication from '@/app/middleware/organizor/require-authentication'
+import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
 
 const eventRouter = Router()
 

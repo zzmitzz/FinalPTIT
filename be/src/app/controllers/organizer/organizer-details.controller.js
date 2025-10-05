@@ -1,4 +1,4 @@
-import * as organizerDetailsService from '../../services/organizor/organizer-details.service'
+import * as organizerDetailsService from '../../services/organizer/organizer-details.service'
 
 export async function createOrganizerDetails(req, res) {
     // Add organizer_id from authenticated user

@@ -1,4 +1,4 @@
-import Organizer from '../model/organizor'
+import Organizer from '../model/organizer'
 import { Op } from 'sequelize'
 
 interface OrganizerData {

@@ -1,4 +1,4 @@
-import * as eventService from '../../services/organizor/event.service'
+import * as eventService from '../../services/organizer/event.service'
 import { EVENT_STATUS } from '@/configs'
 
 export async function createEvent(req, res) {

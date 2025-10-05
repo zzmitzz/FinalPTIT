@@ -1,5 +1,5 @@
 import {abort} from '@/utils/helpers'
-import * as formFieldService from '@/app/services/organizor/form-field.service'
+import * as formFieldService from '@/app/services/organizer/form-field.service'
 
 export async function createItem(req, res) {
     const formField = await formFieldService.createFormField(req.body)

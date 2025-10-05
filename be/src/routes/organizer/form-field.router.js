@@ -1,10 +1,10 @@
 import {Router} from 'express'
 import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
-import requireOrganizerAuthentication from '@/app/middleware/organizor/require-authentication'
-import * as formFieldRequest from '@/app/requests/organizor/form-field.request'
-import * as formFieldController from '@/app/controllers/organizor/form-field.controller'
-import * as formFieldMiddleware from '@/app/middleware/organizor/form-field.middleware'
+import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import * as formFieldRequest from '@/app/requests/organizer/form-field.request'
+import * as formFieldController from '@/app/controllers/organizer/form-field.controller'
+import * as formFieldMiddleware from '@/app/middleware/organizer/form-field.middleware'
 
 const formFieldRouter = Router()
 
@@ -13,7 +13,7 @@ formFieldRouter.use(asyncHandler(requireOrganizerAuthentication))
 
 /**
  * @swagger
- * /organizor/form-fields:
+ * /organizer/form-fields:
  *   post:
  *     summary: Create a new form field
  *     description: Create a new form field for a specific form
@@ -96,7 +96,7 @@ formFieldRouter.post(
 
 /**
  * @swagger
- * /organizor/form-fields:
+ * /organizer/form-fields:
  *   get:
  *     summary: Get form fields by form ID
  *     description: Retrieve all form fields for a specific form
@@ -126,7 +126,7 @@ formFieldRouter.get(
 
 /**
  * @swagger
- * /organizor/form-fields/{id}:
+ * /organizer/form-fields/{id}:
  *   get:
  *     summary: Get a form field by ID
  *     description: Retrieve a specific form field by its ID
@@ -156,7 +156,7 @@ formFieldRouter.get(
 
 /**
  * @swagger
- * /organizor/form-fields/{id}:
+ * /organizer/form-fields/{id}:
  *   put:
  *     summary: Update a form field
  *     description: Update a specific form field by its ID
@@ -229,7 +229,7 @@ formFieldRouter.put(
 
 /**
  * @swagger
- * /organizor/form-fields/{id}:
+ * /organizer/form-fields/{id}:
  *   delete:
  *     summary: Delete a form field
  *     description: Delete a specific form field by its ID
@@ -260,7 +260,7 @@ formFieldRouter.delete(
 
 /**
  * @swagger
- * /organizor/form-fields/form/{formId}:
+ * /organizer/form-fields/form/{formId}:
  *   delete:
  *     summary: Delete all form fields for a form
  *     description: Delete all form fields associated with a specific form

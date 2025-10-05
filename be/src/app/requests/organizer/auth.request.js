@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import * as organizorRepo from '@/db/organizor_repo'
+import * as organizerRepo from '@/db/organizer_repo'
 import {MAX_STRING_SIZE, VALIDATE_FULL_NAME_REGEX, VALIDATE_PASSWORD_REGEX, VALIDATE_PHONE_REGEX} from '@/configs'
 import {AsyncValidate, FileUpload} from '@/utils/classes'
 
@@ -13,7 +13,7 @@ export const register = Joi.object({
         .messages({'string.pattern.base': '{{#label}} không bao gồm số hay ký tự đặc biệt.'}),
     email: Joi.string().trim().max(MAX_STRING_SIZE).lowercase().email().required().label('Email')
         .custom((value, helpers) => new AsyncValidate(value, async function () {
-            const user = await organizorRepo.findOrganizerByEmail(value)
+            const user = await organizerRepo.findOrganizerByEmail(value)
             return !user ? value : helpers.error('any.exists')
         })),
     password: Joi.string().min(6).max(MAX_STRING_SIZE).pattern(VALIDATE_PASSWORD_REGEX).required().label('Mật khẩu')
@@ -29,7 +29,7 @@ export const updateProfile = Joi.object({
         .messages({'string.pattern.base': '{{#label}} không bao gồm số hay ký tự đặc biệt.'}),
     email: Joi.string().trim().lowercase().email().max(MAX_STRING_SIZE).required().label('Email')
         .custom((value, helpers) => new AsyncValidate(value, async function () {
-            const user = await organizorRepo.findOrganizerByEmail(value)
+            const user = await organizerRepo.findOrganizerByEmail(value)
             return !user ? value : helpers.error('any.exists')
         })),
     phone: Joi.string().trim().pattern(VALIDATE_PHONE_REGEX).allow('').required().label('Số điện thoại'),
@@ -47,7 +47,7 @@ export const changePassword = Joi.object({
 export const forgotPassword = Joi.object({
     email: Joi.string().trim().lowercase().email().max(MAX_STRING_SIZE).required().label('Email')
         .custom((value, helpers) => new AsyncValidate(value, async function (req) {
-            const user = await organizorRepo.findOrganizerByEmail(value)
+            const user = await organizerRepo.findOrganizerByEmail(value)
             req.currentOrganizer = user
             return user ? value : helpers.message('{{#label}} không tồn tại.')
         })),
