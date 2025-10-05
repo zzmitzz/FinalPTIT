@@ -1,7 +1,5 @@
-const Admin = require('../models/admin')
-const {Op} = require('sequelize')
-
-type AdminError = Error | unknown
+import Admin from '../model/admin'
+import { Op } from 'sequelize'
 
 interface AdminData {
     name: string
@@ -14,7 +12,7 @@ interface AdminData {
 interface AdminUpdateData extends Partial<AdminData> {}
 
 // Create a new admin
-const createAdmin = async (adminData: AdminData) => {
+export const createAdmin = async (adminData: AdminData) => {
     const { name, email, phone = '', password, role_ids = [] } = adminData
 
     try {
@@ -33,7 +31,7 @@ const createAdmin = async (adminData: AdminData) => {
 }
 
 // Find admin by ID
-const findAdminById = async (id: string) => {    
+export const findAdminById = async (id: string) => {
     try {
         const admin = await Admin.findByPk(id)
         return admin?.toJSON() || null
@@ -44,7 +42,7 @@ const findAdminById = async (id: string) => {
 }
 
 // Find admin by email
-const findAdminByEmail = async (email: string) => {
+export const findAdminByEmail = async (email: string) => {
     try {
         const admin = await Admin.findOne({ where: { email } })
         return admin?.toJSON() || null
@@ -54,8 +52,8 @@ const findAdminByEmail = async (email: string) => {
     }
 }
 
-// Add: Find admin by phone
-const findAdminByPhone = async (phone: string) => {
+// Find admin by phone
+export const findAdminByPhone = async (phone: string) => {
     try {
         const admin = await Admin.findOne({ where: { phone } })
         return admin?.toJSON() || null
@@ -66,9 +64,9 @@ const findAdminByPhone = async (phone: string) => {
 }
 
 // Get all admins with pagination
-const findAllAdmins = async (page: number = 1, limit: number = 10) => {
+export const findAllAdmins = async (page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit
-    
+
     try {
         const result = await Admin.findAll({
             order: [["_id", "DESC"]],
@@ -83,7 +81,7 @@ const findAllAdmins = async (page: number = 1, limit: number = 10) => {
 }
 
 // Get total count of admins
-const countAdmins = async () => {
+export const countAdmins = async () => {
     try {
         return await Admin.count()
     } catch (error: unknown) {
@@ -93,13 +91,13 @@ const countAdmins = async () => {
 }
 
 // Update admin by ID
-const updateAdminById = async (id: string, updateData: AdminUpdateData) => {
+export const updateAdminById = async (id: string, updateData: AdminUpdateData) => {
     try {
         if (Object.keys(updateData).length === 0) {
             throw new Error('No fields to update')
         }
 
-        const [updatedCount, updatedAdmins] = await Admin.update(updateData, {
+        const [, updatedAdmins] = await Admin.update(updateData, {
             where: { _id: id },
             returning: true
         })
@@ -112,11 +110,11 @@ const updateAdminById = async (id: string, updateData: AdminUpdateData) => {
 }
 
 // Delete admin by ID
-const deleteAdminById = async (id: string) => {
+export const deleteAdminById = async (id: string) => {
     try {
         const admin = await Admin.findByPk(id)
         if (!admin) return null
-        
+
         await admin.destroy()
         return admin.toJSON()
     } catch (error: unknown) {
@@ -126,13 +124,13 @@ const deleteAdminById = async (id: string) => {
 }
 
 // Check if email exists
-const adminEmailExists = async (email: string, excludeId: string | null = null) => {
+export const adminEmailExists = async (email: string, excludeId: string | null = null) => {
     try {
         const whereClause: any = { email }
         if (excludeId) {
             whereClause._id = { [Op.ne]: excludeId }
         }
-        
+
         const count = await Admin.count({ where: whereClause })
         return count > 0
     } catch (error: unknown) {
@@ -142,9 +140,9 @@ const adminEmailExists = async (email: string, excludeId: string | null = null) 
 }
 
 // Search admins by name or email
-const searchAdmins = async (searchTerm: string, page: number = 1, limit: number = 10) => {
+export const searchAdmins = async (searchTerm: string, page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit
-    
+
     try {
         const admins = await Admin.findAll({
             where: {
@@ -165,7 +163,7 @@ const searchAdmins = async (searchTerm: string, page: number = 1, limit: number 
 }
 
 // Get admins by role IDs
-const findAdminsByRoleIds = async (roleIds: string[]) => {
+export const findAdminsByRoleIds = async (roleIds: string[]) => {
     try {
         const admins = await Admin.findAll({
             where: {
@@ -181,9 +179,9 @@ const findAdminsByRoleIds = async (roleIds: string[]) => {
 }
 
 // Update admin roles
-const updateAdminRoles = async (id: string, roleIds: string[]) => {
+export const updateAdminRoles = async (id: string, roleIds: string[]) => {
     try {
-        const [count, updatedAdmins] = await Admin.update(
+        const [, updatedAdmins] = await Admin.update(
             { role_ids: roleIds },
             {
                 where: { _id: id },
@@ -195,19 +193,4 @@ const updateAdminRoles = async (id: string, roleIds: string[]) => {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to update admin roles: ${errorMsg}`)
     }
-}
-
-module.exports = {
-    createAdmin,
-    findAdminById,
-    findAdminByEmail,
-    findAdminByPhone,
-    findAllAdmins,
-    countAdmins,
-    updateAdminById,
-    deleteAdminById,
-    adminEmailExists,
-    searchAdmins,
-    findAdminsByRoleIds,
-    updateAdminRoles
 }

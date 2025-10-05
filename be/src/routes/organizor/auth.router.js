@@ -4,7 +4,7 @@ import validate from '@/app/middleware/common/validate'
 import requireOrganizerAuthentication from '@/app/middleware/organizor/require-authentication'
 import * as organizorAuthService from '@/app/services/organizor/organizor_auth.service'
 import * as authRequest from '@/app/requests/organizor/auth.request'
-
+import * as authController from '@/app/controllers/organizer/auth.controller'
 const authRouter = Router()
 
 /**
@@ -48,11 +48,7 @@ const authRouter = Router()
 authRouter.post(
     '/login',
     asyncHandler(validate(authRequest.login)),
-    asyncHandler(async function (req, res) {
-        const valid = await organizorAuthService.checkValidLogin(req.body)
-        if (!valid) return res.status(400).jsonify('Email hoặc mật khẩu không đúng.')
-        res.jsonify(organizorAuthService.authToken(valid))
-    })
+    asyncHandler(authController.login)
 )
 
 /**
@@ -105,10 +101,7 @@ authRouter.post(
 authRouter.post(
     '/register',
     asyncHandler(validate(authRequest.register)),
-    asyncHandler(async function (req, res) {
-        const newUser = await organizorAuthService.register(req.body)
-        res.status(201).jsonify(organizorAuthService.authToken(newUser), 'Đăng ký thành công.')
-    })
+    asyncHandler(authController.register)
 )
 
 /**

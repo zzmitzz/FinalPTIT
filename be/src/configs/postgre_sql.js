@@ -1,7 +1,7 @@
-import { DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD} from './constants'
+import { DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD } from './constants.js'
 import { Sequelize } from 'sequelize'
 
-const sequelize: Sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
+const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
     host: DB_HOST,
     port: Number(DB_PORT),
     dialect: 'postgres',
@@ -12,15 +12,6 @@ const sequelize: Sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
         idle: 30000,
     },
 })
-
-async function initDB() {
-    try {
-        await sequelize.authenticate()
-        console.log('PostgreSQL: Connection has been established successfully.')
-    } catch (error) {
-        console.error('PostgreSQL: Unable to connect to the database:', error)
-    }
-}
 
 // Handle process termination gracefully
 process.on('SIGINT', async () => {
@@ -35,4 +26,5 @@ process.on('SIGTERM', async () => {
     process.exit(0)
 })
 
+export { sequelize }
 export default sequelize

@@ -172,3 +172,22 @@ export const EVENT_STATE = {
     COMPLETED: 'completed',
     CANCELLED: 'cancelled',
 }
+
+export const FIELD_TYPE = {
+    EMAIL: 'EMAIL',
+    PHONE: 'PHONE',
+    FILE: 'FILE',
+    FACE_ID: 'FACE_ID',
+    RADIO: 'RADIO',
+    CHECKBOX: 'CHECKBOX',
+    TEXT: 'TEXT',
+    TEXTAREA: 'TEXTAREA',
+    NUMBER: 'NUMBER',
+    DATE: 'DATE',
+    TIME_MINUTE: 'TIME_MINUTE'
+}
+
+export const CHECKIN_TYPE = {
+    QR_SCAN: 'QR_SCAN',
+    FACE_ID: 'FACE_ID',
+}

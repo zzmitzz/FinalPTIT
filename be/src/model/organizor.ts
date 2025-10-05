@@ -1,7 +1,7 @@
-const { DataTypes } = require('sequelize')
-const sequelize = require('../configs/postgre_sql.js')
+import { DataTypes } from 'sequelize'
+import sequelize from '../configs/postgre_sql.js'
 
-interface OrganizerAttributes {
+export interface OrganizerAttributes {
     _id: string
     name: string
     email: string
@@ -53,4 +53,4 @@ const Organizer = sequelize.define('organizers', {
     comment: 'Event organizers who create and manage events'
 })
 
-module.exports = Organizer
+export default Organizer

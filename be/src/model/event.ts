@@ -1,9 +1,8 @@
-import { EVENT_STATUS } from "@/configs/constants"
-import DataTypes = require("sequelize")
-const sequelize = require('../configs/postgre_sql.js')
+import { EVENT_STATUS } from "../configs/constants.js"
+import { DataTypes } from "sequelize"
+import sequelize from '../configs/postgre_sql.js'
 
-
-interface EventAttributes {
+export interface EventAttributes {
     _id: string,
     organizer_id: string,
     name: string,
@@ -15,7 +14,7 @@ interface EventAttributes {
     location: string,
     category_id: string,
     tags: string[],
-    status: string,
+    status: typeof EVENT_STATUS,
     pin_code: string,
     approver_id: string,
     created_at: Date,
@@ -92,4 +91,4 @@ const Event = sequelize.define('events', {
     },
 })  
 
-module.exports = Event
+export default Event

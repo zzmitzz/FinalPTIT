@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
-import {tokenBlocklist} from '@/app/services/admin/auth.service'
+import {registrationTokenBlocklist} from '@/app/services/registrations/auth.service'
 import {TOKEN_TYPE} from '@/configs'
 import {abort, getToken, verifyToken} from '@/utils/helpers'
 import * as registrationRepo from '@/db/registration_repository'
@@ -10,7 +10,7 @@ async function requireRegistrationAuthentication(req, res, next) {
         const token = getToken(req.headers)
 
         if (token) {
-            const allowedToken = _.isUndefined(await tokenBlocklist.get(token))
+            const allowedToken = _.isUndefined(await registrationTokenBlocklist.get(token))
             if (allowedToken) {
                 const {user_id} = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
                 const user = await registrationRepo.findRegistrationById(user_id)

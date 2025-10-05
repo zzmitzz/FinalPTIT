@@ -1,7 +1,7 @@
-import DataTypes = require("sequelize")
-const sequelize = require('../configs/postgre_sql.js')
+import { DataTypes } from 'sequelize'
+import sequelize from '../configs/postgre_sql.js'
 
-interface AdminAttributes {
+export interface AdminAttributes {
     _id: string
     name: string
     email: string
@@ -12,7 +12,7 @@ interface AdminAttributes {
 
 const Admin = sequelize.define('admins', {
     _id: {
-        type: DataTypes.UUID, 
+        type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
@@ -45,4 +45,4 @@ const Admin = sequelize.define('admins', {
     timestamps: false
 })
 
-module.exports = Admin
+export default Admin

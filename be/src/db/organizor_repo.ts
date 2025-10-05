@@ -1,7 +1,5 @@
-const Organizer = require('../model/organizor')
-const {Op} = require('sequelize')
-
-type OrganizerError = Error | unknown
+import Organizer from '../model/organizor'
+import { Op } from 'sequelize'
 
 interface OrganizerData {
     name: string
@@ -13,7 +11,7 @@ interface OrganizerData {
 interface OrganizerUpdateData extends Partial<OrganizerData> {}
 
 // Create a new organizer
-const createOrganizer = async (organizerData: OrganizerData) => {
+export const createOrganizer = async (organizerData: OrganizerData) => {
     const { name, email, phone, password } = organizerData
 
     try {
@@ -31,7 +29,7 @@ const createOrganizer = async (organizerData: OrganizerData) => {
 }
 
 // Find organizer by ID
-const findOrganizerById = async (id: string) => {    
+export const findOrganizerById = async (id: string) => {
     try {
         const organizer = await Organizer.findByPk(id)
         return organizer?.toJSON() || null
@@ -42,8 +40,9 @@ const findOrganizerById = async (id: string) => {
 }
 
 // Find organizer by email
-const findOrganizerByEmail = async (email: string) => {
+export const findOrganizerByEmail = async (email: string) => {
     try {
+        console.log('findOrganizerByEmail', email)
         const organizer = await Organizer.findOne({ where: { email } })
         return organizer?.toJSON() || null
     } catch (error: unknown) {
@@ -53,7 +52,7 @@ const findOrganizerByEmail = async (email: string) => {
 }
 
 // Find organizer by phone
-const findOrganizerByPhone = async (phone: string) => {
+export const findOrganizerByPhone = async (phone: string) => {
     try {
         const organizer = await Organizer.findOne({ where: { phone } })
         return organizer?.toJSON() || null
@@ -64,9 +63,9 @@ const findOrganizerByPhone = async (phone: string) => {
 }
 
 // Get all organizers with pagination
-const findAllOrganizers = async (page: number = 1, limit: number = 10) => {
+export const findAllOrganizers = async (page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit
-    
+
     try {
         const result = await Organizer.findAll({
             order: [['_id', 'DESC']],
@@ -81,7 +80,7 @@ const findAllOrganizers = async (page: number = 1, limit: number = 10) => {
 }
 
 // Get total count of organizers
-const countOrganizers = async () => {
+export const countOrganizers = async () => {
     try {
         return await Organizer.count()
     } catch (error: unknown) {
@@ -91,13 +90,13 @@ const countOrganizers = async () => {
 }
 
 // Update organizer by ID
-const updateOrganizerById = async (id: string, updateData: OrganizerUpdateData) => {
+export const updateOrganizerById = async (id: string, updateData: OrganizerUpdateData) => {
     try {
         if (Object.keys(updateData).length === 0) {
             throw new Error('No fields to update')
         }
 
-        const [updatedCount, updatedOrganizers] = await Organizer.update(updateData, {
+        const [, updatedOrganizers] = await Organizer.update(updateData, {
             where: { _id: id },
             returning: true
         })
@@ -110,11 +109,11 @@ const updateOrganizerById = async (id: string, updateData: OrganizerUpdateData) 
 }
 
 // Delete organizer by ID
-const deleteOrganizerById = async (id: string) => {
+export const deleteOrganizerById = async (id: string) => {
     try {
         const organizer = await Organizer.findByPk(id)
         if (!organizer) return null
-        
+
         await organizer.destroy()
         return organizer.toJSON()
     } catch (error: unknown) {
@@ -124,13 +123,13 @@ const deleteOrganizerById = async (id: string) => {
 }
 
 // Check if email exists
-const organizerEmailExists = async (email: string, excludeId: string | null = null) => {
+export const organizerEmailExists = async (email: string, excludeId: string | null = null) => {
     try {
         const whereClause: any = { email }
         if (excludeId) {
             whereClause._id = { [Op.ne]: excludeId }
         }
-        
+
         const count = await Organizer.count({ where: whereClause })
         return count > 0
     } catch (error: unknown) {
@@ -140,9 +139,9 @@ const organizerEmailExists = async (email: string, excludeId: string | null = nu
 }
 
 // Search organizers by name or email
-const searchOrganizers = async (searchTerm: string, page: number = 1, limit: number = 10) => {
+export const searchOrganizers = async (searchTerm: string, page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit
-    
+
     try {
         const organizers = await Organizer.findAll({
             where: {
@@ -160,16 +159,4 @@ const searchOrganizers = async (searchTerm: string, page: number = 1, limit: num
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to search organizers: ${errorMsg}`)
     }
-}
-
-module.exports = {
-    createOrganizer,
-    findOrganizerById,
-    findOrganizerByEmail,
-    findAllOrganizers,
-    countOrganizers,
-    updateOrganizerById,
-    deleteOrganizerById,
-    organizerEmailExists,
-    searchOrganizers
 }
