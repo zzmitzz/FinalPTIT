@@ -15,6 +15,7 @@ import formDataHandler from './handlers/form-data.handler'
 import initLocalsHandler from './handlers/init-locals.handler'
 import notFoundHandler from './handlers/not-found.handler'
 import errorHandler from './handlers/error.handler'
+import morgan from 'morgan';
 
 import route from './routes'
 
@@ -43,6 +44,7 @@ function createApp() {
     app.use(multer({storage: multer.memoryStorage()}).any())
     app.use(formDataHandler)
     app.use(initLocalsHandler)
+    app.use(morgan("dev"));
 
     // Swagger documentation
     const swaggerDocs = swaggerJsDoc(swaggerOptions)

@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import * as registrationRepo from '@/db/registration_repository'
-import {MAX_STRING_SIZE, VALIDATE_PASSWORD_REGEX, VALIDATE_PHONE_REGEX} from '@/configs'
+import {MAX_STRING_SIZE, VALIDATE_PASSWORD_REGEX, VALIDATE_PHONE_REGEX, VALIDATE_FULL_NAME_REGEX} from '@/configs'
 import {AsyncValidate} from '@/utils/classes'
 
 export const login = Joi.object({
@@ -33,12 +33,12 @@ export const register = Joi.object({
             'string.pattern.base':
                 '{{#label}} phải có ít nhất một chữ thường, chữ hoa, số và ký tự đặc biệt.',
         }),
-    phone: Joi.string()
+    full_name: Joi.string()
         .trim()
-        .pattern(VALIDATE_PHONE_REGEX)
-        .allow('')
-        .optional()
-        .label('Số điện thoại'),
+        .pattern(VALIDATE_FULL_NAME_REGEX)
+        .max(MAX_STRING_SIZE)
+        .required()
+        .label('Họ và tên'),
 })
 
 export const updateProfile = Joi.object({

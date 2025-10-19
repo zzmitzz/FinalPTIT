@@ -56,7 +56,7 @@ const Event = sequelize.define('events', {
     location: {
         type: DataTypes.STRING,
         allowNull: false,
-    },
+    },  
     category_id: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -66,6 +66,10 @@ const Event = sequelize.define('events', {
         allowNull: false,
     },
     status: {
+        type: DataTypes.ENUM(...Object.values(EVENT_STATUS)),
+        allowNull: false,
+    },
+    state: {
         type: DataTypes.ENUM(...Object.values(EVENT_STATUS)),
         allowNull: false,
     },

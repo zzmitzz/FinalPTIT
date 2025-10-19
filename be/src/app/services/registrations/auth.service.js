@@ -31,13 +31,14 @@ export function authToken(registration) {
     }
 }
 
-export async function register({email, phone = '', password}) {
+export async function register({email, full_name, password}) {
     const passwordHash = await bcrypt.hash(password, 10)
-    return await registrationRepo.createRegistration({email, phone, password: passwordHash})
+    return await registrationRepo.createRegistration({email, full_name, password: passwordHash})
 }
 
 export async function profile(userId) {
-    return await registrationRepo.findRegistrationById(userId)
+    const {email, phone, full_name, dob, gender, address, bio} = await registrationRepo.findRegistrationById(userId)
+    return {email, phone, full_name, dob, gender, address, bio}
 }
 
 export async function updateProfile(currentRegistration, updateData) {

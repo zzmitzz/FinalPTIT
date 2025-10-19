@@ -191,7 +191,7 @@ authRouter.get(
 
 /**
  * @swagger
- * /registrations/auth/me:
+ * /registrations/auth/update-profile:
  *   put:
  *     summary: Update registration user profile
  *     description: Update current registration user profile information
@@ -240,7 +240,7 @@ authRouter.get(
  *               $ref: '#/components/schemas/Error'
  */
 authRouter.put(
-    '/me',
+    '/update-profile',
     asyncHandler(requireRegistrationAuthentication),
     asyncHandler(validate(authRequest.updateProfile)),
     asyncHandler(authController.updateProfile)

@@ -14,6 +14,7 @@ export async function login(req, res) {
 
 export async function register(req, res) {
     const newUser = await registrationAuthService.register(req.body)
+    
     const result = registrationAuthService.authToken(newUser)
     res.status(201).jsonify(result, 'Đăng ký thành công.')
 }
