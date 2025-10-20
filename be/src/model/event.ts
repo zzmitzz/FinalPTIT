@@ -1,4 +1,4 @@
-import { EVENT_STATUS } from "../configs/constants.js"
+import { EVENT_CATEGORY, EVENT_STATUS, EVENT_STATE } from "../configs/constants.js"
 import { DataTypes } from "sequelize"
 import sequelize from '../configs/postgre_sql.js'
 
@@ -12,8 +12,11 @@ export interface EventAttributes {
     start_time: Date,
     end_time: Date,
     location: string,
-    category_id: string,
+    lat: number,
+    lng: number,
+    category_id: typeof EVENT_CATEGORY,
     tags: string[],
+    state: typeof EVENT_STATE,
     status: typeof EVENT_STATUS,
     pin_code: string,
     approver_id: string,
@@ -57,29 +60,37 @@ const Event = sequelize.define('events', {
         type: DataTypes.STRING,
         allowNull: false,
     },  
+    lat: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    lng: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
     category_id: {
-        type: DataTypes.UUID,
+        type: DataTypes.ENUM(...Object.values(EVENT_CATEGORY)),
         allowNull: false,
     },
     tags: {
         type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: false,
+        allowNull: true,
     },
     status: {
         type: DataTypes.ENUM(...Object.values(EVENT_STATUS)),
         allowNull: false,
     },
     state: {
-        type: DataTypes.ENUM(...Object.values(EVENT_STATUS)),
+        type: DataTypes.ENUM(...Object.values(EVENT_STATE)),
         allowNull: false,
     },
     pin_code: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     },
     approver_id: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
     },
     created_at: {
         type: DataTypes.DATE,

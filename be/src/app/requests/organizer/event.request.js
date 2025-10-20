@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import { EVENT_STATUS, MAX_STRING_SIZE } from '@/configs'
-import { AsyncValidate } from '@/utils/classes'
+import { AsyncValidate, FileUpload } from '@/utils/classes'
 import * as eventRepo from '@/db/event_repository'
 
 export const createItem = Joi.object({
@@ -9,20 +9,34 @@ export const createItem = Joi.object({
         .max(MAX_STRING_SIZE)
         .required()
         .label('Tên sự kiện'),
-    
-    thumbnail: Joi.string()
-        .trim()
-        .max(MAX_STRING_SIZE)
+    thumbnail: Joi.object({
+        originalname: Joi.string().trim().required().label('Tên ảnh'),
+        mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+            .required()
+            .label('Định dạng ảnh'),
+        buffer: Joi.binary()
+            .max(25 * 1024 ** 2)
+            .required()
+            .label('Thumbnail'),
+    })
+        .unknown(true)
+        .instance(FileUpload)
         .required()
         .label('Thumbnail'),
-
-    logo: Joi.string()
-        .trim()
-        .max(MAX_STRING_SIZE)
-        .allow('')
-        .default('')
-        .label('Logo'),
-    
+    logo: Joi.array()
+        .single()
+        .items(
+            Joi.object({
+                mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp').label(
+                    'Định dạng ảnh'
+                ),
+            })
+                .unknown(true)
+                .instance(FileUpload)
+                .allow('')
+                .label('Logo')
+        )
+        .default([]),
     description: Joi.string()
         .trim()
         .max(MAX_STRING_SIZE * 10)
@@ -36,7 +50,12 @@ export const createItem = Joi.object({
         .messages({
             'date.min': '{{#label}} không được nhỏ hơn thời gian hiện tại.'
         }),
-    
+    lat: Joi.number()
+        .required()
+        .label('Vĩ độ'),
+    lng: Joi.number()
+        .required()
+        .label('Kinh độ'),
     end_time: Joi.date()
         .required()
         .greater(Joi.ref('start_time'))
@@ -54,37 +73,8 @@ export const createItem = Joi.object({
     category_id: Joi.string()
         .trim()
         .uuid()
-        .required()
         .label('Danh mục'),
     
-    tags: Joi.array()
-        .items(Joi.string().trim().max(50))
-        .default([])
-        .label('Thẻ'),
-    
-    status: Joi.string()
-        .valid(...Object.values(EVENT_STATUS))
-        .default(EVENT_STATUS.WAITING)
-        .label('Trạng thái'),
-    
-    pin_code: Joi.string()
-        .trim()
-        .length(6)
-        .pattern(/^[0-9]+$/)
-        .required()
-        .label('Mã PIN')
-        .custom((value, helpers) => 
-            new AsyncValidate(value, async function() {
-                const existingEvent = await eventRepo.findEventByPinCode(value)
-                return !existingEvent ? value : helpers.error('any.exists')
-            })
-        ),
-    
-    approver_id: Joi.string()
-        .trim()
-        .uuid()
-        .required()
-        .label('Người phê duyệt')
 })
 
 export const updateItem = Joi.object({

@@ -5,7 +5,7 @@ export async function createEvent(req, res) {
     // Add organizer_id from authenticated user
     const eventData = {
         ...req.body,
-        organizer_id: req.currentOrganizer._id
+        organizer_id: req.currentOrganizer._id,
     }
 
     const event = await eventService.createEvent(eventData)
@@ -14,11 +14,36 @@ export async function createEvent(req, res) {
 
 export async function getEventById(req, res) {
     const event = await eventService.getEventById(req.params.id)
+    var result = event.toJSON()
+    result.thumbnail = result.thumbnail && process.env.LINK_STATIC_URL + result.thumbnail
+    result.logo = result.logo && process.env.LINK_STATIC_URL + result.logo  
     if (!event) {
         return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
     }
-    res.jsonify(event)
+    res.jsonify(result)
 }
+
+export async function listEvents(req, res) {
+    const { page = 1, limit = 10 } = req.query
+    const result = await eventService.listEvents(page, limit)
+    res.jsonify(result)
+}
+
+export async function searchEvents(req, res) {
+    const { q = '', page = 1, limit = 10 } = req.query
+    const result = await eventService.searchEvents(q, page, limit)
+    res.jsonify(result)
+}
+
+export async function getNearbyEvents(req, res) {
+    const { lat, lng, limit = 5 } = req.query
+    if (lat === undefined || lng === undefined) {
+        return res.status(400).jsonify(null, 'lat and lng query parameters are required')
+    }
+    const items = await eventService.getNearbyEvents(lat, lng, limit)
+    res.jsonify({ items, total: items.length })
+}
+
 
 export async function updateEvent(req, res) {
     const { status } = req.body
@@ -44,4 +69,3 @@ export async function deleteEvent(req, res) {
 const isValidStatus = (value) => {
     return Object.values(EVENT_STATUS).includes(value)
 }
-  

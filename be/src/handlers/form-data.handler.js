@@ -16,7 +16,7 @@ function formDataHandler(req, res, next) {
                     req.body[fieldname].push(file)
                 } else {
                     req.body[fieldname] = [req.body[fieldname], file]
-                }
+                }   
             }
         }
 

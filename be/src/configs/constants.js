@@ -191,3 +191,11 @@ export const CHECKIN_TYPE = {
     QR_SCAN: 'QR_SCAN',
     FACE_ID: 'FACE_ID',
 }
+
+export const EVENT_CATEGORY = {
+    ENVIRONMENT: 'ENVIRONMENT', // Môi trường
+    ECONOMY: 'ECONOMY',         // Kinh tế
+    EDUCATION: 'EDUCATION',     // Giáo dục
+    HEALTH: 'HEALTH',           // Y tế
+    TECHNOLOGY: 'TECHNOLOGY'    // Công nghệ
+};
