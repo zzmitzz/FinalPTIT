@@ -1,6 +1,31 @@
 import * as eventService from '../../services/organizer/event.service'
 import { EVENT_STATUS } from '@/configs'
 
+const buildStaticUrl = (value) => {
+    if (!value || typeof value !== 'string') return value
+    if (/^https?:\/\//i.test(value)) return value
+    const base = (process.env.APP_URL_API || '').replace(/\/+$/, '')
+    const path = value.startsWith('/') ? value : `/${value}`
+    const withStatic = path.startsWith('/static/') ? path : `/static${path}`
+    return `${base}${withStatic}`
+}
+
+const serializeEvent = (event) => {
+    if (!event) return event
+    const obj = typeof event.toJSON === 'function' ? event.toJSON() : event
+    return {
+        ...obj,
+        thumbnail: buildStaticUrl(obj.thumbnail),
+        logo: buildStaticUrl(obj.logo),
+    }
+}
+
+const mapEventsResponse = (data) => {
+    if (Array.isArray(data)) return data.map(serializeEvent)
+    if (data && Array.isArray(data.items)) return { ...data, items: data.items.map(serializeEvent) }
+    return serializeEvent(data)
+}
+
 export async function createEvent(req, res) {
     // Add organizer_id from authenticated user
     const eventData = {
@@ -9,30 +34,40 @@ export async function createEvent(req, res) {
     }
 
     const event = await eventService.createEvent(eventData)
-    res.status(201).jsonify(event, 'Tạo sự kiện thành công.')
+    const result = serializeEvent(event)
+    res.status(201).jsonify(result, 'Tạo sự kiện thành công.')
 }
 
 export async function getEventById(req, res) {
     const event = await eventService.getEventById(req.params.id)
-    var result = event.toJSON()
-    result.thumbnail = result.thumbnail && process.env.LINK_STATIC_URL + result.thumbnail
-    result.logo = result.logo && process.env.LINK_STATIC_URL + result.logo  
     if (!event) {
         return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
     }
-    res.jsonify(result)
+    res.jsonify(serializeEvent(event))
+}
+export async function getEventByPinCode(req, res) {
+    const event = await eventService.getEventByPinCode(req.params.pinCode)
+    if (!event) {
+        return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
+    }
+    res.jsonify(serializeEvent(event))
 }
 
+
 export async function listEvents(req, res) {
-    const { page = 1, limit = 10 } = req.query
+    // Accept common pagination aliases from clients (limit, per_page, page_size)
+    const { page: pageParam = 1, limit: limitParam, per_page, page_size } = req.query
+    const page = pageParam
+    const limit = limitParam ?? per_page ?? page_size ?? 10
+
     const result = await eventService.listEvents(page, limit)
-    res.jsonify(result)
+    res.jsonify(mapEventsResponse(result))
 }
 
 export async function searchEvents(req, res) {
     const { q = '', page = 1, limit = 10 } = req.query
     const result = await eventService.searchEvents(q, page, limit)
-    res.jsonify(result)
+    res.jsonify(mapEventsResponse(result))
 }
 
 export async function getNearbyEvents(req, res) {
@@ -41,7 +76,8 @@ export async function getNearbyEvents(req, res) {
         return res.status(400).jsonify(null, 'lat and lng query parameters are required')
     }
     const items = await eventService.getNearbyEvents(lat, lng, limit)
-    res.jsonify({ items, total: items.length })
+    const serialized = items.map(serializeEvent)
+    res.jsonify({ items: serialized, total: serialized.length })
 }
 
 
@@ -55,7 +91,7 @@ export async function updateEvent(req, res) {
     if (!event) {
         return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
     }
-    res.jsonify(event, 'Cập nhật sự kiện thành công.')
+    res.jsonify(serializeEvent(event), 'Cập nhật sự kiện thành công.')
 }
 
 export async function deleteEvent(req, res) {

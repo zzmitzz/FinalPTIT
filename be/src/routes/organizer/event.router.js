@@ -198,6 +198,34 @@ eventRouter.post(
      asyncHandler(eventController.getNearbyEvents)
  )
 
+/**
+ * @swagger
+ * /organizer/events/pin/{pinCode}:
+ *   get:
+ *     summary: Get event by PIN code
+ *     tags: [Organizer Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pinCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 6-digit PIN code
+ *     responses:
+ *       200:
+ *         description: Event retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Event not found
+ */
+eventRouter.get(
+    '/pin/:pinCode',
+    asyncHandler(eventController.getEventByPinCode)
+)
+
 
 /**
  * @swagger
