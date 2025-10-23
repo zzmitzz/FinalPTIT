@@ -1,0 +1,84 @@
+import * as formRepo from '@/db/form_repository'
+import * as formFieldRepo from '@/db/form_fields'
+
+/**
+ * Create a form with its associated fields
+ * @param {Object} data - Form data including fields array
+ * @param {string} data.event_id - Event ID
+ * @param {string} data.title - Form title
+ * @param {string} data.description - Form description
+ * @param {boolean} data.is_public - Whether form is public
+ * @param {Array} data.fields - Array of form fields
+ * @returns {Promise<Object>} Created form with fields
+ */
+export async function createFormWithFields(data) {
+    const { event_id, title, description, is_public, fields } = data
+
+    // Create the form first
+    const formData = {
+        event_id,
+        title,
+        description,
+        is_public,
+    }
+
+    const createdForm = await formRepo.createForm(formData)
+
+    // Create all form fields
+    const createdFields = []
+    for (const field of fields) {
+        const fieldData = {
+            form_id: createdForm._id,
+            field_label: field.field_label,
+            field_description: field.field_description || '',
+            field_type: field.field_type,
+            field_options: field.field_options || [],
+            field_has_other_option: field.field_has_other_option || false,
+            field_range: field.field_range || { min: null, max: null },
+            field_extensions: field.field_extensions || [],
+            required: field.required || false,
+            is_primary_key: field.is_primary_key || false,
+            can_edit: field.can_edit !== undefined ? field.can_edit : true,
+            position: field.position,
+        }
+
+        const createdField = await formFieldRepo.createFormField(fieldData)
+        createdFields.push(createdField)
+    }
+
+    return {
+        form: createdForm,
+        fields: createdFields,
+    }
+}
+
+export async function getFormById(id) {
+    const form = await formRepo.findFormById(id)
+    if (!form) {
+        return null
+    }
+
+    // Get all form fields associated with this form
+    const fields = await formFieldRepo.findFormFieldsByFormId(id)
+
+    return {
+        ...form,
+        fields
+    }
+}
+
+export async function updateForm(id, updateData) {
+    const updated = await formRepo.updateFormById(id, updateData)
+    if (!updated) {
+        return null
+    }
+    return await formRepo.findFormById(id)
+}
+
+export async function deleteForm(id) {
+    // Delete associated form fields first
+    await formFieldRepo.deleteFormFieldsByFormId(id)
+    // Then delete the form
+    return await formRepo.deleteFormById(id)
+}
+

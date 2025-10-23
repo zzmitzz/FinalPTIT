@@ -67,6 +67,7 @@ export async function listEvents(req, res) {
 export async function searchEvents(req, res) {
     const { q = '', page = 1, limit = 10 } = req.query
     const result = await eventService.searchEvents(q, page, limit)
+    console.log(result)
     res.jsonify(mapEventsResponse(result))
 }
 

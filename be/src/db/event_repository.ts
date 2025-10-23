@@ -1,6 +1,22 @@
 import Event from '../model/event'
 import { Op, literal } from 'sequelize'
 import { EVENT_STATUS, EVENT_STATE, EVENT_CATEGORY } from '../configs/constants'
+import sequelize from '../configs/postgre_sql.js'
+
+// Cache and check whether the Postgres unaccent extension is available
+let hasUnaccentSupport: boolean | null = null
+const checkUnaccentSupport = async (): Promise<boolean> => {
+    if (hasUnaccentSupport !== null) return hasUnaccentSupport
+    try {
+        const [rows]: any = await sequelize.query("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'unaccent') AS enabled")
+        const enabled = rows?.[0]?.enabled ?? rows?.[0]?.exists ?? false
+        hasUnaccentSupport = Boolean(enabled)
+    } catch {
+        hasUnaccentSupport = false
+    }
+    return hasUnaccentSupport
+}
+
 
 interface EventData {
     organizer_id: string
@@ -37,6 +53,7 @@ export const createEvent = async (eventData: EventData) => {
 
 export const findEventById = async (id: string) => {
     try {
+        console.log(id)
         const event = await Event.findByPk(id)
         return event?.toJSON() || null
     } catch (error: unknown) {
@@ -160,14 +177,23 @@ export const findNearbyEvents = async (lat: number, lng: number, limit: number =
 
 export const searchEvents = async (searchTerm: string, page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit
-
     try {
+        // Normalize and escape the search term
+        const term = (searchTerm ?? '').trim()
+
+        // Escape special LIKE characters: %, _, and \
+        const escaped = term.replace(/[\\%_]/g, '\\$&')
+
+        const likePattern = `%${escaped}%`
+
         const where = {
             [Op.or]: [
-                { name: { [Op.iLike]: `%${searchTerm}%` } },
-                { description: { [Op.iLike]: `%${searchTerm}%` } },
+                { name: { [Op.iLike]: likePattern } },
+                { description: { [Op.iLike]: likePattern } },
             ]
         }
+        console.log('where clause:', JSON.stringify(where, null, 2))
+
         const [events, total] = await Promise.all([
             Event.findAll({
                 where,
@@ -177,6 +203,7 @@ export const searchEvents = async (searchTerm: string, page: number = 1, limit: 
             }),
             Event.count({ where })
         ])
+        console.log('events found:', events.length, 'total:', total)
         return {
             items: events.map(event => event.toJSON()),
             total,
@@ -185,6 +212,7 @@ export const searchEvents = async (searchTerm: string, page: number = 1, limit: 
         }
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
+        console.error('Search error:', errorMsg)
         throw new Error(`Failed to search events: ${errorMsg}`)
     }
 }

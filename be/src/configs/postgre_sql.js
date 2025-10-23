@@ -5,7 +5,6 @@ const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
     host: DB_HOST,
     port: Number(DB_PORT),
     dialect: 'postgres',
-    logging: false,
     pool: {
         max: 20,
         min: 5,
