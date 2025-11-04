@@ -6,6 +6,7 @@ interface OrganizerData {
     email: string
     phone: string
     password: string
+    avatar?: string
 }
 
 interface OrganizerUpdateData extends Partial<OrganizerData> {}

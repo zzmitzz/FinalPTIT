@@ -16,6 +16,7 @@ export interface EventAttributes {
     lng: number,
     category_id: typeof EVENT_CATEGORY,
     tags: string[],
+    capacity: Number,
     state: typeof EVENT_STATE,
     status: typeof EVENT_STATUS,
     pin_code: string,
@@ -40,6 +41,10 @@ const Event = sequelize.define('events', {
     },
     thumbnail: {
         type: DataTypes.STRING,
+        allowNull: false,   
+    },
+    capacity: {
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     logo: {

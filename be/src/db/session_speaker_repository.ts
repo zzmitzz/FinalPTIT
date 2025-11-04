@@ -128,6 +128,31 @@ export const updateSessionSpeakerById = async (id: number, updateData: SessionSp
     }
 }
 
+// Update session-speaker relationship by session and speaker IDs
+export const updateSessionSpeakerByIds = async (sessionId: number, speakerId: number, updateData: SessionSpeakerUpdateData) => {
+    try {
+        if (Object.keys(updateData).length === 0) {
+            throw new Error('No fields to update')
+        }
+
+        const [updatedRows] = await SessionSpeaker.update(updateData, {
+            where: {
+                session_id: sessionId,
+                speaker_id: speakerId
+            }
+        })
+
+        if (updatedRows === 0) {
+            return null
+        }
+
+        return await findSessionSpeakerByIds(sessionId, speakerId)
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to update session-speaker by IDs: ${errorMsg}`)
+    }
+}
+
 // Delete session-speaker relationship by ID
 export const deleteSessionSpeakerById = async (id: number) => {
     try {

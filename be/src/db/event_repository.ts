@@ -33,17 +33,18 @@ interface EventData {
     lng: number
     category_id: typeof EVENT_CATEGORY
     tags: string[]
+    capacity: number
 }
 
 interface EventUpdateData extends Partial<EventData> { }
 
 export const createEvent = async (eventData: EventData) => {
-    const { organizer_id, name, thumbnail, logo, description, start_time, end_time, location,lat, lng } = eventData
+    const { organizer_id, name, thumbnail, logo, description, start_time, end_time, location, lat, lng, capacity } = eventData
     const status = EVENT_STATUS.WAITING
     const state = EVENT_STATE.PENDING
     const category_id = EVENT_CATEGORY.TECHNOLOGY
     try {
-        const newEvent = await Event.create({ organizer_id, name, thumbnail, logo, description, start_time, end_time, location, status, state, lat, lng, category_id })
+        const newEvent = await Event.create({ organizer_id, name, thumbnail, logo, description, start_time, end_time, location, status, state, lat, lng, category_id, capacity })
         return newEvent
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)

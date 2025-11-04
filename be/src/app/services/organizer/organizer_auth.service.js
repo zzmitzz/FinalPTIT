@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import * as organizerRepo from '@/db/organizer_repo'
 import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '@/configs'
 import {generateToken} from '@/utils/helpers'
+import {FileUpload} from '@/utils/classes'
 
 export const organizerTokenBlocklist = cache.create('organizer-token-block-list')
 
@@ -35,8 +36,22 @@ export async function profile(userId) {
     return await organizerRepo.findOrganizerById(userId)
 }
 
-export async function updateProfile(currentOrganizer, {name, email, phone}) {
-    await organizerRepo.updateOrganizerById(currentOrganizer._id, {name, email, phone})
+export async function updateProfile(currentOrganizer, updateData) {
+    const {name, email, phone, avatar} = updateData
+    const dataToUpdate = {name, email, phone}
+
+    // Handle avatar file upload
+    if (avatar instanceof FileUpload) {
+        const avatarPath = avatar.save('organizers', 'avatars')
+        dataToUpdate.avatar = avatarPath
+
+        // Remove old avatar if exists
+        if (currentOrganizer.avatar) {
+            FileUpload.remove(currentOrganizer.avatar)
+        }
+    }
+
+    await organizerRepo.updateOrganizerById(currentOrganizer._id, dataToUpdate)
 }
 
 export async function resetPassword(userId, newPassword) {

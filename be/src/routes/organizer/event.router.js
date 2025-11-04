@@ -44,6 +44,7 @@ eventRouter.use(asyncHandler(requireOrganizerAuthentication))
  *               - location
  *               - lat
  *               - lng
+ *               - capacity
  *             properties:
  *               name:
  *                 type: string
@@ -61,6 +62,10 @@ eventRouter.use(asyncHandler(requireOrganizerAuthentication))
  *                 type: number
  *               lng:
  *                 type: number
+ *               capacity:
+ *                 type: integer
+ *                 minimum: 1
+ *                 description: Event capacity (number of attendees)
  *               category_id:
  *                 type: string
  *               tags:
@@ -299,6 +304,10 @@ eventRouter.get(
  *                 format: date-time
  *               location:
  *                 type: string
+ *               capacity:
+ *                 type: integer
+ *                 minimum: 1
+ *                 description: Event capacity (number of attendees)
  *               category_id:
  *                 type: string
  *               tags:

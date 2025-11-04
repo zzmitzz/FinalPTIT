@@ -8,7 +8,18 @@ export const createItem = Joi.object({
         .trim()
         .max(MAX_STRING_SIZE)
         .required()
-        .label('Tên sự kiện'),
+        .label('Tên sự kiện')
+        .custom((value, helpers) =>
+            new AsyncValidate(value, async function() {
+                const existingEvents = await eventRepo.findEventByName(value)
+                return existingEvents.length === 0
+                    ? value
+                    : helpers.error('any.exists')
+            })
+        )
+        .messages({
+            'any.exists': '{{#label}} đã tồn tại.'
+        }),
     thumbnail: Joi.object({
         originalname: Joi.string().trim().required().label('Tên ảnh'),
         mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
@@ -69,19 +80,43 @@ export const createItem = Joi.object({
         .max(MAX_STRING_SIZE)
         .required()
         .label('Địa điểm'),
-    
+
+    capacity: Joi.number()
+        .integer()
+        .min(1)
+        .required()
+        .label('Sức chứa')
+        .messages({
+            'number.base': '{{#label}} phải là số.',
+            'number.min': '{{#label}} phải lớn hơn 0.',
+            'any.required': '{{#label}} là bắt buộc.'
+        }),
+
     category_id: Joi.string()
         .trim()
         .uuid()
         .label('Danh mục'),
-    
+
 })
 
 export const updateItem = Joi.object({
     name: Joi.string()
         .trim()
         .max(MAX_STRING_SIZE)
-        .label('Tên sự kiện'),
+        .label('Tên sự kiện')
+        .custom((value, helpers) =>
+            new AsyncValidate(value, async function(req) {
+                const existingEvents = await eventRepo.findEventByName(value)
+                // Allow if no events found or if it's the same event being updated
+                return existingEvents.length === 0 ||
+                       (existingEvents.length === 1 && existingEvents[0]._id === req.params.id)
+                    ? value
+                    : helpers.error('any.exists')
+            })
+        )
+        .messages({
+            'any.exists': '{{#label}} đã tồn tại.'
+        }),
     
     thumbnail: Joi.string()
         .trim()
@@ -123,12 +158,21 @@ export const updateItem = Joi.object({
         .trim()
         .max(MAX_STRING_SIZE)
         .label('Địa điểm'),
-    
+
+    capacity: Joi.number()
+        .integer()
+        .min(1)
+        .label('Sức chứa')
+        .messages({
+            'number.base': '{{#label}} phải là số.',
+            'number.min': '{{#label}} phải lớn hơn 0.'
+        }),
+
     category_id: Joi.string()
         .trim()
         .uuid()
         .label('Danh mục'),
-    
+
     tags: Joi.array()
         .items(Joi.string().trim().max(50))
         .label('Thẻ'),

@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import * as registrationRepo from '@/db/registration_repository'
 import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '@/configs'
 import {generateToken} from '@/utils/helpers'
+import {FileUpload} from '@/utils/classes'
 
 export const registrationTokenBlocklist = cache.create('registration-token-block-list')
 
@@ -37,20 +38,31 @@ export async function register({email, full_name, password}) {
 }
 
 export async function profile(userId) {
-    const {email, phone, full_name, dob, gender, address, bio} = await registrationRepo.findRegistrationById(userId)
-    return {email, phone, full_name, dob, gender, address, bio}
+    const {email, phone, full_name, dob, gender, address, bio, avatar_url} = await registrationRepo.findRegistrationById(userId)
+    return {email, phone, full_name, dob, gender, address, bio, avatar_url}
 }
 
 export async function updateProfile(currentRegistration, updateData) {
-    const allowedFields = ['full_name', 'phone', 'dob', 'gender', 'address', 'bio']
+    const allowedFields = ['full_name', 'phone', 'dob', 'gender', 'address', 'bio', 'avatar_url']
     const filteredData = {}
-    
+
+    // Handle avatar file upload
+    if (updateData.avatar instanceof FileUpload) {
+        const avatarPath = updateData.avatar.save('registrations', 'avatars')
+        filteredData.avatar_url = avatarPath
+
+        // Remove old avatar if exists
+        if (currentRegistration.avatar_url) {
+            FileUpload.remove(currentRegistration.avatar_url)
+        }
+    }
+
     for (const field of allowedFields) {
         if (updateData[field] !== undefined) {
             filteredData[field] = updateData[field]
         }
     }
-    
+
     await registrationRepo.updateRegistrationById(currentRegistration._id, filteredData)
 }
 

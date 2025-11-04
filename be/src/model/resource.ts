@@ -1,18 +1,24 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../configs/postgre_sql.js'
 
+// Resource type enum
+export const RESOURCE_TYPE = {
+    MAPS: 'MAPS',
+    FILE: 'FILE'
+} as const
+
+
 export interface ResourceAttributes {
     id: number
     session_id: number | null
     event_id: string | null
-    resource_type: string
+    resource_type: typeof RESOURCE_TYPE 
     name: string
     url_source: string
     description: string
     file_size_bytes: number // Added improvement: track file sizes
     mime_type: string // Added improvement: track file types
     is_public: boolean // Added improvement: control public access
-    download_count: number // Added improvement: track downloads
     upload_date: Date // Added improvement: separate upload tracking
     is_active: boolean // Added improvement: enable/disable resources
     tags: string[] // Added improvement: searchable tags
@@ -45,9 +51,8 @@ const Resource = sequelize.define('resources', {
         comment: 'Can be null if resource belongs to session'
     },
     resource_type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM(...Object.values(RESOURCE_TYPE)),
         allowNull: false,
-        comment: 'Type: pdf, image, video, link, document, presentation, etc.'
     },
     name: {
         type: DataTypes.STRING,

@@ -10,6 +10,7 @@
   "scripts": {
     "start": "nodemon",
     "seed": "babel-node src/seeders",
+    "migrate": "babel-node src/migrations/run-migration.js",
     "build": "del-cli build && cross-env NODE_ENV=build babel src -d build -D",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

@@ -7,6 +7,7 @@ export interface OrganizerAttributes {
     email: string
     phone: string
     password: string
+    avatar?: string
     created_at: Date
     updated_at: Date
 }
@@ -34,6 +35,10 @@ const Organizer = sequelize.define('organizers', {
         type: DataTypes.STRING,
         allowNull: false,
         comment: 'bcrypt hashed'
+    },
+    avatar: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     created_at: {
         type: DataTypes.DATE,

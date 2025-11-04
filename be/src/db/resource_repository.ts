@@ -1,10 +1,10 @@
-import Resource from '../model/resource'
+import Resource, {RESOURCE_TYPE} from '../model/resource'
 import { Op } from 'sequelize'
 
 interface ResourceData {
     session_id?: number | null
     event_id?: string | null
-    resource_type: string
+    resource_type: typeof RESOURCE_TYPE
     name: string
     url_source: string
     description?: string
@@ -253,5 +253,35 @@ export const getMostDownloadedResources = async (limit: number = 10) => {
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to get most downloaded resources: ${errorMsg}`)
+    }
+}
+
+// Check if resource name exists within event or session (case-insensitive)
+export const resourceNameExists = async (
+    name: string,
+    eventId: string | null,
+    sessionId: number | null,
+    excludeId: number | null = null
+) => {
+    try {
+        const whereClause: any = {
+            name: { [Op.iLike]: name }
+        }
+
+        if (sessionId) {
+            whereClause.session_id = sessionId
+        } else if (eventId) {
+            whereClause.event_id = eventId
+        }
+
+        if (excludeId) {
+            whereClause.id = { [Op.ne]: excludeId }
+        }
+
+        const count = await Resource.count({ where: whereClause })
+        return count > 0
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to check resource name existence: ${errorMsg}`)
     }
 }

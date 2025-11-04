@@ -8,12 +8,9 @@ export interface SpeakerAttributes {
     email: string
     phone: string
     event_id: string
-    organization: string
     photo_url: string
-    title: string // Added improvement: professional title
+    professional_title: string // Added improvement: professional title
     linkedin_url: string // Added improvement: social media links
-    expertise_areas: string[] // Added improvement: areas of expertise
-    is_active: boolean // Added improvement: enable/disable speakers
     created_at: Date
     updated_at: Date
 }
@@ -52,10 +49,7 @@ const Speaker = sequelize.define('speakers', {
         type: DataTypes.STRING,
         allowNull: true
     },
-    organization: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
+
     photo_url: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -63,7 +57,7 @@ const Speaker = sequelize.define('speakers', {
             isUrl: true
         }
     },
-    title: {
+    professional_title: {
         type: DataTypes.STRING,
         allowNull: true,
         comment: 'Professional title or position'
@@ -74,18 +68,6 @@ const Speaker = sequelize.define('speakers', {
         validate: {
             isUrl: true
         }
-    },
-    expertise_areas: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: false,
-        defaultValue: [],
-        comment: 'Areas of expertise or specialization'
-    },
-    is_active: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
-        comment: 'Whether the speaker is currently active and available'
     },
     created_at: {
         type: DataTypes.DATE,

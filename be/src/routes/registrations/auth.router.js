@@ -194,13 +194,41 @@ authRouter.get(
  * /registrations/auth/update-profile:
  *   put:
  *     summary: Update registration user profile
- *     description: Update current registration user profile information
+ *     description: Update current registration user profile information with optional avatar upload
  *     tags: [Registration Auth]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               full_name:
+ *                 type: string
+ *                 description: Full name
+ *               phone:
+ *                 type: string
+ *                 description: Phone number
+ *               dob:
+ *                 type: string
+ *                 format: date
+ *                 description: Date of birth
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: Avatar image file (JPEG, PNG, SVG, or WebP, max 25MB)
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *                 description: Gender
+ *               address:
+ *                 type: string
+ *                 description: Address
+ *               bio:
+ *                 type: string
+ *                 description: Biography
  *         application/json:
  *           schema:
  *             type: object
@@ -215,6 +243,9 @@ authRouter.get(
  *                 type: string
  *                 format: date
  *                 description: Date of birth
+ *               avatar_url:
+ *                 type: string
+ *                 description: Avatar URL (if not uploading file)
  *               gender:
  *                 type: string
  *                 enum: [male, female, other]

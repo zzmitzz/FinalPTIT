@@ -158,20 +158,50 @@ authRouter.get(
  * /organizer/auth/me:
  *   put:
  *     summary: Update organizer profile
- *     description: Update current organizer user profile information
+ *     description: Update current organizer user profile information with optional avatar upload
  *     tags: [Organizer Auth]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone
  *             properties:
  *               name:
  *                 type: string
  *                 description: Organizer full name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Organizer email
+ *               phone:
+ *                 type: string
+ *                 description: Organizer phone number
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: Avatar image file (JPEG, PNG, SVG, or WebP, max 25MB)
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Organizer full name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Organizer email
  *               phone:
  *                 type: string
  *                 description: Organizer phone number

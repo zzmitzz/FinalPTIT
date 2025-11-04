@@ -1,5 +1,4 @@
 import SessionRegistration from '../model/session_registration'
-import { Op } from 'sequelize'
 
 interface SessionRegistrationData {
     session_id: number
@@ -297,5 +296,41 @@ export const updateNotificationStatus = async (id: number, notificationSent: boo
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to update notification status: ${errorMsg}`)
+    }
+}
+
+// Count registrations by session and status
+export const countRegistrationsBySessionAndStatus = async (sessionId: number, status: string) => {
+    try {
+        return await SessionRegistration.count({
+            where: {
+                session_id: sessionId,
+                status: status
+            }
+        })
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to count registrations by session and status: ${errorMsg}`)
+    }
+}
+
+// Find registrations by user ID and status
+export const findRegistrationsByUserIdAndStatus = async (userId: string, status: string, page: number = 1, limit: number = 10) => {
+    const offset = (page - 1) * limit
+
+    try {
+        const registrations = await SessionRegistration.findAll({
+            where: {
+                user_id: userId,
+                status: status
+            },
+            order: [['registered_at', 'DESC']],
+            limit,
+            offset
+        })
+        return registrations.map(reg => reg.toJSON())
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to find registrations by user ID and status: ${errorMsg}`)
     }
 }

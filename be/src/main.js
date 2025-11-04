@@ -16,7 +16,7 @@ const app = createApp()
 async function startServer(){
     try {
     await db.authenticate()
-    await db.sync({alter: true})
+    await db.sync({ alter: true })
     console.log('PostgreSQL: Connection has been established successfully.')
     app.listen(port, host, async function () {
     let displayHostname = host

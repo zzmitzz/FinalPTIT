@@ -28,9 +28,10 @@ export const updateProfile = Joi.object({
     name: Joi.string().trim().max(MAX_STRING_SIZE).pattern(VALIDATE_FULL_NAME_REGEX).required().label('Họ và tên')
         .messages({'string.pattern.base': '{{#label}} không bao gồm số hay ký tự đặc biệt.'}),
     email: Joi.string().trim().lowercase().email().max(MAX_STRING_SIZE).required().label('Email')
-        .custom((value, helpers) => new AsyncValidate(value, async function () {
+        .custom((value, helpers) => new AsyncValidate(value, async function (req) {
             const user = await organizerRepo.findOrganizerByEmail(value)
-            return !user ? value : helpers.error('any.exists')
+            // Allow if email belongs to current user or doesn't exist
+            return (!user || user._id === req.currentOrganizer._id) ? value : helpers.error('any.exists')
         })),
     phone: Joi.string().trim().pattern(VALIDATE_PHONE_REGEX).allow('').required().label('Số điện thoại'),
     avatar: Joi.object({

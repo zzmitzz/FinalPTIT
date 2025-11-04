@@ -37,7 +37,6 @@ const CheckinHistory = sequelize.define('checkin_history', {
     checkin_type: {
         type: DataTypes.ENUM(...Object.values(CHECKIN_TYPE)),
         allowNull: false,
-        comment: 'Type of check-in: QR_SCAN, FACE_ID, or LOCATION'
     },
     checkin: {
         type: DataTypes.DATE,

@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import * as registrationRepo from '@/db/registration_repository'
 import {MAX_STRING_SIZE, VALIDATE_PASSWORD_REGEX, VALIDATE_PHONE_REGEX, VALIDATE_FULL_NAME_REGEX} from '@/configs'
-import {AsyncValidate} from '@/utils/classes'
+import {AsyncValidate, FileUpload} from '@/utils/classes'
 
 export const login = Joi.object({
     email: Joi.string().trim().max(MAX_STRING_SIZE).lowercase().email().required().label('Email'),
@@ -33,6 +33,11 @@ export const register = Joi.object({
             'string.pattern.base':
                 '{{#label}} phải có ít nhất một chữ thường, chữ hoa, số và ký tự đặc biệt.',
         }),
+    phone: Joi.string()
+        .trim()
+        .pattern(VALIDATE_PHONE_REGEX)
+        .optional()
+        .label('Số điện thoại'),
     full_name: Joi.string()
         .trim()
         .pattern(VALIDATE_FULL_NAME_REGEX)
@@ -46,13 +51,17 @@ export const updateProfile = Joi.object({
     phone: Joi.string()
         .trim()
         .pattern(VALIDATE_PHONE_REGEX)
-        .allow('')
         .optional()
         .label('Số điện thoại'),
-    dob: Joi.date().optional().label('Ngày sinh'),
-    gender: Joi.string().valid('male', 'female', 'other').optional().label('Giới tính'),
-    address: Joi.string().trim().max(MAX_STRING_SIZE).allow('').optional().label('Địa chỉ'),
-    bio: Joi.string().trim().max(1000).allow('').optional().label('Tiểu sử'),
+    dob: Joi.date().optional().label('Ngày sinh').allow(null,''),
+    avatar: Joi.object({
+        mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp').required().label('Định dạng ảnh'),
+        originalname: Joi.string().trim().required().label('Tên ảnh'),
+        buffer: Joi.binary().max(25 * 1024 ** 2).required().label('Ảnh đại diện'),
+    }).unknown(true).instance(FileUpload).optional().label('Ảnh đại diện'),
+    gender: Joi.string().valid('male', 'female', 'other').optional().label('Giới tính').allow(null,''),
+    address: Joi.string().trim().max(MAX_STRING_SIZE).allow('').optional().label('Địa chỉ').allow(null,''),
+    bio: Joi.string().trim().max(1000).allow('').optional().label('Tiểu sử').allow(null,''),
 })
 
 export const changePassword = Joi.object({

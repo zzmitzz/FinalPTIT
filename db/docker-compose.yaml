@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: iec_postgres
+    restart: always
+
+    environment:
+      POSTGRES_USER: iec
+      POSTGRES_PASSWORD: 123456789@
+      POSTGRES_DB: event_db
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
+    driver: local

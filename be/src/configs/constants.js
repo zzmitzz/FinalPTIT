@@ -199,3 +199,8 @@ export const EVENT_CATEGORY = {
     HEALTH: 'HEALTH',           // Y tế
     TECHNOLOGY: 'TECHNOLOGY'    // Công nghệ
 };
+
+export const RESOURCE_TYPE = {
+    MAPS: 'MAPS',
+    FILE: 'FILE'
+}
