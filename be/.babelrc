@@ -7,7 +7,8 @@
           "node": "current"
         }
       }
-    ]
+    ],
+    "@babel/preset-typescript"
   ],
   "plugins": [
     "@babel/plugin-transform-runtime",
@@ -16,7 +17,8 @@
       {
         "alias": {
           "@": "./src"
-        }
+        },
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
       }
     ]
   ],

@@ -100,7 +100,8 @@ export async function listEvents(req, res) {
         const { page: pageParam = 1, limit: limitParam, per_page, page_size } = req.query
         const page = pageParam
         const limit = limitParam ?? per_page ?? page_size ?? 10
-        const result = await eventService.listEvents(page, limit)
+        const organizerId = req.currentOrganizer._id
+        const result = await eventService.listEvents(page, limit, organizerId)
         res.jsonify(mapEventsResponse(result))
     } catch (error) {
         console.error('Error in listEvents:', error)
@@ -116,7 +117,8 @@ export async function listEvents(req, res) {
 export async function searchEvents(req, res) {
     try {
         const { q = '', page = 1, limit = 10 } = req.query
-        const result = await eventService.searchEvents(q, page, limit)
+        const organizerId = req.currentOrganizer._id
+        const result = await eventService.searchEvents(q, page, limit, organizerId)
         console.log(result)
         res.jsonify(mapEventsResponse(result))
     } catch (error) {
@@ -125,6 +127,22 @@ export async function searchEvents(req, res) {
             status: 500,
             success: false,
             message: 'Đã xảy ra lỗi khi tìm kiếm sự kiện.',
+            error: error.message
+        })
+    }
+}
+
+export async function getMyEventsGroupedByDate(req, res) {
+    try {
+        const organizerId = req.currentOrganizer._id
+        const events = await eventService.getOrganizerEventsGroupedByDate(organizerId)
+        res.jsonify(mapEventsResponse(events))
+    } catch (error) {
+        console.error('Error in getMyEventsGroupedByDate:', error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Đã xảy ra lỗi khi lấy danh sách sự kiện.',
             error: error.message
         })
     }

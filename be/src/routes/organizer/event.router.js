@@ -168,6 +168,26 @@ eventRouter.post(
 
 /**
  * @swagger
+ * /organizer/events/my-events:
+ *   get:
+ *     summary: Get organizer's events grouped by date
+ *     description: Get all events belonging to the authenticated organizer, ordered by start_time
+ *     tags: [Organizer Events]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of events grouped by date
+ *       401:
+ *         description: Unauthorized
+ */
+ eventRouter.get(
+     '/my-events',
+     asyncHandler(eventController.getMyEventsGroupedByDate)
+ )
+
+/**
+ * @swagger
  * /organizer/events/nearby:
  *   get:
  *     summary: Get the 5 nearest events to the provided coordinates

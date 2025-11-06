@@ -1,10 +1,8 @@
 {
-  "ext": "js",
+  "ext": "js,ts",
   "verbose": true,
   "watch": ["src/", ".env"],
-  "execMap": {
-    "js": "babel-node"
-  },
+  "exec": "babel-node --extensions .js,.ts src/main.js",
   "env": {
     "NODE_ENV": "development",
     "__ESLINT__": "true"

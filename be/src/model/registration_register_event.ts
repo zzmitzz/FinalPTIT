@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../configs/postgre_sql.js'
-import Event from './event.js'
+import Event from './event'
 
 export interface RegistrationRegisterEventAttributes {
     _id: number

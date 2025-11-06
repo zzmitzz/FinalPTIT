@@ -123,11 +123,17 @@ export const deleteEventById = async (id: string) => {
         throw new Error(`Failed to delete event: ${errorMsg}`)
     }
 }
-export const findAllEvents = async (page: number = 1, limit: number = 10) => {
+export const findAllEvents = async (page: number = 1, limit: number = 10, organizerId?: string) => {
     const offset = (page - 1) * limit
     try {
+        const whereClause: any = {}
+        if (organizerId) {
+            whereClause.organizer_id = organizerId
+        }
+        
         const events = await Event.findAll({
-            order: [["_id", "DESC"]],
+            where: whereClause,
+            order: [["start_time", "ASC"], ["_id", "DESC"]],
             limit,
             offset,
         })
@@ -138,9 +144,13 @@ export const findAllEvents = async (page: number = 1, limit: number = 10) => {
     }
 }
 
-export const countEvents = async () => {
+export const countEvents = async (organizerId?: string) => {
     try {
-        return await Event.count()
+        const whereClause: any = {}
+        if (organizerId) {
+            whereClause.organizer_id = organizerId
+        }
+        return await Event.count({ where: whereClause })
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to count events: ${errorMsg}`)
@@ -176,7 +186,7 @@ export const findNearbyEvents = async (lat: number, lng: number, limit: number =
 }
 
 
-export const searchEvents = async (searchTerm: string, page: number = 1, limit: number = 10) => {
+export const searchEvents = async (searchTerm: string, page: number = 1, limit: number = 10, organizerId?: string) => {
     const offset = (page - 1) * limit
     try {
         // Normalize and escape the search term
@@ -187,18 +197,23 @@ export const searchEvents = async (searchTerm: string, page: number = 1, limit: 
 
         const likePattern = `%${escaped}%`
 
-        const where = {
+        const where: any = {
             [Op.or]: [
                 { name: { [Op.iLike]: likePattern } },
                 { description: { [Op.iLike]: likePattern } },
             ]
         }
+        
+        if (organizerId) {
+            where.organizer_id = organizerId
+        }
+        
         console.log('where clause:', JSON.stringify(where, null, 2))
 
         const [events, total] = await Promise.all([
             Event.findAll({
                 where,
-                order: [["_id", "DESC"]],
+                order: [["start_time", "ASC"], ["_id", "DESC"]],
                 limit,
                 offset
             }),
@@ -215,5 +230,18 @@ export const searchEvents = async (searchTerm: string, page: number = 1, limit: 
         const errorMsg = error instanceof Error ? error.message : String(error)
         console.error('Search error:', errorMsg)
         throw new Error(`Failed to search events: ${errorMsg}`)
+    }
+}
+
+export const findEventsByOrganizerGroupedByDate = async (organizerId: string) => {
+    try {
+        const events = await Event.findAll({
+            where: { organizer_id: organizerId },
+            order: [["start_time", "ASC"], ["_id", "DESC"]],
+        })
+        return events.map(event => event.toJSON())
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to find events by organizer: ${errorMsg}`)
     }
 }
