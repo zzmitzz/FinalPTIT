@@ -97,6 +97,70 @@ export const createItem = Joi.object({
         .uuid()
         .label('Danh mục'),
 
+    tags: Joi.array()
+        .items(Joi.string().trim().max(50))
+        .optional()
+        .default([])
+        .label('Thẻ'),
+
+    speakers: Joi.array()
+        .items(
+            Joi.object({
+                full_name: Joi.string()
+                    .trim()
+                    .max(MAX_STRING_SIZE)
+                    .required()
+                    .label('Tên đầy đủ diễn giả'),
+                bio: Joi.string()
+                    .trim()
+                    .max(5000)
+                    .allow('')
+                    .optional()
+                    .label('Tiểu sử'),
+                email: Joi.string()
+                    .trim()
+                    .email()
+                    .required()
+                    .label('Email diễn giả'),
+                phone: Joi.string()
+                    .trim()
+                    .max(20)
+                    .allow('')
+                    .optional()
+                    .label('Số điện thoại'),
+                photo_url: Joi.object({
+                    originalname: Joi.string().trim().required().label('Tên ảnh'),
+                    mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                        .required()
+                        .label('Định dạng ảnh'),
+                    buffer: Joi.binary()
+                        .max(25 * 1024 ** 2)
+                        .required()
+                        .label('Ảnh diễn giả'),
+                })
+                    .unknown(true)
+                    .instance(FileUpload)
+                    .optional()
+                    .allow(null)
+                    .label('Ảnh đại diện'),
+                professional_title: Joi.string()
+                    .trim()
+                    .max(MAX_STRING_SIZE)
+                    .allow('')
+                    .optional()
+                    .label('Chức danh'),
+                linkedin_url: Joi.string()
+                    .trim()
+                    .uri()
+                    .allow('')
+                    .optional()
+                    .label('LinkedIn URL'),
+            })
+        )
+        .optional()
+        .default([])
+        .label('Danh sách diễn giả'),
+
 })
 
 export const updateItem = Joi.object({
@@ -199,5 +263,53 @@ export const updateItem = Joi.object({
     approver_id: Joi.string()
         .trim()
         .uuid()
-        .label('Người phê duyệt')
+        .label('Người phê duyệt'),
+
+    speakers: Joi.array()
+        .items(
+            Joi.object({
+                full_name: Joi.string()
+                    .trim()
+                    .max(MAX_STRING_SIZE)
+                    .required()
+                    .label('Tên đầy đủ diễn giả'),
+                bio: Joi.string()
+                    .trim()
+                    .max(5000)
+                    .allow('')
+                    .optional()
+                    .label('Tiểu sử'),
+                email: Joi.string()
+                    .trim()
+                    .email()
+                    .required()
+                    .label('Email diễn giả'),
+                phone: Joi.string()
+                    .trim()
+                    .max(20)
+                    .allow('')
+                    .optional()
+                    .label('Số điện thoại'),
+                photo_url: Joi.string()
+                    .trim()
+                    .uri()
+                    .allow('')
+                    .optional()
+                    .label('URL ảnh đại diện'),
+                professional_title: Joi.string()
+                    .trim()
+                    .max(MAX_STRING_SIZE)
+                    .allow('')
+                    .optional()
+                    .label('Chức danh'),
+                linkedin_url: Joi.string()
+                    .trim()
+                    .uri()
+                    .allow('')
+                    .optional()
+                    .label('LinkedIn URL'),
+            })
+        )
+        .optional()
+        .label('Danh sách diễn giả'),
 })

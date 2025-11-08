@@ -22,29 +22,46 @@ interface EventData {
     organizer_id: string
     name: string
     thumbnail: string
-    logo: string
-    description: string
+    logo?: string
+    description?: string
     start_time: Date
     end_time: Date
     location: string,
-    state: typeof EVENT_STATE,
-    status: typeof EVENT_STATUS,
+    state?: typeof EVENT_STATE,
+    status?: typeof EVENT_STATUS,
     lat: number
     lng: number
-    category_id: typeof EVENT_CATEGORY
-    tags: string[]
+    category_id?: typeof EVENT_CATEGORY
+    tags?: string[]
     capacity: number
 }
 
 interface EventUpdateData extends Partial<EventData> { }
 
 export const createEvent = async (eventData: EventData) => {
-    const { organizer_id, name, thumbnail, logo, description, start_time, end_time, location, lat, lng, capacity } = eventData
+    const { organizer_id, name, thumbnail, logo, description, start_time, end_time, location, lat, lng, capacity, tags, category_id } = eventData
     const status = EVENT_STATUS.WAITING
     const state = EVENT_STATE.PENDING
-    const category_id = EVENT_CATEGORY.TECHNOLOGY
+    const finalCategoryId = category_id || EVENT_CATEGORY.TECHNOLOGY
+    const finalTags = tags || []
     try {
-        const newEvent = await Event.create({ organizer_id, name, thumbnail, logo, description, start_time, end_time, location, status, state, lat, lng, category_id, capacity })
+        const newEvent = await Event.create({ 
+            organizer_id, 
+            name, 
+            thumbnail, 
+            logo, 
+            description, 
+            start_time, 
+            end_time, 
+            location, 
+            status, 
+            state, 
+            lat, 
+            lng, 
+            category_id: finalCategoryId, 
+            capacity,
+            tags: finalTags
+        })
         return newEvent
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)

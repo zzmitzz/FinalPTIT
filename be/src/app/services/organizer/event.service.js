@@ -11,6 +11,7 @@ import {
     findNearbyEvents,
     findEventsByOrganizerGroupedByDate,
 } from '../../../db/event_repository'
+import * as speakerService from './speaker.service'
 
 export const createEvent = async (eventData) => {
     const { thumbnail, logo } = eventData
@@ -94,5 +95,32 @@ export const getNearbyEvents = async (lat, lng, limit = 5) => {
     }
 
     return await findNearbyEvents(parsedLat, parsedLng, parsedLimit)
+}
+
+export const createSpeakersForEvent = async (eventId, speakersData) => {
+    const createdSpeakers = []
+    
+    for (const speakerData of speakersData) {
+        const { photo_url, ...speakerFields } = speakerData
+        
+        // Save photo if provided
+        let savedPhotoUrl = ''
+        if (photo_url instanceof FileUpload) {
+            savedPhotoUrl = photo_url.save()
+        } else if (typeof photo_url === 'string' && photo_url.trim()) {
+            savedPhotoUrl = photo_url
+        }
+        
+        const speakerPayload = {
+            ...speakerFields,
+            event_id: eventId,
+            photo_url: savedPhotoUrl || null,
+        }
+        
+        const speaker = await speakerService.createSpeaker(speakerPayload)
+        createdSpeakers.push(speaker)
+    }
+    
+    return createdSpeakers
 }
 
