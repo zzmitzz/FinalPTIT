@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { EVENT_STATUS, MAX_STRING_SIZE } from '@/configs'
+import { EVENT_STATUS, MAX_STRING_SIZE, EVENT_CATEGORY } from '@/configs'
 import { AsyncValidate, FileUpload } from '@/utils/classes'
 import * as eventRepo from '@/db/event_repository'
 
@@ -92,9 +92,11 @@ export const createItem = Joi.object({
             'any.required': '{{#label}} là bắt buộc.'
         }),
 
-    category_id: Joi.string()
-        .trim()
-        .uuid()
+    category_id: Joi.alternatives()
+        .try(
+            Joi.string().trim().uuid(),
+            Joi.string().trim().valid(...Object.values(EVENT_CATEGORY))
+        )
         .label('Danh mục'),
 
     tags: Joi.array()
@@ -232,9 +234,11 @@ export const updateItem = Joi.object({
             'number.min': '{{#label}} phải lớn hơn 0.'
         }),
 
-    category_id: Joi.string()
-        .trim()
-        .uuid()
+    category_id: Joi.alternatives()
+        .try(
+            Joi.string().trim().uuid(),
+            Joi.string().trim().valid(...Object.values(EVENT_CATEGORY))
+        )
         .label('Danh mục'),
 
     tags: Joi.array()

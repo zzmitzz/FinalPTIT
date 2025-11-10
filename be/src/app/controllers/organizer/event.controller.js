@@ -1,5 +1,6 @@
 import * as eventService from '../../services/organizer/event.service'
 import * as speakerService from '../../services/organizer/speaker.service'
+import * as formService from '../../services/organizer/form.service'
 import { findOrganizerById } from '@/db/organizer_repo'
 import { EVENT_STATUS } from '@/configs'
 
@@ -84,6 +85,48 @@ export async function createEvent(req, res) {
         const result = {
             ...serializeEvent(eventWithSpeakers),
             speakers: speakersList || []
+        }
+        // Create a default registration form for this event (non-blocking)
+        try {
+            const defaultTitle = `Form đăng ký ${event.name || ''}`
+            const defaultFormPayload = {
+                event_id: event._id,
+                title: defaultTitle,
+                description: '',
+                is_public: false,
+                fields: [
+                    {
+                        field_label: 'Họ và tên người tham gia',
+                        field_description: '',
+                        field_type: 'TEXT',
+                        field_options: [],
+                        field_has_other_option: false,
+                        field_range: { min: null, max: null },
+                        field_extensions: [],
+                        required: true,
+                        is_primary_key: false,
+                        can_edit: true,
+                        position: 0,
+                    },
+                    {
+                        field_label: 'Email liên hệ',
+                        field_description: '',
+                        field_type: 'EMAIL',
+                        field_options: [],
+                        field_has_other_option: false,
+                        field_range: { min: null, max: null },
+                        field_extensions: [],
+                        required: true,
+                        is_primary_key: true,
+                        can_edit: true,
+                        position: 1,
+                    }
+                ]
+            }
+
+            await formService.createFormWithFields(defaultFormPayload)
+        } catch (err) {
+            console.error('Failed to create default form for event:', event._id, err)
         }
         
         res.status(201).jsonify(result, 'Tạo sự kiện thành công.')

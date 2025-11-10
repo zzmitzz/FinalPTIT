@@ -67,6 +67,13 @@ export async function getFormById(id) {
     }
 }
 
+export async function getFormByEventId(eventId) {
+    const form = await formRepo.findFormByEventId(eventId)
+    if (!form) return null
+    const fields = await formFieldRepo.findFormFieldsByFormId(form._id)
+    return { ...form, fields }
+}
+
 export async function updateForm(id, updateData) {
     const updated = await formRepo.updateFormById(id, updateData)
     if (!updated) {

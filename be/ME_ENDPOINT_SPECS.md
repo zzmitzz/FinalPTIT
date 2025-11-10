@@ -109,3 +109,6 @@ curl -X GET http://localhost:3456/organizer/auth/me \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
+
+
+
