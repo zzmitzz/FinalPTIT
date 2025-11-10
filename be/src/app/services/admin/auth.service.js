@@ -10,7 +10,7 @@ import {
     deleteAdminById,
     adminPhoneExists,
     adminEmailExists,
-} from '../../../../dist/db/admin_reporistory'
+} from '../../../../db/admin_reporistory'
 
 
 
