@@ -10,10 +10,10 @@ on:
 
 env:
   # General variables for the workflow
-  IMAGE_REPO: ${{ vars.IMAGE_REPO }} # e.g., your-dockerhub-username/your-app-name
+  IMAGE_REPO: ${{ vars.IMAGE_REPO }}              # e.g., your-dockerhub-username/your-app-name
   DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-  DOCKER_CONTEXT: be # The directory containing your Dockerfile and application code
-  DOCKERFILE: be/Dockerfile # Path to the Dockerfile within the DOCKER_CONTEXT
+  DOCKER_CONTEXT: be                              # The directory containing your Dockerfile and application code
+  DOCKERFILE: be/Dockerfile                       # Path to the Dockerfile within the DOCKER_CONTEXT
 
 jobs:
   build-and-push:
@@ -22,11 +22,11 @@ jobs:
     if: ${{ env.IMAGE_REPO != '' && env.DOCKERHUB_USERNAME != '' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Needed for actions/checkout
-      packages: write # Needed for docker/login-action to write to GHCR if used, or for build-push-action
+      contents: read    # Needed for actions/checkout
+      packages: write   # Needed for docker/login-action to write to GHCR if used, or for build-push-action
     outputs:
-      full_image: ${{ steps.img.outputs.full }} # Full image tag (e.g., repo/image:sha)
-      short_sha: ${{ steps.meta.outputs.sha }} # Short commit SHA
+      full_image: ${{ steps.img.outputs.full }}   # Full image tag (e.g., repo/image:sha)
+      short_sha: ${{ steps.meta.outputs.sha }}    # Short commit SHA
 
     steps:
       - name: Checkout repository
@@ -45,7 +45,7 @@ jobs:
         id: meta
         run: |
           # Get a short SHA for tagging images
-          SHORT_SHA=${GITHUB_SHA::7} # Use 7 characters for better uniqueness
+          SHORT_SHA="${GITHUB_SHA::7}"  # Use 7 characters for better uniqueness
           echo "sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "Generated short SHA: $SHORT_SHA"
 
@@ -57,30 +57,31 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_REPO }}:${{ steps.meta.outputs.sha }}
-            ${{ env.IMAGE_REPO }}:latest # Push 'latest' for convenience, consider immutability for production
-          provenance: false # Set to true for build provenance if desired and supported by your registry
+            ${{ env.IMAGE_REPO }}:latest
+          # Push 'latest' for convenience, consider immutability for production
+          provenance: false  # Set to true for build provenance if desired and supported by your registry
 
       - name: Export full image reference
         id: img
         run: |
-          SHORT_SHA=${{ steps.meta.outputs.sha }}
+          SHORT_SHA="${{ steps.meta.outputs.sha }}"
           echo "full=${{ env.IMAGE_REPO }}:${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "Full image reference: ${{ env.IMAGE_REPO }}:${SHORT_SHA}"
 
   update-gitops:
     name: Update GitOps repository
-    needs: build-and-push # This job depends on the successful completion of build-and-push
+    needs: build-and-push  # This job depends on the successful completion of build-and-push
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to push changes to the GitOps repo
-      pull-requests: write # Needed to create pull requests
+      contents: write        # Needed to push changes to the GitOps repo
+      pull-requests: write   # Needed to create pull requests
     env:
       # GitOps specific variables
-      GITOPS_REPO: ${{ vars.GITOPS_REPO }} # e.g., your-org/your-gitops-repo
-      GITOPS_BRANCH: ${{ vars.GITOPS_BRANCH }} # e.g., main or master
-      GITOPS_FILE_PATH: ${{ vars.GITOPS_FILE_PATH }} # e.g., kubernetes/deployments/backend.yaml
-      CONTAINER_NAME: ${{ vars.CONTAINER_NAME }} # Optional: Name of the container to update if multiple exist
-      GITOPS_CREATE_PR: ${{ vars.GITOPS_CREATE_PR || 'false' }} # Set to 'true' to create a PR instead of pushing directly
+      GITOPS_REPO: ${{ vars.GITOPS_REPO }}                        # e.g., your-org/your-gitops-repo
+      GITOPS_BRANCH: ${{ vars.GITOPS_BRANCH }}                    # e.g., main or master
+      GITOPS_FILE_PATH: ${{ vars.GITOPS_FILE_PATH }}              # e.g., kubernetes/deployments/backend.yaml
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}                  # Optional: Name of the container to update if multiple exist
+      GITOPS_CREATE_PR: ${{ vars.GITOPS_CREATE_PR || 'false' }}   # Set to 'true' to create a PR instead of pushing directly
 
       # Variables passed from the previous job
       FULL_IMAGE: ${{ needs.build-and-push.outputs.full_image }}
@@ -93,7 +94,10 @@ jobs:
           echo "Validating GitOps environment variables..."
           REQUIRED_VARS="GITOPS_REPO GITOPS_BRANCH GITOPS_FILE_PATH FULL_IMAGE SHORT_SHA"
           for var in $REQUIRED_VARS; do
-            if [ -z "${!var}" ]; then echo "Error: Missing required GitOps environment variable: $var"; exit 1; fi
+            if [ -z "${!var}" ]; then 
+              echo "Error: Missing required GitOps environment variable: $var"
+              exit 1
+            fi
           done
           echo "All required GitOps variables are present."
 
@@ -102,8 +106,8 @@ jobs:
         with:
           repository: ${{ env.GITOPS_REPO }}
           ref: ${{ env.GITOPS_BRANCH }}
-          token: ${{ secrets.GITOPS_PAT }} # PAT with repo write access to the GitOps repository
-          path: gitops # Checkout into a subdirectory
+          token: ${{ secrets.GITOPS_PAT }}  # PAT with repo write access to the GitOps repository
+          path: gitops                      # Checkout into a subdirectory
 
       - name: Install yq (for robust YAML updates)
         run: |
@@ -116,8 +120,9 @@ jobs:
         working-directory: gitops
         shell: bash
         run: |
-          set -euo pipefail # Exit on error, unset variables, and pipeline failures
+          set -euo pipefail  # Exit on error, unset variables, and pipeline failures
           echo "Attempting to update $GITOPS_FILE_PATH to image: $FULL_IMAGE"
+          
           if [ ! -f "$GITOPS_FILE_PATH" ]; then
             echo "Error: GitOps file not found at '$GITOPS_FILE_PATH'" >&2
             exit 1
@@ -143,7 +148,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          git config user.name "github-actions[bot]" # Use the GitHub Actions bot user
+          git config user.name "github-actions[bot]"    # Use the GitHub Actions bot user
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           git add "$GITOPS_FILE_PATH"
@@ -175,7 +180,7 @@ Source: ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
       - name: Create Pull Request in GitOps repo (if enabled and changes exist)
         if: ${{ env.GITOPS_CREATE_PR == 'true' && steps.commit.outputs.has_changes == 'true' }}
         env:
-          GH_TOKEN: ${{ secrets.GITOPS_PAT }} # Use the same PAT for GitHub CLI
+          GH_TOKEN: ${{ secrets.GITOPS_PAT }}  # Use the same PAT for GitHub CLI
         working-directory: gitops
         run: |
           set -e
@@ -193,5 +198,7 @@ Source: ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
             --body "Automated update from ${GITHUB_REPOSITORY}@${GITHUB_SHA}${'\n'}${'\n'}Image: ${FULL_IMAGE}" \
             --base "${GITOPS_BRANCH}" \
             --head "$PR_BRANCH" \
-            --assignee "${GITHUB_ACTOR}" || { echo "Warning: Failed to create PR. It might already exist or there was another issue. Continuing workflow."; }
+            --assignee "${GITHUB_ACTOR}" || {
+              echo "Warning: Failed to create PR. It might already exist or there was another issue. Continuing workflow."
+            }
           echo "Pull Request creation attempted."
