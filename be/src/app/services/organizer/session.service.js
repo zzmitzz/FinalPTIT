@@ -1,7 +1,22 @@
 import * as sessionRepo from '@/db/session_repository'
+import * as sessionSpeakerRepo from '@/db/session_speaker_repository'
 
 export async function createSession(data) {
-    return await sessionRepo.createSession(data)
+    // create session and attach speakers if provided
+    const session = await sessionRepo.createSession(data)
+    if (data.speakers && Array.isArray(data.speakers) && session && session.id) {
+        const speakersPayload = data.speakers.map((spId) => ({ session_id: session.id, speaker_id: spId }))
+        try {
+            await sessionSpeakerRepo.bulkCreateSessionSpeakers(speakersPayload)
+        } catch (err) {
+            // If speaker linking fails, log but don't fail session creation
+            console.error('Failed to attach speakers to session', err)
+        }
+    }
+
+    // return session enriched with speakers
+    const speakers = await sessionSpeakerRepo.findSpeakersBySessionId(session.id)
+    return { ...session, speakers }
 }
 
 export async function getSessionById(id) {
@@ -9,7 +24,18 @@ export async function getSessionById(id) {
 }
 
 export async function getSessionsByEventId(eventId) {
-    return await sessionRepo.findSessionsByEventId(eventId)
+    const sessions = await sessionRepo.findSessionsByEventId(eventId)
+    // Attach speakers for each session
+    try {
+        const enriched = await Promise.all(sessions.map(async (s) => {
+            const speakers = await (await import('@/db/session_speaker_repository')).findSpeakersBySessionId(s.id)
+            return { ...s, speakers }
+        }))
+        return enriched
+    } catch (err) {
+        console.error('Failed to attach speakers to sessions', err)
+        return sessions
+    }
 }
 
 export async function getAllSessions(page = 1, limit = 10) {

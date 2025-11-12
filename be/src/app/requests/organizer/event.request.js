@@ -107,57 +107,77 @@ export const createItem = Joi.object({
 
     speakers: Joi.array()
         .items(
-            Joi.object({
-                full_name: Joi.string()
-                    .trim()
-                    .max(MAX_STRING_SIZE)
-                    .required()
-                    .label('Tên đầy đủ diễn giả'),
-                bio: Joi.string()
-                    .trim()
-                    .max(5000)
-                    .allow('')
-                    .optional()
-                    .label('Tiểu sử'),
-                email: Joi.string()
-                    .trim()
-                    .email()
-                    .required()
-                    .label('Email diễn giả'),
-                phone: Joi.string()
-                    .trim()
-                    .max(20)
-                    .allow('')
-                    .optional()
-                    .label('Số điện thoại'),
-                photo_url: Joi.object({
-                    originalname: Joi.string().trim().required().label('Tên ảnh'),
-                    mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+            Joi.alternatives().try(
+                // full speaker object (client may send full objects inline)
+                Joi.object({
+                    full_name: Joi.string()
+                        .trim()
+                        .max(MAX_STRING_SIZE)
                         .required()
-                        .label('Định dạng ảnh'),
-                    buffer: Joi.binary()
-                        .max(25 * 1024 ** 2)
+                        .label('Tên đầy đủ diễn giả'),
+                    bio: Joi.string()
+                        .trim()
+                        .max(5000)
+                        .allow('')
+                        .optional()
+                        .label('Tiểu sử'),
+                    email: Joi.string()
+                        .trim()
+                        .email()
                         .required()
-                        .label('Ảnh diễn giả'),
-                })
-                    .unknown(true)
-                    .instance(FileUpload)
-                    .optional()
-                    .allow(null)
-                    .label('Ảnh đại diện'),
-                professional_title: Joi.string()
-                    .trim()
-                    .max(MAX_STRING_SIZE)
-                    .allow('')
-                    .optional()
-                    .label('Chức danh'),
-                linkedin_url: Joi.string()
-                    .trim()
-                    .uri()
-                    .allow('')
-                    .optional()
-                    .label('LinkedIn URL'),
-            })
+                        .label('Email diễn giả'),
+                    phone: Joi.string()
+                        .trim()
+                        .max(20)
+                        .allow('')
+                        .optional()
+                        .label('Số điện thoại'),
+                    photo_url: Joi.object({
+                        originalname: Joi.string().trim().required().label('Tên ảnh'),
+                        mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                            .required()
+                            .label('Định dạng ảnh'),
+                        buffer: Joi.binary()
+                            .max(25 * 1024 ** 2)
+                            .required()
+                            .label('Ảnh diễn giả'),
+                    })
+                        .unknown(true)
+                        .instance(FileUpload)
+                        .optional()
+                        .allow(null)
+                        .label('Ảnh đại diện'),
+                    professional_title: Joi.string()
+                        .trim()
+                        .max(MAX_STRING_SIZE)
+                        .allow('')
+                        .optional()
+                        .label('Chức danh'),
+                    linkedin_url: Joi.string()
+                        .trim()
+                        .uri()
+                        .allow('')
+                        .optional()
+                        .label('LinkedIn URL'),
+                }),
+                // file-only entry created by formDataHandler when client sends speakers_json + files
+                Joi.object({
+                    photo_url: Joi.object({
+                        originalname: Joi.string().trim().required().label('Tên ảnh'),
+                        mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                            .required()
+                            .label('Định dạng ảnh'),
+                        buffer: Joi.binary()
+                            .max(25 * 1024 ** 2)
+                            .required()
+                            .label('Ảnh diễn giả'),
+                    })
+                        .unknown(true)
+                        .instance(FileUpload)
+                        .required()
+                        .label('Ảnh đại diện'),
+                }).label('Ảnh diễn giả (file only)')
+            )
         )
         .optional()
         .default([])
@@ -271,48 +291,65 @@ export const updateItem = Joi.object({
 
     speakers: Joi.array()
         .items(
-            Joi.object({
-                full_name: Joi.string()
-                    .trim()
-                    .max(MAX_STRING_SIZE)
-                    .required()
-                    .label('Tên đầy đủ diễn giả'),
-                bio: Joi.string()
-                    .trim()
-                    .max(5000)
-                    .allow('')
-                    .optional()
-                    .label('Tiểu sử'),
-                email: Joi.string()
-                    .trim()
-                    .email()
-                    .required()
-                    .label('Email diễn giả'),
-                phone: Joi.string()
-                    .trim()
-                    .max(20)
-                    .allow('')
-                    .optional()
-                    .label('Số điện thoại'),
-                photo_url: Joi.string()
-                    .trim()
-                    .uri()
-                    .allow('')
-                    .optional()
-                    .label('URL ảnh đại diện'),
-                professional_title: Joi.string()
-                    .trim()
-                    .max(MAX_STRING_SIZE)
-                    .allow('')
-                    .optional()
-                    .label('Chức danh'),
-                linkedin_url: Joi.string()
-                    .trim()
-                    .uri()
-                    .allow('')
-                    .optional()
-                    .label('LinkedIn URL'),
-            })
+            Joi.alternatives().try(
+                // full speaker object (strings) used when updating via JSON
+                Joi.object({
+                    full_name: Joi.string()
+                        .trim()
+                        .max(MAX_STRING_SIZE)
+                        .required()
+                        .label('Tên đầy đủ diễn giả'),
+                    bio: Joi.string()
+                        .trim()
+                        .max(5000)
+                        .allow('')
+                        .optional()
+                        .label('Tiểu sử'),
+                    email: Joi.string()
+                        .trim()
+                        .email()
+                        .required()
+                        .label('Email diễn giả'),
+                    phone: Joi.string()
+                        .trim()
+                        .max(20)
+                        .allow('')
+                        .optional()
+                        .label('Số điện thoại'),
+                    photo_url: Joi.string()
+                        .trim()
+                        .uri()
+                        .allow('')
+                        .optional()
+                        .label('URL ảnh đại diện'),
+                    professional_title: Joi.string()
+                        .trim()
+                        .max(MAX_STRING_SIZE)
+                        .allow('')
+                        .optional()
+                        .label('Chức danh'),
+                    linkedin_url: Joi.string()
+                        .trim()
+                        .uri()
+                        .allow('')
+                        .optional()
+                        .label('LinkedIn URL'),
+                }),
+                // allow file-only object produced by formDataHandler when client sends speakers_json + files
+                Joi.object({
+                    photo_url: Joi.object({
+                        originalname: Joi.string().trim().required().label('Tên ảnh'),
+                        mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                            .required()
+                            .label('Định dạng ảnh'),
+                        buffer: Joi.binary().max(25 * 1024 ** 2).required().label('Ảnh diễn giả'),
+                    })
+                        .unknown(true)
+                        .instance(FileUpload)
+                        .required()
+                        .label('Ảnh đại diện (file)'),
+                }).label('Ảnh diễn giả (file only)')
+            )
         )
         .optional()
         .label('Danh sách diễn giả'),

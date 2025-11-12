@@ -36,6 +36,34 @@ function formDataHandler(req, res, next) {
             }
         }
 
+        // After attaching uploaded files into req.body (e.g. req.body.speakers[0].photo_url = FileUpload),
+        // if client also sent a speakers_json field (stringified array of speaker metadata),
+        // merge the parsed metadata with the file-only entries so downstream validators
+        // (which run as route middleware) see a unified `req.body.speakers` array.
+        if (req.body && req.body.speakers_json) {
+            try {
+                const parsed = JSON.parse(req.body.speakers_json)
+                if (Array.isArray(parsed)) {
+                    // Ensure req.body.speakers is an array
+                    if (!Array.isArray(req.body.speakers)) req.body.speakers = []
+                    // Merge each parsed speaker object with any file-only entry produced earlier
+                    for (let i = 0; i < parsed.length; i++) {
+                        const meta = parsed[i] || {}
+                        const fileEntry = req.body.speakers[i] || {}
+                        // Prefer metadata fields, but keep fileEntry.photo_url (FileUpload) if present
+                        req.body.speakers[i] = {
+                            ...meta,
+                            ...fileEntry,
+                        }
+                    }
+                }
+            } catch (err) {
+                // If parsing fails, leave req.body.speakers as-is (file-only entries)
+                // downstream handlers will handle validation/error reporting.
+                // Do not throw here.
+            }
+        }
+
         delete req.files
     }
 

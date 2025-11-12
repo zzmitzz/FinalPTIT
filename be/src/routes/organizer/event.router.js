@@ -284,6 +284,12 @@ eventRouter.get(
     asyncHandler(eventController.getEventById)
 )
 
+// Get registrations (form responses) for an event (organizer)
+eventRouter.get(
+    '/:id/registrations',
+    asyncHandler(eventController.getEventRegistrations)
+)
+
 /**
  * @swagger
  * /organizer/events/{id}:

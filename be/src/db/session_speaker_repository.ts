@@ -35,14 +35,19 @@ export const findSessionSpeakerById = async (id: number) => {
     }
 }
 
-// Find speakers for a specific session
+// Return speaker details (join speakers table) for a session
 export const findSpeakersBySessionId = async (sessionId: number) => {
     try {
         const sessionSpeakers = await SessionSpeaker.findAll({
             where: { session_id: sessionId },
+            include: [{ model: (await import('../model/speaker')).default, as: 'speaker' }],
             order: [['speaking_order', 'ASC'], ['id', 'ASC']]
         })
-        return sessionSpeakers.map(ss => ss.toJSON())
+        // Map to speaker details
+        return sessionSpeakers.map(ss => {
+            const raw = ss.toJSON()
+            return raw.speaker || { id: raw.speaker_id }
+        })
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to find speakers by session ID: ${errorMsg}`)
