@@ -148,18 +148,14 @@ Source: ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
           GH_TOKEN: ${{ secrets.GITOPS_PAT }}
         working-directory: gitops
         run: |
-          set -e
           BRANCH="chore/update-backend-image-${SHORT_SHA}"
           git checkout -b "$BRANCH"
           git push -u origin "$BRANCH"
 
           gh pr create \
             --title "Update backend image to ${SHORT_SHA}" \
-            --body "$(cat <<EOF
-  Automated update from ${GITHUB_REPOSITORY}@${GITHUB_SHA}
+            --body "Automated update from ${GITHUB_REPOSITORY}@${GITHUB_SHA}
 
-  Image: ${FULL_IMAGE}
-  EOF
-  )" \
-              --base "${GITOPS_BRANCH}" \
-              --head "$BRANCH" || true
+          Image: ${FULL_IMAGE}" \
+            --base "${GITOPS_BRANCH}" \
+            --head "$BRANCH" || true
