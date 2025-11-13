@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_REPO }}
+  IMAGE_NAME: ${{ vars.IMAGE_REPO }}
 
 jobs:
   build-and-push:
@@ -37,7 +37,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./be
+          file: ./be/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.IMAGE_TAG }}
