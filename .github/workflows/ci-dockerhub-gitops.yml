@@ -58,8 +58,9 @@ jobs:
         run: |
           cd gitops
 
-          sed -i "s|image: ${{ env.IMAGE_NAME }}:.*|image: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.IMAGE_TAG }}|g" ${{ vars.GITOPS_FILE_PATH }}
+          sed -i "s|image: \(docker\.io/\)\?${{ env.IMAGE_NAME }}:.*|image: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.IMAGE_TAG }}|g" ${{ vars.GITOPS_FILE_PATH }}
 
+          echo "=== Updated manifest ==="
           cat ${{ vars.GITOPS_FILE_PATH }}
 
       - name: Commit and push to GitOps repo
