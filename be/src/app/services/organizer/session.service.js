@@ -64,6 +64,17 @@ export async function updateSession(id, updateData) {
 }
 
 export async function deleteSession(id) {
+    // First remove any session-speaker relationships to avoid FK constraint errors
+    try {
+        const sid = Number(id)
+        if (!Number.isNaN(sid)) {
+            await sessionSpeakerRepo.deleteSessionSpeakersBySessionId(sid)
+        }
+    } catch (err) {
+        // Log but continue to attempt session deletion — if this fails, higher layer will handle
+        console.error('Failed to delete session-speakers before deleting session:', err)
+    }
+
     return await sessionRepo.deleteSessionById(id)
 }
 

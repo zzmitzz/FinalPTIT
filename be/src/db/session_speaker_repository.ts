@@ -249,3 +249,14 @@ export const bulkCreateSessionSpeakers = async (sessionSpeakersData: SessionSpea
         throw new Error(`Failed to bulk create session-speakers: ${errorMsg}`)
     }
 }
+
+// Delete all session-speaker relationships for a given session id
+export const deleteSessionSpeakersBySessionId = async (sessionId: number) => {
+    try {
+        const deleted = await SessionSpeaker.destroy({ where: { session_id: sessionId } })
+        return deleted
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete session-speakers for session ${sessionId}: ${errorMsg}`)
+    }
+}

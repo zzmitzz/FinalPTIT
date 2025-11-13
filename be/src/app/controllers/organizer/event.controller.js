@@ -4,6 +4,8 @@ import * as formService from '../../services/organizer/form.service'
 import * as registrationResponseService from '@/app/services/registrations/registration-response.service'
 import * as registrationRepo from '@/db/registration_repository'
 import { findOrganizerById } from '@/db/organizer_repo'
+import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
+import * as checkinHistoryService from '@/app/services/registrations/checkin-history.service'
 import { EVENT_STATUS } from '@/configs'
 import Joi from 'joi'
 import FileUpload from '@/utils/classes/file-upload'
@@ -286,6 +288,47 @@ export async function getEventRegistrations(req, res) {
     } catch (error) {
         console.error('Error in getEventRegistrations:', error)
         return res.status(500).json({ status: 500, success: false, message: 'Đã xảy ra lỗi khi lấy lượt đăng ký.', error: error.message })
+    }
+}
+
+/**
+ * Get event statistics for organizer view
+ * GET /organizer/events/:id/statistics
+ */
+export async function getEventStatistics(req, res) {
+    try {
+        const eventId = req.params.id
+
+        // Get registration stats (total registered / total records)
+        const regStats = await registrationRegisterEventService.getEventRegistrationStats(eventId)
+
+        // Get check-in history and compute unique checked-in users and hourly aggregation
+        const checkins = await checkinHistoryService.getCheckinHistoryByEventId(eventId) || []
+        const uniqueCheckedIn = new Set(checkins.map(c => c.registration_id)).size
+
+        const hourlyMap = {}
+        for (const c of checkins) {
+            const ts = c.created_at || c.createdAt || c.timestamp || c.time || null
+            const d = ts ? new Date(ts) : null
+            if (!d || isNaN(d)) continue
+            // Use ISO hour bucket (YYYY-MM-DDTHH:00Z) so ordering is stable
+            const hourKey = d.toISOString().slice(0, 13) + ':00'
+            hourlyMap[hourKey] = (hourlyMap[hourKey] || 0) + 1
+        }
+
+        const hourly = Object.entries(hourlyMap)
+            .map(([hour, count]) => ({ hour, count }))
+            .sort((a, b) => a.hour.localeCompare(b.hour))
+
+        res.jsonify({
+            registered: regStats?.total_registered ?? regStats?.totalRegistered ?? 0,
+            totalRecords: regStats?.total_records ?? regStats?.totalRecords ?? 0,
+            checkedIn: uniqueCheckedIn,
+            hourly
+        })
+    } catch (error) {
+        console.error('Error in getEventStatistics:', error)
+        return res.status(500).json({ status: 500, success: false, message: 'Đã xảy ra lỗi khi lấy thống kê sự kiện.', error: error.message })
     }
 }
 
