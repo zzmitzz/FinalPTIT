@@ -58,11 +58,7 @@ function createApp() {
         })
     )
 
-    // Add /app-api prefix to all routes
-    app.use('/app-api', (req, res, next) => {
-        route(req.app)
-        next()
-    })
+    route(app)
 
     // Not found handler
     app.use(notFoundHandler)
