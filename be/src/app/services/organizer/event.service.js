@@ -9,7 +9,9 @@ import {
     deleteEventById,
     searchEvents as searchEventsInRepo,
     findNearbyEvents,
+    findEventsByOrganizerGroupedByDate,
 } from '../../../db/event_repository'
+import * as speakerService from './speaker.service'
 
 export const createEvent = async (eventData) => {
     const { thumbnail, logo } = eventData
@@ -47,13 +49,13 @@ export const getEventByPinCode = async (pinCode) => {
     return await findEventByPinCode(pinCode)
 }
 
-export const listEvents = async (page = 1, limit = 10) => {
+export const listEvents = async (page = 1, limit = 10, organizerId = null) => {
     const normalizedPage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1
     const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10
 
     const [items, total] = await Promise.all([
-        findAllEvents(normalizedPage, normalizedLimit),
-        countEvents(),
+        findAllEvents(normalizedPage, normalizedLimit, organizerId),
+        countEvents(organizerId),
     ])
 
     return {
@@ -72,11 +74,15 @@ export const deleteEvent = async (id) => {
     return await deleteEventById(id)
 }
 
-export const searchEvents = async (searchTerm, page = 1, limit = 10) => {
+export const searchEvents = async (searchTerm, page = 1, limit = 10, organizerId = null) => {
     const normalizedPage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1
     const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10
 
-    return await searchEventsInRepo(searchTerm ?? '', normalizedPage, normalizedLimit)
+    return await searchEventsInRepo(searchTerm ?? '', normalizedPage, normalizedLimit, organizerId)
+}
+
+export const getOrganizerEventsGroupedByDate = async (organizerId) => {
+    return await findEventsByOrganizerGroupedByDate(organizerId)
 }
 
 export const getNearbyEvents = async (lat, lng, limit = 5) => {
@@ -89,5 +95,32 @@ export const getNearbyEvents = async (lat, lng, limit = 5) => {
     }
 
     return await findNearbyEvents(parsedLat, parsedLng, parsedLimit)
+}
+
+export const createSpeakersForEvent = async (eventId, speakersData) => {
+    const createdSpeakers = []
+    
+    for (const speakerData of speakersData) {
+        const { photo_url, ...speakerFields } = speakerData
+        
+        // Save photo if provided
+        let savedPhotoUrl = ''
+        if (photo_url instanceof FileUpload) {
+            savedPhotoUrl = photo_url.save()
+        } else if (typeof photo_url === 'string' && photo_url.trim()) {
+            savedPhotoUrl = photo_url
+        }
+        
+        const speakerPayload = {
+            ...speakerFields,
+            event_id: eventId,
+            photo_url: savedPhotoUrl || null,
+        }
+        
+        const speaker = await speakerService.createSpeaker(speakerPayload)
+        createdSpeakers.push(speaker)
+    }
+    
+    return createdSpeakers
 }
 

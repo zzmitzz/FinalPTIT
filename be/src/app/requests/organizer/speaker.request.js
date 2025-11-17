@@ -2,7 +2,7 @@ import Joi from 'joi'
 import {MAX_STRING_SIZE} from '@/configs'
 import * as eventRepo from '@/db/event_repository'
 import * as speakerRepo from '@/db/speaker_repository'
-import {AsyncValidate} from '@/utils/classes'
+import {AsyncValidate, FileUpload} from '@/utils/classes'
 
 export const createItem = Joi.object({
     event_id: Joi.string()
@@ -51,12 +51,18 @@ export const createItem = Joi.object({
         .allow('')
         .optional()
         .label('Tổ chức'),
-    photo_url: Joi.string()
-        .trim()
-        .uri()
-        .allow('')
-        .optional()
-        .label('URL ảnh'),
+    photo_url: Joi.alternatives().try(
+        Joi.string().trim().uri().allow('').optional(),
+        Joi.object({
+            originalname: Joi.string().trim().required().label('Tên ảnh'),
+            mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                .required()
+                .label('Định dạng ảnh'),
+            buffer: Joi.binary().required().label('Ảnh diễn giả'),
+        })
+            .unknown(true)
+            .instance(FileUpload)
+    ).optional().label('URL ảnh'),
     title: Joi.string()
         .trim()
         .max(MAX_STRING_SIZE)
@@ -130,12 +136,18 @@ export const updateItem = Joi.object({
         .allow('')
         .optional()
         .label('Tổ chức'),
-    photo_url: Joi.string()
-        .trim()
-        .uri()
-        .allow('')
-        .optional()
-        .label('URL ảnh'),
+    photo_url: Joi.alternatives().try(
+        Joi.string().trim().uri().allow('').optional(),
+        Joi.object({
+            originalname: Joi.string().trim().required().label('Tên ảnh'),
+            mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                .required()
+                .label('Định dạng ảnh'),
+            buffer: Joi.binary().required().label('Ảnh diễn giả'),
+        })
+            .unknown(true)
+            .instance(FileUpload)
+    ).optional().label('URL ảnh'),
     title: Joi.string()
         .trim()
         .max(MAX_STRING_SIZE)
@@ -194,12 +206,18 @@ export const updateProperties = Joi.object({
         .allow('')
         .optional()
         .label('Tổ chức'),
-    photo_url: Joi.string()
-        .trim()
-        .uri()
-        .allow('')
-        .optional()
-        .label('URL ảnh'),
+    photo_url: Joi.alternatives().try(
+        Joi.string().trim().uri().allow('').optional(),
+        Joi.object({
+            originalname: Joi.string().trim().required().label('Tên ảnh'),
+            mimetype: Joi.valid('image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
+                .required()
+                .label('Định dạng ảnh'),
+            buffer: Joi.binary().required().label('Ảnh diễn giả'),
+        })
+            .unknown(true)
+            .instance(FileUpload)
+    ).optional().label('URL ảnh'),
     title: Joi.string()
         .trim()
         .max(MAX_STRING_SIZE)

@@ -40,6 +40,12 @@ const Organizer = sequelize.define('organizers', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+        comment: 'Whether the organizer account is active'
+    },
     created_at: {
         type: DataTypes.DATE,
         allowNull: false,

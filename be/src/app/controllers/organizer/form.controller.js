@@ -23,6 +23,17 @@ export async function getForm(req, res) {
 }
 
 /**
+ * Get form by event ID
+ * GET /organizer/events/forms/event/:eventId
+ */
+export async function getFormByEvent(req, res) {
+    const { eventId } = req.params
+    const form = await formService.getFormByEventId(eventId)
+    if (!form) return res.status(404).send({ message: 'Form not found for event' })
+    res.send(form)
+}
+
+/**
  * Update form
  * PUT /organizer/events/forms/:id
  */

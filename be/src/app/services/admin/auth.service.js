@@ -1,16 +1,7 @@
 import moment from 'moment'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import {
-    createAdmin,
-    findAdminByEmail,
-    findAdminById,
-    updateAdminById,
-    updateAdminRoles,
-    deleteAdminById,
-    adminPhoneExists,
-    adminEmailExists,
-} from '../../../../dist/db/admin_reporistory'
+import * as adminRepository from '@/db/admin_reporistory'
 
 
 
