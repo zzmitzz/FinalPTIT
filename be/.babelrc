@@ -1,34 +1,13 @@
 {
-<<<<<<< HEAD
   "presets": [["@babel/preset-env", {"targets": {"node": "current"}}], "@babel/preset-typescript"],
-=======
-  "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "targets": {
-          "node": "current"
-        }
-      }
-    ],
-    "@babel/preset-typescript"
-  ],
->>>>>>> upstream/master
   "plugins": [
     "@babel/plugin-transform-runtime",
     [
       "module-resolver",
       {
-<<<<<<< HEAD
         "root": ["./src"],
         "alias": {"@": "./src"},
         "extensions": [".js", ".ts"]
-=======
-        "alias": {
-          "@": "./src"
-        },
-        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
->>>>>>> upstream/master
       }
     ]
   ],
