@@ -1,33 +1,38 @@
-# ========================
-# Stage 1: Install deps
-# ========================
+# Dependencies stage
 FROM node:20-alpine AS deps
 WORKDIR /app
-RUN apk add --no-cache python3 make g++ bash git libc-dev
-COPY package*.json ./
-RUN npm ci
 
-# ========================
-# Stage 2: Build project
-# ========================
+RUN apk add --no-cache python3 make g++
+
+COPY package*.json ./
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
+
+# Builder stage
 FROM node:20-alpine AS builder
 WORKDIR /app
-RUN apk add --no-cache python3 make g++ bash git libc-dev
-COPY --from=deps /app/node_modules ./node_modules
+
+RUN apk add --no-cache python3 make g++
+
+COPY package*.json ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
 COPY . .
 RUN npm run build
 
-# ========================
-# Stage 3: Production image
-# ========================
+# Runner stage
 FROM node:20-alpine AS runner
 WORKDIR /app
+
 ENV NODE_ENV=production
 USER node
-COPY --chown=node:node --from=builder /app/node_modules ./node_modules
+
+COPY --chown=node:node --from=deps /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/build ./build
 COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=node:node --from=builder /app/dist ./
 COPY --chown=node:node --from=builder /app/public ./public
-COPY --chown=node:node --from=builder /app/package.json ./
+COPY --chown=node:node package.json ./
+
 EXPOSE 3456
+
 CMD ["node", "build/main.js"]
