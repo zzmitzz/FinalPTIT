@@ -4,7 +4,7 @@ import requireAuthentication from '@/app/middleware/common/require-authenticatio
 import validate from '@/app/middleware/common/validate'
 import * as authMiddleware from '@/app/middleware/auth.middleware'
 import * as authRequest from '@/app/requests/admin/auth.request'
-import * as authController from '@/app/controllers/organizer/auth.controller'
+import * as authController from '@/app/controllers/admin/auth.controller'
 
 const authRouter = Router()
 

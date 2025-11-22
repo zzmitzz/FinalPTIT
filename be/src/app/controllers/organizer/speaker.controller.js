@@ -1,8 +1,20 @@
 import {abort} from '@/utils/helpers'
 import * as speakerService from '@/app/services/organizer/speaker.service'
+import { FileUpload } from '@/utils/classes'
 
 export async function createItem(req, res) {
-    const speaker = await speakerService.createSpeaker(req.body)
+    // If a file upload was provided in photo_url, save it and convert to URL/path
+    const payload = { ...req.body }
+    if (payload.photo_url && payload.photo_url instanceof FileUpload) {
+        try {
+            payload.photo_url = payload.photo_url.save()
+        } catch (err) {
+            console.error('Failed to save speaker photo:', err)
+            payload.photo_url = ''
+        }
+    }
+
+    const speaker = await speakerService.createSpeaker(payload)
     res.status(201).jsonify(speaker, 'Tạo diễn giả thành công.')
 }
 
@@ -35,7 +47,18 @@ export async function updateItem(req, res) {
         abort(404, 'Không tìm thấy diễn giả.')
     }
 
-    const updated = await speakerService.updateSpeaker(req.params.id, req.body)
+    // If updating with an uploaded file for photo_url, save it first
+    const updatePayload = { ...req.body }
+    if (updatePayload.photo_url && updatePayload.photo_url instanceof FileUpload) {
+        try {
+            updatePayload.photo_url = updatePayload.photo_url.save()
+        } catch (err) {
+            console.error('Failed to save speaker photo on update:', err)
+            updatePayload.photo_url = ''
+        }
+    }
+
+    const updated = await speakerService.updateSpeaker(req.params.id, updatePayload)
     res.jsonify(updated, 'Cập nhật diễn giả thành công.')
 }
 
@@ -58,6 +81,16 @@ export async function updateProperties(req, res) {
             allowedUpdates[field] = req.body[field]
         }
     })
+
+    // Save uploaded photo if present
+    if (allowedUpdates.photo_url && allowedUpdates.photo_url instanceof FileUpload) {
+        try {
+            allowedUpdates.photo_url = allowedUpdates.photo_url.save()
+        } catch (err) {
+            console.error('Failed to save speaker photo on updateProperties:', err)
+            allowedUpdates.photo_url = ''
+        }
+    }
 
     const updated = await speakerService.updateSpeaker(req.params.id, allowedUpdates)
     res.jsonify(updated, 'Cập nhật thuộc tính diễn giả thành công.')

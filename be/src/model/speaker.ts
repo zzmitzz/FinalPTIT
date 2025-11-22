@@ -52,10 +52,7 @@ const Speaker = sequelize.define('speakers', {
 
     photo_url: {
         type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-            isUrl: true
-        }
+        allowNull: true
     },
     professional_title: {
         type: DataTypes.STRING,
@@ -64,10 +61,7 @@ const Speaker = sequelize.define('speakers', {
     },
     linkedin_url: {
         type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-            isUrl: true
-        }
+        allowNull: true
     },
     created_at: {
         type: DataTypes.DATE,

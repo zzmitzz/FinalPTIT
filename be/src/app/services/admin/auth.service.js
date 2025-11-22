@@ -1,6 +1,7 @@
 import moment from 'moment'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
+<<<<<<< HEAD
 import {
     createAdmin,
     findAdminByEmail,
@@ -11,6 +12,9 @@ import {
     adminPhoneExists,
     adminEmailExists,
 } from '../../../../db/admin_reporistory'
+=======
+import * as adminRepository from '@/db/admin_reporistory'
+>>>>>>> upstream/master
 
 
 

@@ -81,4 +81,43 @@ const SessionSpeaker = sequelize.define('session_speakers', {
     ]
 })
 
+// Associations: link session_speakers to sessions and speakers for eager loading
+try {
+    // Require models dynamically to avoid circular import issues
+    // and only set associations if models are available
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Speaker = require('./speaker').default
+    const Session = require('./session').default
+
+    SessionSpeaker.belongsTo(Speaker, {
+        foreignKey: 'speaker_id',
+        targetKey: 'id',
+        as: 'speaker'
+    })
+
+    SessionSpeaker.belongsTo(Session, {
+        foreignKey: 'session_id',
+        targetKey: 'id',
+        as: 'session'
+    })
+
+    // Also add reverse associations for convenience
+    if (Speaker && typeof Speaker.hasMany === 'function') {
+        Speaker.hasMany(SessionSpeaker, {
+            foreignKey: 'speaker_id',
+            sourceKey: 'id',
+            as: 'sessionSpeakers'
+        })
+    }
+    if (Session && typeof Session.hasMany === 'function') {
+        Session.hasMany(SessionSpeaker, {
+            foreignKey: 'session_id',
+            sourceKey: 'id',
+            as: 'sessionSpeakers'
+        })
+    }
+} catch (err) {
+    // If models aren't ready yet, skip association setup — associations may be set elsewhere
+}
+
 export default SessionSpeaker

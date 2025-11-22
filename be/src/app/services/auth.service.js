@@ -1,7 +1,7 @@
 import moment from 'moment'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import * as adminRepository from '../../db/admin_reporistory.ts'
+import * as adminRepository from '@/db/admin_reporistory'
 import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '../../configs'
 import {generateToken} from '../../utils/helpers/token.helper.js'
 

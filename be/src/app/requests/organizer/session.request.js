@@ -3,6 +3,7 @@ import {MAX_STRING_SIZE} from '@/configs'
 import * as eventRepo from '@/db/event_repository'
 import * as sessionRepo from '@/db/session_repository'
 import {AsyncValidate} from '@/utils/classes'
+import * as speakerRepo from '@/db/speaker_repository'
 
 export const createItem = Joi.object({
     event_id: Joi.string()
@@ -120,6 +121,27 @@ export const createItem = Joi.object({
         .optional()
         .default([])
         .label('Thẻ'),
+    speakers: Joi.array()
+        .items(Joi.number().integer().positive())
+        .optional()
+        .label('Danh sách diễn giả')
+        .custom((value, helpers) =>
+            new AsyncValidate(value, async function () {
+                // value is array of speaker ids
+                const { event_id } = helpers.state.ancestors[0]
+                if (!value || !Array.isArray(value) || value.length === 0) return value
+                if (!event_id) return value
+
+                for (const spId of value) {
+                    const sp = await speakerRepo.findSpeakerById(spId)
+                    if (!sp || sp.event_id !== event_id) {
+                        return helpers.message('Một hoặc nhiều diễn giả không thuộc sự kiện này.')
+                    }
+                }
+
+                return value
+            })
+        ),
 })
 
 export const updateItem = Joi.object({

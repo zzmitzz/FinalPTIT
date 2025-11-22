@@ -4,6 +4,7 @@ import validate from '@/app/middleware/common/validate'
 import * as eventController from '@/app/controllers/organizer/event.controller'
 import * as eventRequest from '@/app/requests/organizer/event.request'
 import * as formController from '@/app/controllers/organizer/form.controller'
+import * as sessionController from '@/app/controllers/organizer/session.controller'
 import * as formRequest from '@/app/requests/organizer/form.request'
 import * as formFieldController from '@/app/controllers/organizer/form-field.controller'
 import * as formFieldRequest from '@/app/requests/organizer/form-field.request'
@@ -168,6 +169,26 @@ eventRouter.post(
 
 /**
  * @swagger
+ * /organizer/events/my-events:
+ *   get:
+ *     summary: Get organizer's events grouped by date
+ *     description: Get all events belonging to the authenticated organizer, ordered by start_time
+ *     tags: [Organizer Events]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of events grouped by date
+ *       401:
+ *         description: Unauthorized
+ */
+ eventRouter.get(
+     '/my-events',
+     asyncHandler(eventController.getMyEventsGroupedByDate)
+ )
+
+/**
+ * @swagger
  * /organizer/events/nearby:
  *   get:
  *     summary: Get the 5 nearest events to the provided coordinates
@@ -262,6 +283,35 @@ eventRouter.get(
 eventRouter.get(
     '/:id',
     asyncHandler(eventController.getEventById)
+)
+
+// Get registrations (form responses) for an event (organizer)
+eventRouter.get(
+    '/:id/registrations',
+    asyncHandler(eventController.getEventRegistrations)
+)
+
+// Compatibility route: allow fetching sessions via /organizer/events/:id/sessions
+// (frontend expects this path; session routes are implemented under /organizer/sessions/event/:eventId)
+// Map /organizer/events/:id/sessions -> /organizer/sessions/event/:eventId
+// We set req.params.eventId and then run the same ownership middleware + controller
+import * as sessionMiddleware from '@/app/middleware/organizer/session.middleware'
+
+eventRouter.get(
+    '/:id/sessions',
+    // map id -> eventId for downstream handlers
+    asyncHandler(async (req, res, next) => {
+        req.params.eventId = req.params.id
+        return next()
+    }),
+    asyncHandler(sessionMiddleware.verifyEventOwnership),
+    asyncHandler(sessionController.getListByEventId)
+)
+
+// Event statistics (registrations + check-ins)
+eventRouter.get(
+    '/:id/statistics',
+    asyncHandler(eventController.getEventStatistics)
 )
 
 /**
