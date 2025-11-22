@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
-import { findAdminByEmail, createAdmin } from '../db/admin_reporistory.js'
-import { findOrganizerByEmail, createOrganizer } from '../db/organizer_repo.js'
+import {findAdminByEmail, createAdmin} from '@/db/admin_reporistory'
+import {findOrganizerByEmail, createOrganizer} from '../db/organizer_repo.js'
 
 /**
  * Seeder to create default admin and organizer accounts
@@ -20,7 +20,7 @@ async function createDefaultAccounts() {
                 email: adminEmail,
                 phone: '+1234567890',
                 password: adminPassword,
-                role_ids: []
+                role_ids: [],
             })
             console.log('✓ Admin account created:')
             console.log(`  Email: ${adminEmail}`)
@@ -38,7 +38,7 @@ async function createDefaultAccounts() {
                 name: 'Event Organizer',
                 email: organizerEmail,
                 phone: '+1234567891',
-                password: organizerPassword
+                password: organizerPassword,
             })
             console.log('✓ Organizer account created:')
             console.log(`  Email: ${organizerEmail}`)
@@ -57,8 +57,11 @@ async function createDefaultAccounts() {
 // Run seeder if called directly
 // Use: node -r ts-node/register src/seeders/create-default-accounts.seeder.js
 // Or: babel-node src/seeders/create-default-accounts.seeder.js
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.includes('create-default-accounts.seeder')) {
-    import('../configs/postgre_sql.js').then(async ({ default: sequelize }) => {
+if (
+    import.meta.url === `file://${process.argv[1]}` ||
+    process.argv[1]?.includes('create-default-accounts.seeder')
+) {
+    import('../configs/postgre_sql.js').then(async ({default: sequelize}) => {
         try {
             await sequelize.authenticate()
             console.log('Database connection established.')
@@ -73,4 +76,3 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.includes
 }
 
 export default createDefaultAccounts
-
