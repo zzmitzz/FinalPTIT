@@ -1,4 +1,5 @@
 import * as registrationResponseService from '@/app/services/registrations/registration-response.service'
+import { registerUserForEvent } from '@/app/services/registrations/registration-register-event.service'
 
 /**
  * Create a new registration response
@@ -10,7 +11,7 @@ export async function createRegistrationResponse(req, res) {
         ...req.body,
         registration_id: req.currentRegistration._id
     }
-    
+
     const response = await registrationResponseService.createRegistrationResponse(responseData)
     res.status(201).jsonify(response, 'Tạo câu trả lời đăng ký thành công.')
 }
@@ -21,12 +22,12 @@ export async function createRegistrationResponse(req, res) {
  */
 export async function getRegistrationResponseById(req, res) {
     const response = await registrationResponseService.getRegistrationResponseById(req.params.id)
-    
+
     // Ensure the response belongs to the authenticated user
     if (response.registration_id !== req.currentRegistration._id) {
         return res.status(403).jsonify(null, 'Bạn không có quyền truy cập câu trả lời này.')
     }
-    
+
     res.jsonify(response)
 }
 
@@ -71,17 +72,17 @@ export async function getMyRegistrationResponses(req, res) {
 export async function updateRegistrationResponse(req, res) {
     // First check if the response belongs to the authenticated user
     const existingResponse = await registrationResponseService.getRegistrationResponseById(req.params.id)
-    
+
     if (existingResponse.registration_id !== req.currentRegistration._id) {
         return res.status(403).jsonify(null, 'Bạn không có quyền cập nhật câu trả lời này.')
     }
-    
+
     // Ensure registration_id cannot be changed
     const updateData = {
         ...req.body,
         registration_id: req.currentRegistration._id
     }
-    
+
     const updatedResponse = await registrationResponseService.updateRegistrationResponse(
         req.params.id,
         updateData
@@ -108,6 +109,10 @@ export async function submitFormResponses(req, res) {
     }))
 
     const createdResponses = await registrationResponseService.bulkCreateRegistrationResponses(responsesData)
+
+    // Record that the registration is registered after success fill the form
+    await registerUserForEvent(event_id, req.currentRegistration._id)
+
     res.status(201).jsonify(createdResponses, 'Gửi biểu mẫu thành công.')
 }
 

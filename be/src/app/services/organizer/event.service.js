@@ -49,18 +49,16 @@ export const getEventByPinCode = async (pinCode) => {
     return await findEventByPinCode(pinCode)
 }
 
-export const listEvents = async (page = 1, limit = 10, organizerId = null) => {
+export const listEvents = async (page = 1, limit = 10) => {
     const normalizedPage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1
     const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10
 
-    const [items, total] = await Promise.all([
-        findAllEvents(normalizedPage, normalizedLimit, organizerId),
-        countEvents(organizerId),
+    const [items] = await Promise.all([
+        findAllEvents(normalizedPage, normalizedLimit),
     ])
 
     return {
         items,
-        total,
         page: normalizedPage,
         limit: normalizedLimit,
     }

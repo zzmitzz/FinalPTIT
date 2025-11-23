@@ -1,7 +1,14 @@
 import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE} from '@/configs'
 import {abort, generateToken, getToken} from '@/utils/helpers'
 import * as registrationAuthService from '@/app/services/registrations/auth.service'
-
+const buildStaticUrl = (value) => {
+    if (!value || typeof value !== 'string') return value
+    if (/^https?:\/\//i.test(value)) return value
+    const base = (process.env.APP_URL_API || '').replace(/\/+$/, '')
+    const path = value.startsWith('/') ? value : `/${value}`
+    const withStatic = path.startsWith('/static/') ? path : `/static${path}`
+    return `${base}${withStatic}`
+}
 export async function login(req, res) {
     const validLogin = await registrationAuthService.checkValidLogin(req.body)
 
@@ -26,8 +33,12 @@ export async function logout(req, res) {
 }
 
 export async function me(req, res) {
-    const result = await registrationAuthService.profile(req.currentRegistration._id)
-    res.jsonify(result)
+    const profileData = await registrationAuthService.profile(req.currentRegistration._id)
+    const { avatar_url, ...result } = profileData
+    res.jsonify({
+        ...result,
+        avatar: buildStaticUrl(avatar_url)
+    })
 }
 
 export async function updateProfile(req, res) {
@@ -74,4 +85,3 @@ export async function resetPassword(req, res) {
     await registrationAuthService.blockToken(req.params.token)
     res.status(201).jsonify('Cập nhật mật khẩu thành công.')
 }
-

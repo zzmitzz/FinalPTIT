@@ -109,7 +109,7 @@ export async function getRegistrationStatus(eventId, registrationId) {
  * Get all events a user is registered for
  */
 export async function getRegisteredEventsByUser(registrationId) {
-    const listRegisteredEvent =  await registrationRegisterEventRepo.findRegisteredEventsByRegistrationId(registrationId)
+    const listRegisteredEvent = await registrationRegisterEventRepo.findRegisteredEventsByRegistrationId(registrationId)
     return listRegisteredEvent.map(e => e.event)
 }
 
