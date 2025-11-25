@@ -1,5 +1,32 @@
 import * as sessionRegistrationService from '@/app/services/registrations/session-registration.service'
 
+const buildStaticUrl = (value) => {
+    if (!value || typeof value !== 'string') return value
+    if (/^https?:\/\//i.test(value)) return value
+    const base = (process.env.APP_URL_API || '').replace(/\/+$/, '')
+    const path = value.startsWith('/') ? value : `/${value}`
+    const withStatic = path.startsWith('/static/') ? path : `/static${path}`
+    return `${base}${withStatic}`
+}
+
+const serializeSpeaker = (speaker) => {
+    if (!speaker) return speaker
+    const obj = typeof speaker.toJSON === 'function' ? speaker.toJSON() : speaker
+    return {
+        ...obj,
+        photo_url: buildStaticUrl(obj.photo_url)
+    }
+}
+
+const serializeSession = (session) => {
+    if (!session) return session
+    const obj = typeof session.toJSON === 'function' ? session.toJSON() : session
+    return {
+        ...obj,
+        speakers: Array.isArray(obj.speakers) ? obj.speakers.map(serializeSpeaker) : obj.speakers
+    }
+}
+
 /**
  * Register authenticated user for a session
  * POST /registrations/session-registrations/register
@@ -91,7 +118,7 @@ export async function getSessionsByEvent(req, res) {
     const sessions = await sessionRegistrationService.getSessionsByEventId(eventId)
 
     res.jsonify({
-        data: sessions,
+        data: sessions.map(serializeSession),
         total: sessions.length
     })
 }
