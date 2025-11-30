@@ -19,6 +19,15 @@ const buildStaticUrl = (value) => {
     return `${base}${withStatic}`
 }
 
+const serializeSpeaker = (speaker) => {
+    if (!speaker) return speaker
+    const obj = typeof speaker.toJSON === 'function' ? speaker.toJSON() : speaker
+    return {
+        ...obj,
+        photo_url: buildStaticUrl(obj.photo_url)
+    }
+}
+
 const serializeEvent = (event) => {
     if (!event) return event
     const obj = typeof event.toJSON === 'function' ? event.toJSON() : event
@@ -122,7 +131,7 @@ export async function createEvent(req, res) {
         
         const result = {
             ...serializeEvent(eventWithSpeakers),
-            speakers: speakersList || []
+            speakers: (speakersList || []).map(serializeSpeaker)
         }
         // Create a default registration form for this event (non-blocking)
         try {
@@ -200,7 +209,7 @@ export async function getEventById(req, res) {
                 phone: organizer.phone,
                 avatar: buildStaticUrl(organizer.avatar)
             } : null,
-            speakers: speakers || []
+            speakers: (speakers || []).map(serializeSpeaker)
         }
 
         res.jsonify(eventWithDetails)
@@ -500,7 +509,7 @@ export async function updateEvent(req, res) {
         
         const result = {
             ...serializeEvent(updatedEvent),
-            speakers: speakersList || []
+            speakers: (speakersList || []).map(serializeSpeaker)
         }
         
         res.jsonify(result, 'Cập nhật sự kiện thành công.')
