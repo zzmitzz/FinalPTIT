@@ -13,7 +13,8 @@ router.get(
   asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page || 1)
     const limit = parseInt(req.query.limit || 20)
-    const result = await eventService.listEvents(page, limit, null)
+    // Admins see all events regardless of status
+    const result = await eventService.listEvents(page, limit, null, false)
     res.jsonify(result)
   }),
 )

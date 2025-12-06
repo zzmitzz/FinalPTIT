@@ -163,6 +163,7 @@ export const EVENT_STATUS = {
     WAITING: 'waiting',
     APPROVED: 'approved',
     REJECTED: 'rejected',
+    PUBLISHED: 'published',
 }
 
 export const EVENT_STATE = {

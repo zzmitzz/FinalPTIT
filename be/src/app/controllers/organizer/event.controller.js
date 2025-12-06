@@ -349,7 +349,8 @@ export async function listEvents(req, res) {
         const page = pageParam
         const limit = limitParam ?? per_page ?? page_size ?? 10
         const organizerId = req.currentOrganizer._id
-        const result = await eventService.listEvents(page, limit, organizerId)
+        // Organizers see all their events regardless of status
+        const result = await eventService.listEvents(page, limit, organizerId, false)
         res.jsonify(mapEventsResponse(result))
     } catch (error) {
         console.error('Error in listEvents:', error)
@@ -366,7 +367,8 @@ export async function searchEvents(req, res) {
     try {
         const { q = '', page = 1, limit = 10 } = req.query
         const organizerId = req.currentOrganizer._id
-        const result = await eventService.searchEvents(q, page, limit, organizerId)
+        // Organizers see all their events regardless of status
+        const result = await eventService.searchEvents(q, page, limit, organizerId, false)
         console.log(result)
         res.jsonify(mapEventsResponse(result))
     } catch (error) {
@@ -537,6 +539,45 @@ export async function deleteEvent(req, res) {
             status: 500,
             success: false,
             message: 'Đã xảy ra lỗi khi xóa sự kiện.',
+            error: error.message
+        })
+    }
+}
+
+export async function togglePublishEvent(req, res) {
+    try {
+        const { published } = req.body
+        
+        if (typeof published !== 'boolean') {
+            return res.status(400).jsonify(null, 'Trường "published" phải là boolean.')
+        }
+
+        // Check if event exists and belongs to organizer
+        const event = await eventService.getEventById(req.params.id)
+        if (!event) {
+            return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
+        }
+
+        // Verify ownership
+        if (event.organizer_id !== req.currentOrganizer._id) {
+            return res.status(403).jsonify(null, 'Bạn không có quyền thay đổi trạng thái xuất bản của sự kiện này.')
+        }
+
+        // Update status based on published flag
+        const newStatus = published ? EVENT_STATUS.PUBLISHED : EVENT_STATUS.WAITING
+        const updatedEvent = await eventService.updateEvent(req.params.id, { status: newStatus })
+
+        const message = published 
+            ? 'Sự kiện đã được xuất bản thành công.' 
+            : 'Sự kiện đã được chuyển về trạng thái riêng tư.'
+
+        res.jsonify(serializeEvent(updatedEvent), message)
+    } catch (error) {
+        console.error('Error in togglePublishEvent:', error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Đã xảy ra lỗi khi thay đổi trạng thái xuất bản sự kiện.',
             error: error.message
         })
     }

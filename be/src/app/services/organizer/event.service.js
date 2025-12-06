@@ -49,12 +49,12 @@ export const getEventByPinCode = async (pinCode) => {
     return await findEventByPinCode(pinCode)
 }
 
-export const listEvents = async (page = 1, limit = 10) => {
+export const listEvents = async (page = 1, limit = 10, organizerId = null, filterPublished = false) => {
     const normalizedPage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1
     const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10
 
     const [items] = await Promise.all([
-        findAllEvents(normalizedPage, normalizedLimit),
+        findAllEvents(normalizedPage, normalizedLimit, organizerId, filterPublished),
     ])
 
     return {
@@ -72,11 +72,11 @@ export const deleteEvent = async (id) => {
     return await deleteEventById(id)
 }
 
-export const searchEvents = async (searchTerm, page = 1, limit = 10, organizerId = null) => {
+export const searchEvents = async (searchTerm, page = 1, limit = 10, organizerId = null, filterPublished = false) => {
     const normalizedPage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1
     const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10
 
-    return await searchEventsInRepo(searchTerm ?? '', normalizedPage, normalizedLimit, organizerId)
+    return await searchEventsInRepo(searchTerm ?? '', normalizedPage, normalizedLimit, organizerId, filterPublished)
 }
 
 export const getOrganizerEventsGroupedByDate = async (organizerId) => {

@@ -140,12 +140,16 @@ export const deleteEventById = async (id: string) => {
         throw new Error(`Failed to delete event: ${errorMsg}`)
     }
 }
-export const findAllEvents = async (page: number = 1, limit: number = 10, organizerId?: string) => {
+export const findAllEvents = async (page: number = 1, limit: number = 10, organizerId?: string, filterPublished: boolean = false) => {
     const offset = (page - 1) * limit
     try {
         const whereClause: any = {}
         if (organizerId) {
             whereClause.organizer_id = organizerId
+        }
+        // Filter by PUBLISHED status for public endpoints
+        if (filterPublished) {
+            whereClause.status = EVENT_STATUS.PUBLISHED
         }
         
         const events = await Event.findAll({
@@ -189,6 +193,9 @@ export const findNearbyEvents = async (lat: number, lng: number, limit: number =
         // Simple squared distance ordering (sufficient for nearest-neighbor ranking)
         const distanceExpr = `( (lat - ${lat})*(lat - ${lat}) + (lng - ${lng})*(lng - ${lng}) )`
         const events = await Event.findAll({
+            where: {
+                status: EVENT_STATUS.PUBLISHED
+            },
             attributes: {
                 include: [[literal(distanceExpr), 'distance']],
             },
@@ -203,7 +210,7 @@ export const findNearbyEvents = async (lat: number, lng: number, limit: number =
 }
 
 
-export const searchEvents = async (searchTerm: string, page: number = 1, limit: number = 10, organizerId?: string) => {
+export const searchEvents = async (searchTerm: string, page: number = 1, limit: number = 10, organizerId?: string, filterPublished: boolean = false) => {
     const offset = (page - 1) * limit
     try {
         // Normalize and escape the search term
@@ -223,6 +230,11 @@ export const searchEvents = async (searchTerm: string, page: number = 1, limit: 
         
         if (organizerId) {
             where.organizer_id = organizerId
+        }
+        
+        // Filter by PUBLISHED status for public endpoints
+        if (filterPublished) {
+            where.status = EVENT_STATUS.PUBLISHED
         }
         
         console.log('where clause:', JSON.stringify(where, null, 2))

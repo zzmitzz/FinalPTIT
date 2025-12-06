@@ -55,6 +55,11 @@ export async function getEventById(req, res) {
             abort(404, 'Không tìm thấy sự kiện.')
         }
 
+        // Check if event is published - only published events are visible to public
+        if (event.status !== EVENT_STATUS.PUBLISHED) {
+            abort(404, 'Không tìm thấy sự kiện.')
+        }
+
         const organizer = event.organizer_id ? await findOrganizerById(event.organizer_id) : null
         const speakers = await speakerService.getSpeakersByEventId(req.params.id)
 
@@ -94,6 +99,12 @@ export async function getEventByPinCode(req, res) {
         if (!event) {
             return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         }
+        
+        // Check if event is published - only published events are visible to public
+        if (event.status !== EVENT_STATUS.PUBLISHED) {
+            return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
+        }
+        
         res.jsonify(serializeEvent(event))
     } catch (error) {
         console.error('Error in getEventByPinCode:', error)
@@ -114,7 +125,8 @@ export async function listEvents(req, res) {
         const { page: pageParam = 1, limit: limitParam, per_page, page_size } = req.query
         const page = pageParam
         const limit = limitParam ?? per_page ?? page_size ?? 10
-        const result = await eventService.listEvents(page, limit)
+        // Filter by PUBLISHED status for public endpoints
+        const result = await eventService.listEvents(page, limit, null, true)
         res.jsonify(mapEventsResponse(result))
     } catch (error) {
         console.error('Error in listEvents:', error)
@@ -130,7 +142,8 @@ export async function listEvents(req, res) {
 export async function searchEvents(req, res) {
     try {
         const { q = '', page = 1, limit = 10 } = req.query
-        const result = await eventService.searchEvents(q, page, limit)
+        // Filter by PUBLISHED status for public endpoints
+        const result = await eventService.searchEvents(q, page, limit, null, true)
         console.log(result)
         res.jsonify(mapEventsResponse(result))
     } catch (error) {

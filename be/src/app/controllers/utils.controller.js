@@ -43,8 +43,12 @@ export async function reverseGeocode(req, res) {
     })
     const url = `https://nominatim.openstreetmap.org/reverse?${params.toString()}`
 
-    // Nominatim requires a valid User-Agent header
-    const headers = { 'User-Agent': 'FinalPTIT/1.0 (contact: noreply@example.com)' }
+    // Nominatim requires a valid User-Agent and Referer header
+    // Use a descriptive User-Agent that identifies your application
+    const headers = { 
+      'User-Agent': 'FinalPTIT-Conference-Platform/1.0 (Event Management System)',
+      'Referer': 'https://github.com/zzmitzz/FinalPTIT'
+    }
 
     log('Requesting Nominatim:', url)
     const resp = await fetch(url, { headers })

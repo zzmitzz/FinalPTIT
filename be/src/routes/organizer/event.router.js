@@ -416,6 +416,49 @@ eventRouter.delete(
 
 /**
  * @swagger
+ * /organizer/events/{id}/publish:
+ *   patch:
+ *     summary: Toggle event publication status
+ *     description: Publish or unpublish an event to control its visibility to the public. Published events appear in public listings; unpublished events remain private.
+ *     tags: [Organizer Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Event ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - published
+ *             properties:
+ *               published:
+ *                 type: boolean
+ *                 description: Set to true to publish, false to unpublish
+ *     responses:
+ *       200:
+ *         description: Event publication status updated successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Event not found
+ */
+eventRouter.patch(
+    '/:id/publish',
+    asyncHandler(eventController.togglePublishEvent)
+)
+
+/**
+ * @swagger
  * /organizer/events/forms:
  *   post:
  *     summary: Create a form with fields for an event
