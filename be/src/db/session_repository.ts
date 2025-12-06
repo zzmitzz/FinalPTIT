@@ -117,6 +117,19 @@ export const deleteSessionById = async (id: number) => {
     }
 }
 
+// Delete all sessions by event ID
+export const deleteSessionsByEventId = async (eventId: string) => {
+    try {
+        const deletedCount = await Session.destroy({
+            where: { event_id: eventId }
+        })
+        return deletedCount
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete sessions by event ID: ${errorMsg}`)
+    }
+}
+
 // Search sessions by title, description, or tags
 export const searchSessions = async (searchTerm: string, page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit

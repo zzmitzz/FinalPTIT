@@ -132,6 +132,19 @@ export const deleteResourceById = async (id: number) => {
     }
 }
 
+// Delete resources by event ID
+export const deleteResourcesByEventId = async (eventId: string) => {
+    try {
+        const deletedCount = await Resource.destroy({
+            where: { event_id: eventId }
+        })
+        return deletedCount
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete resources by event ID: ${errorMsg}`)
+    }
+}
+
 // Search resources by name, description, or tags
 export const searchResources = async (searchTerm: string, page: number = 1, limit: number = 10) => {
     const offset = (page - 1) * limit

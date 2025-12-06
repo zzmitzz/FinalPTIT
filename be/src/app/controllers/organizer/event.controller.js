@@ -143,7 +143,7 @@ export async function createEvent(req, res) {
                 is_public: false,
                 fields: [
                     {
-                        field_label: 'Họ và tên người tham gia',
+                        field_label: 'Họ và tên',
                         field_description: '',
                         field_type: 'TEXT',
                         field_options: [],
@@ -151,8 +151,8 @@ export async function createEvent(req, res) {
                         field_range: { min: null, max: null },
                         field_extensions: [],
                         required: true,
-                        is_primary_key: false,
-                        can_edit: true,
+                        is_primary_key: true,
+                        can_edit: false,
                         position: 0,
                     },
                     {
@@ -165,8 +165,34 @@ export async function createEvent(req, res) {
                         field_extensions: [],
                         required: true,
                         is_primary_key: true,
-                        can_edit: true,
+                        can_edit: false,
                         position: 1,
+                    },
+                    {
+                        field_label: 'Ngày sinh',
+                        field_description: '',
+                        field_type: 'DATE',
+                        field_options: [],
+                        field_has_other_option: false,
+                        field_range: { min: null, max: null },
+                        field_extensions: [],
+                        required: true,
+                        is_primary_key: true,
+                        can_edit: false,
+                        position: 2,
+                    },
+                    {
+                        field_label: 'Giới tính',
+                        field_description: '',
+                        field_type: 'RADIO',
+                        field_options: ['Nam', 'Nữ', 'Khác'],
+                        field_has_other_option: false,
+                        field_range: { min: null, max: null },
+                        field_extensions: [],
+                        required: true,
+                        is_primary_key: true,
+                        can_edit: false,
+                        position: 3,
                     }
                 ]
             }

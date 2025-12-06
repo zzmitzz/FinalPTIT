@@ -26,6 +26,9 @@ router.get('/event/:eventId', asyncHandler(formController.getFormByEvent))
 // Update form
 router.put('/:id', asyncHandler(validate(formRequest.updateForm)), asyncHandler(formController.updateForm))
 
+// Update form with fields
+router.put('/:id/with-fields', asyncHandler(validate(formRequest.updateFormWithFields)), asyncHandler(formController.updateFormWithFields))
+
 // Delete form
 router.delete('/:id', asyncHandler(formController.deleteForm))
 

@@ -132,6 +132,19 @@ export const deleteSpeakerById = async (id: number) => {
     }
 }
 
+// Delete all speakers by event ID
+export const deleteSpeakersByEventId = async (eventId: string) => {
+    try {
+        const deletedCount = await Speaker.destroy({
+            where: { event_id: eventId }
+        })
+        return deletedCount
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete speakers by event ID: ${errorMsg}`)
+    }
+}
+
 // Check if email exists
 export const speakerEmailExists = async (email: string, excludeId: number | null = null) => {
     try {

@@ -82,6 +82,75 @@ export async function updateForm(id, updateData) {
     return await formRepo.findFormById(id)
 }
 
+/**
+ * Update form with fields
+ * @param {string} id - Form ID
+ * @param {Object} data - Update data including fields array
+ * @returns {Promise<Object>} Updated form with fields
+ */
+export async function updateFormWithFields(id, data) {
+    const { title, description, is_public, fields } = data
+
+    // Update the form metadata
+    const formData = { title, description, is_public }
+    const updatedForm = await formRepo.updateFormById(id, formData)
+    
+    if (!updatedForm) {
+        return null
+    }
+
+    // If fields are provided, update them
+    if (fields && Array.isArray(fields)) {
+        // Get existing fields
+        const existingFields = await formFieldRepo.findFormFieldsByFormId(id)
+        const existingFieldIds = new Set(existingFields.map(f => f._id))
+        
+        // Track which fields are in the update
+        const updatedFieldIds = new Set()
+        
+        for (const field of fields) {
+            const fieldData = {
+                field_label: field.field_label,
+                field_description: field.field_description || '',
+                field_type: field.field_type,
+                field_options: field.field_options || [],
+                field_has_other_option: field.field_has_other_option || false,
+                field_range: field.field_range || { min: null, max: null },
+                field_extensions: field.field_extensions || [],
+                required: field.required || false,
+                is_primary_key: field.is_primary_key || false,
+                can_edit: field.can_edit !== undefined ? field.can_edit : true,
+                position: field.position,
+            }
+
+            if (field._id && existingFieldIds.has(field._id)) {
+                // Update existing field
+                await formFieldRepo.updateFormFieldById(field._id, fieldData)
+                updatedFieldIds.add(field._id)
+            } else {
+                // Create new field
+                const newFieldData = { ...fieldData, form_id: id }
+                const created = await formFieldRepo.createFormField(newFieldData)
+                updatedFieldIds.add(created._id)
+            }
+        }
+        
+        // Delete fields that were removed (only non-primary fields)
+        for (const existingField of existingFields) {
+            if (!updatedFieldIds.has(existingField._id) && !existingField.is_primary_key) {
+                await formFieldRepo.deleteFormFieldById(existingField._id)
+            }
+        }
+    }
+
+    // Return updated form with fields
+    const updatedFields = await formFieldRepo.findFormFieldsByFormId(id)
+    return {
+        ...updatedForm,
+        fields: updatedFields
+    }
+}
+
 export async function deleteForm(id) {
     // Delete associated form fields first
     await formFieldRepo.deleteFormFieldsByFormId(id)

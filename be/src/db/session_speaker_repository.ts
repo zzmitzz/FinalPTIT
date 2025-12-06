@@ -260,3 +260,14 @@ export const deleteSessionSpeakersBySessionId = async (sessionId: number) => {
         throw new Error(`Failed to delete session-speakers for session ${sessionId}: ${errorMsg}`)
     }
 }
+
+// Delete all session-speaker relationships for a given speaker id
+export const deleteSessionSpeakersBySpeakerId = async (speakerId: number) => {
+    try {
+        const deleted = await SessionSpeaker.destroy({ where: { speaker_id: speakerId } })
+        return deleted
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete session-speakers for speaker ${speakerId}: ${errorMsg}`)
+    }
+}

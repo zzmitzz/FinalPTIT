@@ -61,3 +61,13 @@ export const deleteFormById = async (id: string) => {
         throw new Error(`Failed to delete form: ${errorMsg}`)
     }
 }
+
+export const deleteFormByEventId = async (eventId: string) => {
+    try {
+        const deletedRows = await Form.destroy({ where: { event_id: eventId } })
+        return deletedRows
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete form by event ID: ${errorMsg}`)
+    }
+}

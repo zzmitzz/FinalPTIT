@@ -143,6 +143,19 @@ export const deleteSessionRegistrationById = async (id: number) => {
     }
 }
 
+// Delete all session registrations by session ID
+export const deleteSessionRegistrationsBySessionId = async (sessionId: number) => {
+    try {
+        const deletedCount = await SessionRegistration.destroy({
+            where: { session_id: sessionId }
+        })
+        return deletedCount
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to delete session registrations by session ID: ${errorMsg}`)
+    }
+}
+
 // Cancel session registration
 export const cancelSessionRegistration = async (sessionId: number, userId: string, reason?: string) => {
     try {

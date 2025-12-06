@@ -46,6 +46,18 @@ export async function updateForm(req, res) {
 }
 
 /**
+ * Update form with fields
+ * PUT /organizer/events/forms/:id/with-fields
+ */
+export async function updateFormWithFields(req, res) {
+    const result = await formService.updateFormWithFields(req.params.id, req.body)
+    if (!result) {
+        abort(404, 'Không tìm thấy form.')
+    }
+    res.jsonify(result, 'Cập nhật form và các trường thành công.')
+}
+
+/**
  * Delete form
  * DELETE /organizer/events/forms/:id
  */

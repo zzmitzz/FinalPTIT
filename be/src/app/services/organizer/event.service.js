@@ -11,6 +11,16 @@ import {
     findNearbyEvents,
     findEventsByOrganizerGroupedByDate,
 } from '../../../db/event_repository'
+import { deleteSpeakersByEventId, getSpeakersWithEvent } from '../../../db/speaker_repository'
+import { deleteSessionsByEventId, findSessionsByEventId } from '../../../db/session_repository'
+import { deleteSessionSpeakersBySessionId, deleteSessionSpeakersBySpeakerId } from '../../../db/session_speaker_repository'
+import { deleteSessionRegistrationsBySessionId } from '../../../db/session_registration_repository'
+import { deletePlacesByEventId } from '../../../db/place_repository'
+import { deleteFormByEventId } from '../../../db/form_repository'
+import { deleteResourcesByEventId } from '../../../db/resource_repository'
+import { deleteCheckinHistoryByEventId } from '../../../db/checkin_history_repository'
+import { deleteRegistrationResponsesByEventId } from '../../../db/registration_responses_repository'
+import { deleteRegistrationRegisterEventByEventId } from '../../../db/registration_register_event_repository'
 import * as speakerService from './speaker.service'
 
 export const createEvent = async (eventData) => {
@@ -69,6 +79,36 @@ export const updateEvent = async (id, updateData) => {
 }
 
 export const deleteEvent = async (id) => {
+    // Delete all related records first to avoid foreign key constraint violations
+    // Order matters: delete dependent records before the main event
+    
+    // 1. Get all sessions and speakers for this event
+    const sessions = await findSessionsByEventId(id)
+    const speakers = await getSpeakersWithEvent(id)
+    
+    // 2. Delete session registrations for all sessions
+    for (const session of sessions) {
+        await deleteSessionRegistrationsBySessionId(session.id)
+    }
+    
+    // 3. Delete session-speaker relationships (can be done by session or speaker)
+    for (const session of sessions) {
+        await deleteSessionSpeakersBySessionId(session.id)
+    }
+    
+    // 4. Now safe to delete sessions and speakers
+    await deleteSessionsByEventId(id)
+    await deleteSpeakersByEventId(id)
+    
+    // 5. Delete other related records
+    await deleteCheckinHistoryByEventId(id)          // Delete check-in history
+    await deleteRegistrationResponsesByEventId(id)   // Delete registration responses
+    await deleteRegistrationRegisterEventByEventId(id) // Delete event registrations
+    await deleteResourcesByEventId(id)               // Delete resources
+    await deletePlacesByEventId(id)                  // Delete places/rooms
+    await deleteFormByEventId(id)                    // Delete form (and its fields via cascade)
+    
+    // 6. Finally delete the event itself
     return await deleteEventById(id)
 }
 

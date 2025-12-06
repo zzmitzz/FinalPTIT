@@ -19,3 +19,8 @@ export async function deletePlaceById(id) {
     await p.destroy()
     return true
 }
+
+export async function deletePlacesByEventId(eventId) {
+    const deletedCount = await Place.destroy({ where: { event_id: eventId } })
+    return deletedCount
+}
