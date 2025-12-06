@@ -8,25 +8,11 @@ export const addSpeakerToSession = Joi.object({
     session_id: Joi.number()
         .integer()
         .required()
-        .label('Session ID')
-        .custom(
-            (value, helpers) =>
-                new AsyncValidate(value, async function () {
-                    const session = await sessionRepo.findSessionById(value)
-                    return session ? value : helpers.message('{{#label}} không tồn tại.')
-                })
-        ),
+        .label('Session ID'),
     speaker_id: Joi.number()
         .integer()
         .required()
         .label('Speaker ID')
-        .custom(
-            (value, helpers) =>
-                new AsyncValidate(value, async function () {
-                    const speaker = await speakerRepo.findSpeakerById(value)
-                    return speaker ? value : helpers.message('{{#label}} không tồn tại.')
-                })
-        )
         .custom(
             (value, helpers) =>
                 new AsyncValidate(value, async function () {
