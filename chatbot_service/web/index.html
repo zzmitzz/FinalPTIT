@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Chatbot - Gemini AI</title>
+    <meta name="description" content="Interactive SQL Chatbot powered by Google's Gemini AI with function calling">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1>🤖 SQL Chatbot</h1>
+                <p class="subtitle">Powered by Gemini AI</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="clearChat()">Clear Chat</button>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-message">
+                    <div class="welcome-icon">💡</div>
+                    <h2>Welcome to SQL Chatbot!</h2>
+                    <p>Ask me anything about the database. Try these examples:</p>
+                    <div class="example-queries">
+                        <button class="example-query" onclick="sendExample('How many users are in the database?')">
+                            📊 How many users are in the database?
+                        </button>
+                        <button class="example-query" onclick="sendExample('Show me all users with gmail email addresses')">
+                            📧 Show me all users with gmail email addresses
+                        </button>
+                        <button class="example-query" onclick="sendExample('Get users between age 25 and 35')">
+                            🎂 Get users between age 25 and 35
+                        </button>
+                        <button class="example-query" onclick="sendExample('Search for users named Alice')">
+                            🔍 Search for users named Alice
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <form id="chatForm" onsubmit="sendMessage(event)">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Ask about the database..."
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="btn-primary" id="sendButton">
+                        <span class="btn-text">Send</span>
+                        <span class="btn-icon">➤</span>
+                    </button>
+                </form>
+                <div class="input-hint">
+                    💡 Tip: You can ask questions in natural language or request specific SQL queries
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

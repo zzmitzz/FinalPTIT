@@ -117,9 +117,6 @@ export async function getSessionsByEvent(req, res) {
 
     const sessions = await sessionRegistrationService.getSessionsByEventId(eventId)
 
-    res.jsonify({
-        data: sessions.map(serializeSession),
-        total: sessions.length
-    })
+    res.jsonify(sessions.map(serializeSession))
 }
 

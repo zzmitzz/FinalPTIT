@@ -1,5 +1,5 @@
-import {Router} from 'express'
-import {asyncHandler} from '@/utils/helpers'
+import { Router } from 'express'
+import { asyncHandler } from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
 import * as sessionRequest from '@/app/requests/organizer/session.request'

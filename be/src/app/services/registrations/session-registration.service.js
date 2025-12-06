@@ -3,6 +3,7 @@ import * as sessionRepo from '@/db/session_repository'
 import * as sessionRegistrationRepo from '@/db/session_registration_repository'
 import * as registrationRepo from '@/db/registration_repository'
 import * as eventRepo from '@/db/event_repository'
+import * as sessionSpeakerRepo from '@/db/session_speaker_repository'
 
 /**
  * Register a user for a session
@@ -240,11 +241,17 @@ export async function getSessionsByEventId(eventId) {
             const checkedInCount = await sessionRegistrationRepo.countRegistrationsBySessionAndStatus(session.id, 'checked_in')
             const waitlistCount = await sessionRegistrationRepo.countRegistrationsBySessionAndStatus(session.id, 'waitlist')
 
+            // Fetch speakers for this session
+            const speakers = (await sessionSpeakerRepo.findSpeakersBySessionId(session.id)).map(s => ({
+                id: s.id,
+                photo_url: s.photo_url}))
+
             return {
                 ...session,
                 registered_count: attendingCount + checkedInCount,
                 waitlist_count: waitlistCount,
-                available_spots: Math.max(0, session.capacity - (attendingCount + checkedInCount))
+                available_spots: Math.max(0, session.capacity - (attendingCount + checkedInCount)),
+                speakers: speakers || []
             }
         })
     )

@@ -2,6 +2,7 @@ import {abort} from '@/utils/helpers'
 import * as sessionSpeakerService from '@/app/services/organizer/session-speaker.service'
 
 export async function addSpeakerToSession(req, res) {
+    console.log('Request body:', req.body)  // Debugging line
     const sessionSpeaker = await sessionSpeakerService.addSpeakerToSession(req.body)
     res.status(201).jsonify(sessionSpeaker, 'Thêm diễn giả vào phiên thành công.')
 }
