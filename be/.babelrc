@@ -1,32 +1,10 @@
 {
-  "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "targets": {
-          "node": "current"
-        }
-      }
-    ],
-    "@babel/preset-typescript"
-  ],
+  "presets": [["@babel/preset-env", {"targets": {"node": "current"}}], "@babel/preset-typescript"],
   "plugins": [
     "@babel/plugin-transform-runtime",
-    [
-      "module-resolver",
-      {
-        "alias": {
-          "@": "./src"
-        },
-        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
-      }
-    ]
+    ["module-resolver", {"root": ["./src"], "alias": {"@": "./src"}, "extensions": [".js", ".ts"]}]
   ],
   "ignore": ["./build", "./node_modules"],
   "comments": false,
-  "env": {
-    "build": {
-      "sourceMaps": true
-    }
-  }
+  "env": {"build": {"sourceMaps": true}}
 }
