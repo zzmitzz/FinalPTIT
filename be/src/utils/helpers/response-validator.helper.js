@@ -76,18 +76,12 @@ export function validateResponseByFieldType(response, field) {
                 break
 
             case FIELD_TYPE.DATE:
-                // Date stored as Unix timestamp (number)
-                schema = Joi.number().integer().label(field_label)
-                if (_.isNumber(field_range.min)) {
-                    schema = schema.min(field_range.min)
-                }
-                if (_.isNumber(field_range.max)) {
-                    schema = schema.max(field_range.max)
-                }
+                // Date stored as string
+                schema = Joi.string().trim().label(field_label)
                 if (required) {
                     schema = schema.required()
                 } else {
-                    schema = schema.allow(null).optional()
+                    schema = schema.allow('', null).optional()
                 }
                 break
 
@@ -128,26 +122,34 @@ export function validateResponseByFieldType(response, field) {
                 break
 
             case FIELD_TYPE.CHECKBOX:
-                // Multiple selections from options
-                if (field_has_other_option) {
-                    schema = Joi.array().items(
-                        Joi.alternatives().try(
-                            Joi.string().valid(...field_options),
-                            Joi.object({
-                                option: Joi.string().valid('other').required(),
-                                value: Joi.string().trim().max(255).required()
-                            })
-                        )
-                    ).label(field_label)
-                } else {
-                    schema = Joi.array().items(
-                        Joi.string().valid(...field_options)
-                    ).label(field_label)
+                // Multiple selections stored as comma-separated string
+                schema = Joi.string().trim().label(field_label)
+
+                // Custom validation to check if values are valid options
+                if (!_.isEmpty(field_options)) {
+                    schema = schema.custom((value, helpers) => {
+                        if (!value) return value
+
+                        const selectedValues = value.split(',').map(v => v.trim())
+
+                        for (const val of selectedValues) {
+                            if (field_has_other_option && val.startsWith('other:')) {
+                                // Allow 'other:custom_value' format
+                                continue
+                            }
+                            if (!field_options.includes(val)) {
+                                return helpers.error('any.invalid', { value: val })
+                            }
+                        }
+
+                        return value
+                    })
                 }
+
                 if (required) {
-                    schema = schema.min(1).required()
+                    schema = schema.required()
                 } else {
-                    schema = schema.allow(null).optional()
+                    schema = schema.allow('', null).optional()
                 }
                 break
 
@@ -171,7 +173,7 @@ export function validateResponseByFieldType(response, field) {
                 if (!_.isEmpty(field_extensions) && _.isObject(response)) {
                     const filename = response.originalname || response.filename
                     if (filename) {
-                        const hasValidExtension = field_extensions.some(ext => 
+                        const hasValidExtension = field_extensions.some(ext =>
                             filename.toLowerCase().endsWith(ext.toLowerCase())
                         )
                         if (!hasValidExtension) {
@@ -250,7 +252,7 @@ export function validateMultipleResponses(responses, formFields) {
         }
 
         const validation = validateResponseByFieldType(response, field)
-        
+
         if (!validation.valid) {
             errors[form_fields_id] = validation.error
         } else {

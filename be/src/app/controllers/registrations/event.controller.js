@@ -4,6 +4,7 @@ import * as formService from '../../services/organizer/form.service'
 import * as registrationResponseService from '@/app/services/registrations/registration-response.service'
 import * as registrationRepo from '@/db/registration_repository'
 import { findOrganizerById } from '@/db/organizer_repo'
+import { getOrganizerDetailsByOrganizerId } from '@/app/services/organizer/organizer-details.service'
 import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
 import * as checkinHistoryService from '@/app/services/registrations/checkin-history.service'
 import { EVENT_STATUS } from '@/configs'
@@ -60,7 +61,7 @@ export async function getEventById(req, res) {
             abort(404, 'Không tìm thấy sự kiện.')
         }
 
-        const organizer = event.organizer_id ? await findOrganizerById(event.organizer_id) : null
+        const organizer = event.organizer_id ? await getOrganizerDetailsByOrganizerId(event.organizer_id) : null
         const speakers = await speakerService.getSpeakersByEventId(req.params.id)
 
         // Check if user is registered
@@ -73,11 +74,9 @@ export async function getEventById(req, res) {
             ...serializeEvent(event),
             is_registered: !!isRegistered,
             organizer: organizer ? {
-                _id: organizer._id,
-                name: organizer.name,
-                email: organizer.email,
-                phone: organizer.phone,
-                avatar: buildStaticUrl(organizer.avatar)
+                name: organizer.organization_name,
+                describe: organizer.description,
+                avatar: buildStaticUrl(organizer.logo_url),
             } : null,
             speakers: (speakers || []).map(serializeSpeaker)
         }
@@ -99,12 +98,12 @@ export async function getEventByPinCode(req, res) {
         if (!event) {
             return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         }
-        
+
         // Check if event is published - only published events are visible to public
         if (event.status !== EVENT_STATUS.PUBLISHED) {
             return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         }
-        
+
         res.jsonify(serializeEvent(event))
     } catch (error) {
         console.error('Error in getEventByPinCode:', error)
@@ -214,3 +213,27 @@ export async function registerEvent(req, res) {
 }
 
 
+export async function getRegistrationStatus(req, res) {
+    try {
+        const { id: eventId } = req.params
+        const registrationId = req.currentRegistration._id
+
+        const registrationStatus = await registrationRegisterEventService.getRegistrationStatus(
+            eventId,
+            registrationId
+        )
+        if (!registrationStatus) {
+            return abort(404, 'Không tìm thấy thông tin đăng ký.')
+        }
+        res.jsonify(registrationStatus)
+    } catch (error) {
+        console.error('Error in registerEvent:', error)
+        const status = error.status || 500
+        return res.status(status).json({
+            status: status,
+            success: false,
+            message: error.message || 'Đã xảy ra lỗi khi lấy biểu mẫu đăng ký.',
+            error: error.message
+        })
+    }
+}

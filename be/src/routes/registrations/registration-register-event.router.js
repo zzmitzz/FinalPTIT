@@ -150,5 +150,8 @@ registrationRegisterEventRouter.get(
     asyncHandler(registrationRegisterEventController.getMyRegisteredEventsByMonth)
 )
 
+
+
+
 export default registrationRegisterEventRouter
 

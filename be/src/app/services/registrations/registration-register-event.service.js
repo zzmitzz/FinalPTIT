@@ -98,6 +98,7 @@ export async function getRegistrationStatus(eventId, registrationId) {
     }
 
     return {
+        id: registerEvent._id,
         event_id: registerEvent.event_id,
         registration_id: registerEvent.registration_id,
         is_registered: registerEvent.is_registered,

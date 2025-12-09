@@ -1,5 +1,4 @@
 import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
-
 /**
  * Get all events the authenticated user is registered for
  * GET /registrations/registered-events
@@ -26,3 +25,12 @@ export async function getMyRegisteredEventsByMonth(req, res) {
     res.jsonify(events)
 }
 
+
+export async function getRegistrationStatus(req, res) {
+    const { event_id } = req.params
+    const status = await registrationRegisterEventService.getRegistrationStatus(
+        req.currentRegistration._id,
+        event_id
+    )
+    res.jsonify(status)
+}

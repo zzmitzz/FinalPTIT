@@ -12,7 +12,7 @@ export interface ResourceAttributes {
     id: number
     session_id: number | null
     event_id: string | null
-    resource_type: typeof RESOURCE_TYPE 
+    resource_type: typeof RESOURCE_TYPE
     name: string
     url_source: string
     description: string
@@ -61,9 +61,6 @@ const Resource = sequelize.define('resources', {
     url_source: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-            isUrl: true
-        }
     },
     description: {
         type: DataTypes.TEXT,
@@ -127,7 +124,9 @@ const Resource = sequelize.define('resources', {
     comment: 'Resources associated with events or sessions',
     validate: {
         eitherSessionOrEvent() {
-            if ((this.session_id === null) === (this.event_id === null)) {
+            console.log(this.session_id, this.event_id)
+            console.log((this.session_id === null) === (this.event_id === null))
+            if ((this.session_id === null) && (this.event_id === null)) {
                 throw new Error('Resource must belong to either a session or an event, but not both')
             }
         }

@@ -6,7 +6,6 @@ import * as eventRepo from '@/db/event_repository'
 import * as sessionRepo from '@/db/session_repository'
 import { FileUpload } from '@/utils/classes'
 
-// Helper to check name duplication within event or session
 const checkNameDuplicate = async (name, eventId, sessionId, excludeId = null) => {
     let resources
     if (sessionId) {
@@ -33,7 +32,6 @@ export const createItem = Joi.object({
         .external(async (value, helpers) => {
             const { session_id } = helpers.prefs.context?.data || {}
 
-            // Ensure exactly one of event_id or session_id is provided
             if (!value && !session_id) {
                 throw new Error('Phải cung cấp event_id hoặc session_id.')
             }
@@ -90,7 +88,7 @@ export const createItem = Joi.object({
                 .required()
                 .label('Định dạng tệp'),
             buffer: Joi.binary()
-                .max(50 * 1024 * 1024) // 50MB limit
+                .max(50 * 1024 * 1024)
                 .required()
                 .label('Tệp tải lên')
                 .messages({
@@ -110,11 +108,25 @@ export const createItem = Joi.object({
                 .trim()
                 .required()
                 .label('Tên tệp'),
+
             mimetype: Joi.string()
+                .valid(
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp',
+                    'image/gif',
+                    'image/svg+xml',
+                    'image/heic',
+                    'image/heif'
+                )
                 .required()
-                .label('Định dạng tệp'),
+                .label('Định dạng tệp')
+                .messages({
+                    'any.only': '{{#label}} phải là định dạng ảnh hợp lệ.'
+                }),
+
             buffer: Joi.binary()
-                .max(50 * 1024 * 1024) // 50MB limit
+                .max(50 * 1024 * 1024)
                 .required()
                 .label('Tệp tải lên')
                 .messages({
@@ -124,7 +136,8 @@ export const createItem = Joi.object({
             .unknown(true)
             .instance(FileUpload)
             .required()
-            .label('Tệp'),
+            .label('Bản đồ'),
+
         otherwise: Joi.forbidden()
     }),
     description: Joi.string()
@@ -181,7 +194,7 @@ export const updateItem = Joi.object({
                 .required()
                 .label('Định dạng tệp'),
             buffer: Joi.binary()
-                .max(10 * 1024 * 1024) // 10MB limit
+                .max(10 * 1024 * 1024)
                 .required()
                 .label('Tệp tải lên')
                 .messages({
@@ -194,10 +207,6 @@ export const updateItem = Joi.object({
             .label('Tệp'),
         otherwise: Joi.forbidden()
     }),
-    url_source: Joi.string()
-        .uri()
-        .optional()
-        .label('URL nguồn'),
     description: Joi.string()
         .trim()
         .max(5000)
@@ -236,4 +245,3 @@ export const checkActivation = Joi.object({
         .required()
         .label('Resource ID')
 })
-
