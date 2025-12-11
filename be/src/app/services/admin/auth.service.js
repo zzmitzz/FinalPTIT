@@ -2,9 +2,6 @@ import moment from 'moment'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import * as adminRepository from '@/db/admin_reporistory'
-
-
-
 import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '@/configs'
 import {generateToken} from '@/utils/helpers'
 
@@ -12,14 +9,12 @@ export const tokenBlocklist = cache.create('token-block-list')
 
 export async function checkValidLogin({email, password}) {
     const admin = await adminRepository.findAdminByEmail(email)
-
     if (admin) {
         const verified = await bcrypt.compare(password, admin.password)
         if (verified) {
             return admin
         }
     }
-
     return false
 }
 
@@ -36,7 +31,12 @@ export function authToken(admin) {
 
 export async function register({name, email, phone = '', password}) {
     const passwordHash = await bcrypt.hash(password, 10)
-    const admin = await adminRepository.createAdmin({name, email, phone, password: passwordHash})
+    const admin = await adminRepository.createAdmin({
+        name,
+        email,
+        phone,
+        password: passwordHash,
+    })
     return admin
 }
 

@@ -11,7 +11,7 @@
     "start": "nodemon",
     "seed": "babel-node src/seeders",
     "migrate": "babel-node src/migrations/run-migration.js",
-    "build": "del-cli build && cross-env NODE_ENV=build babel src -d build -D",
+    "build": "del-cli build dist && cross-env NODE_ENV=build babel src -d build -D --extensions \".js,.ts\" --copy-files && npx tsc -p tsconfig.json --module commonjs --outDir dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -51,7 +51,6 @@
     "winston": "^3.13.0",
     "yaml": "^2.4.5",
     "morgan": "1.10.1"
-
   },
   "devDependencies": {
     "@babel/cli": "^7.24.7",

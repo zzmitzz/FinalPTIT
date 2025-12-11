@@ -15,7 +15,7 @@ import formDataHandler from './handlers/form-data.handler'
 import initLocalsHandler from './handlers/init-locals.handler'
 import notFoundHandler from './handlers/not-found.handler'
 import errorHandler from './handlers/error.handler'
-import morgan from 'morgan';
+import morgan from 'morgan'
 
 import route from './routes'
 
@@ -42,18 +42,21 @@ function createApp() {
     app.use(express.json())
     app.use(express.urlencoded({extended: true}))
 
-
     app.use(multer({storage: multer.memoryStorage()}).any())
     app.use(formDataHandler)
     app.use(initLocalsHandler)
-    app.use(morgan("dev"));
+    app.use(morgan('dev'))
 
     // Swagger documentation
     const swaggerDocs = swaggerJsDoc(swaggerOptions)
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
-        customSiteTitle: 'Event Management API Documentation',
-        customCss: '.swagger-ui .topbar { display: none }',
-    }))
+    app.use(
+        '/api-docs',
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerDocs, {
+            customSiteTitle: 'Event Management API Documentation',
+            customCss: '.swagger-ui .topbar { display: none }',
+        })
+    )
 
     route(app)
 
