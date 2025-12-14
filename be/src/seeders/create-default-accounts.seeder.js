@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import {findAdminByEmail, createAdmin} from '@/db/admin_reporistory'
+import {findAdminByEmail, createAdmin} from '@/db/admin_rbac_repository'
 import {findOrganizerByEmail, createOrganizer} from '../db/organizer_repo.js'
 
 /**

@@ -3,7 +3,7 @@ import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import requireAuthentication from '@/app/middleware/common/require-authentication'
 import * as authRequest from '@/app/requests/admin/auth.request'
-import * as adminRepository from '@/db/admin_reporistory'
+import * as adminRepository from '@/db/admin_rbac_repository'
 
 const router = Router()
 
@@ -78,7 +78,7 @@ router.get(
             adminRepository.countAdmins(),
         ])
         res.jsonify({total, page, per_page: limit, admins: items})
-    }),
+    })
 )
 
 /**
@@ -143,7 +143,7 @@ router.get(
             return res.status(404).jsonify('Không tìm thấy quản trị viên.')
         }
         res.jsonify(admin)
-    }),
+    })
 )
 
 /**
@@ -205,7 +205,7 @@ router.put(
             return res.status(404).jsonify('Không tìm thấy quản trị viên.')
         }
         res.status(201).jsonify('Cập nhật thông tin quản trị viên thành công.')
-    }),
+    })
 )
 
 /**
@@ -268,7 +268,7 @@ router.patch(
             return res.status(404).jsonify('Không tìm thấy quản trị viên.')
         }
         res.status(201).jsonify('Cập nhật mật khẩu quản trị viên thành công.')
-    }),
+    })
 )
 
 export default router

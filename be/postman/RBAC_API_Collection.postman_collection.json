@@ -1,0 +1,1018 @@
+{
+  "info": {
+    "name": "PTIT Event Management - RBAC API",
+    "description": "Complete RBAC (Role-Based Access Control) API collection for System Users, Roles, and Permissions management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3456",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "system_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "role_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "permission_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System User Authentication",
+      "item": [
+        {
+          "name": "Register System User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.access_token) {",
+                  "        pm.collectionVariables.set('access_token', response.data.access_token);",
+                  "        console.log('Access token saved:', response.data.access_token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Super Admin\",\n  \"email\": \"superadmin@ptit.com\",\n  \"phone\": \"0123456789\",\n  \"password\": \"Admin@123\",\n  \"organizer_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/register",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "register"]
+            },
+            "description": "Register a new system user (global admin or organizer staff)"
+          },
+          "response": []
+        },
+        {
+          "name": "Login System User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.access_token) {",
+                  "        pm.collectionVariables.set('access_token', response.data.access_token);",
+                  "        console.log('Access token saved:', response.data.access_token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@ptit.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/login",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "login"]
+            },
+            "description": "Login with email and password"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/me",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "me"]
+            },
+            "description": "Get current authenticated user profile with roles"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Super Admin Updated\",\n  \"phone\": \"0987654321\",\n  \"avatar_url\": \"https://example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "profile"]
+            },
+            "description": "Update current user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"Admin@123\",\n  \"new_password\": \"NewAdmin@123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "change-password"]
+            },
+            "description": "Change current user password"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/logout",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "logout"]
+            },
+            "description": "Logout and invalidate token"
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication endpoints for system users"
+    },
+    {
+      "name": "System User Management",
+      "item": [
+        {
+          "name": "List System Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users?page=1&limit=10&include_roles=true&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "include_roles",
+                  "value": "true"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "role_id",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get paginated list of system users with optional filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('system_user_id', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}?include_roles=true",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}"],
+              "query": [
+                {
+                  "key": "include_roles",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get system user details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create System User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('system_user_id', response.data._id);",
+                  "        console.log('System user ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event Coordinator\",\n  \"email\": \"coordinator@ptit.com\",\n  \"phone\": \"0123456789\",\n  \"password\": \"Coordinator@123\",\n  \"organizer_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users"]
+            },
+            "description": "Create a new system user (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update System User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event Coordinator Updated\",\n  \"phone\": \"0987654321\",\n  \"avatar_url\": \"https://example.com/coordinator-avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}"]
+            },
+            "description": "Update system user information"
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate System User",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}", "deactivate"]
+            },
+            "description": "Deactivate system user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Activate System User",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}", "activate"]
+            },
+            "description": "Activate system user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete System User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}"]
+            },
+            "description": "Delete system user permanently"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Roles to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_ids\": [\n    \"{{role_id}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}/roles",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}", "roles"]
+            },
+            "description": "Assign roles to a system user"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Roles from User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_ids\": [\n    \"{{role_id}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}/roles",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}", "roles"]
+            },
+            "description": "Remove roles from a system user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}", "permissions"]
+            },
+            "description": "Get all permissions for a system user (aggregated from roles)"
+          },
+          "response": []
+        }
+      ],
+      "description": "System user CRUD and management endpoints"
+    },
+    {
+      "name": "Role Management",
+      "item": [
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('role_id', response.data._id);",
+                  "        console.log('Role ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event Manager\",\n  \"code\": \"EVENT_MANAGER\",\n  \"description\": \"Can create and manage events\",\n  \"scope\": \"ORGANIZER\",\n  \"is_system_role\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles"]
+            },
+            "description": "Create a new role"
+          },
+          "response": []
+        },
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles?page=1&limit=10&include_permissions=true&include_admins=false&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "include_permissions",
+                  "value": "true"
+                },
+                {
+                  "key": "include_admins",
+                  "value": "false"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "is_protected",
+                  "value": "false",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get paginated list of roles"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}?include_permissions=true&include_admins=true",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}"],
+              "query": [
+                {
+                  "key": "include_permissions",
+                  "value": "true"
+                },
+                {
+                  "key": "include_admins",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get role details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event Manager Updated\",\n  \"description\": \"Can create, manage, and publish events\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}"]
+            },
+            "description": "Update role information"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}"]
+            },
+            "description": "Delete role (cannot delete system roles)"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Permissions to Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_ids\": [\n    \"{{permission_id}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}", "permissions"]
+            },
+            "description": "Assign permissions to a role"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Permissions from Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_ids\": [\n    \"{{permission_id}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}", "permissions"]
+            },
+            "description": "Remove permissions from a role"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}/permissions?include_inherited=true",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}", "permissions"],
+              "query": [
+                {
+                  "key": "include_inherited",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get all permissions for a role"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Users to Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"system_user_ids\": [\n    \"{{system_user_id}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}", "users"]
+            },
+            "description": "Assign system users to a role"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Users from Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"system_user_ids\": [\n    \"{{system_user_id}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_id}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_id}}", "users"]
+            },
+            "description": "Remove system users from a role"
+          },
+          "response": []
+        }
+      ],
+      "description": "Role CRUD and permission management endpoints"
+    },
+    {
+      "name": "Permission Management",
+      "item": [
+        {
+          "name": "Create Permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('permission_id', response.data._id);",
+                  "        console.log('Permission ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"EVENT:CREATE\",\n  \"name\": \"Create Event\",\n  \"description\": \"Permission to create new events\",\n  \"resource\": \"EVENT\",\n  \"action\": \"CREATE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions"]
+            },
+            "description": "Create a new permission"
+          },
+          "response": []
+        },
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions?page=1&limit=50&resource=&action=&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "resource",
+                  "value": ""
+                },
+                {
+                  "key": "action",
+                  "value": ""
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get paginated list of permissions"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permission by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/{{permission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "{{permission_id}}"]
+            },
+            "description": "Get permission details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permission by Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/code/EVENT:CREATE",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "code", "EVENT:CREATE"]
+            },
+            "description": "Get permission by code"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Permission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Create Event Updated\",\n  \"description\": \"Permission to create and draft new events\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/{{permission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "{{permission_id}}"]
+            },
+            "description": "Update permission information"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Permission",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/{{permission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "{{permission_id}}"]
+            },
+            "description": "Delete permission"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permissions Grouped by Resource",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/grouped",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "grouped"]
+            },
+            "description": "Get all permissions grouped by resource type"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unique Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/resources",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "resources"]
+            },
+            "description": "Get list of unique resource types"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unique Actions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/actions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "actions"]
+            },
+            "description": "Get list of unique action types"
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Create Permissions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    {\n      \"code\": \"EVENT:READ\",\n      \"name\": \"View Events\",\n      \"description\": \"Permission to view event details\",\n      \"resource\": \"EVENT\",\n      \"action\": \"READ\"\n    },\n    {\n      \"code\": \"EVENT:UPDATE\",\n      \"name\": \"Update Event\",\n      \"description\": \"Permission to update events\",\n      \"resource\": \"EVENT\",\n      \"action\": \"UPDATE\"\n    },\n    {\n      \"code\": \"EVENT:DELETE\",\n      \"name\": \"Delete Event\",\n      \"description\": \"Permission to delete events\",\n      \"resource\": \"EVENT\",\n      \"action\": \"DELETE\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/bulk",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "bulk"]
+            },
+            "description": "Create multiple permissions at once"
+          },
+          "response": []
+        }
+      ],
+      "description": "Permission CRUD and utility endpoints"
+    },
+    {
+      "name": "Complete Workflow Examples",
+      "item": [
+        {
+          "name": "1. Setup - Create Permissions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    {\"code\": \"EVENT:CREATE\", \"name\": \"Create Event\", \"description\": \"Create new events\", \"resource\": \"EVENT\", \"action\": \"CREATE\"},\n    {\"code\": \"EVENT:READ\", \"name\": \"View Events\", \"description\": \"View event details\", \"resource\": \"EVENT\", \"action\": \"READ\"},\n    {\"code\": \"EVENT:UPDATE\", \"name\": \"Update Event\", \"description\": \"Update events\", \"resource\": \"EVENT\", \"action\": \"UPDATE\"},\n    {\"code\": \"EVENT:DELETE\", \"name\": \"Delete Event\", \"description\": \"Delete events\", \"resource\": \"EVENT\", \"action\": \"DELETE\"},\n    {\"code\": \"SESSION:MANAGE\", \"name\": \"Manage Sessions\", \"description\": \"Full session management\", \"resource\": \"SESSION\", \"action\": \"MANAGE\"},\n    {\"code\": \"SPEAKER:MANAGE\", \"name\": \"Manage Speakers\", \"description\": \"Full speaker management\", \"resource\": \"SPEAKER\", \"action\": \"MANAGE\"},\n    {\"code\": \"CHECKIN:MANAGE\", \"name\": \"Manage Check-ins\", \"description\": \"Full check-in management\", \"resource\": \"CHECKIN\", \"action\": \"MANAGE\"}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/permissions/bulk",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "permissions", "bulk"]
+            },
+            "description": "Step 1: Create all necessary permissions"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Setup - Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event Coordinator\",\n  \"code\": \"EVENT_COORDINATOR\",\n  \"description\": \"Can create and manage events\",\n  \"scope\": \"ORGANIZER\",\n  \"is_system_role\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles"]
+            },
+            "description": "Step 2: Create a role"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Workflow - Create System User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Coordinator\",\n  \"email\": \"john@ptit.com\",\n  \"phone\": \"0123456789\",\n  \"password\": \"John@123\",\n  \"organizer_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/system-users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users"]
+            },
+            "description": "Step 3: Create a new system user"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Complete Flow Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system-users/{{system_user_id}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system-users", "{{system_user_id}}", "permissions"]
+            },
+            "description": "Step 4: Verify user has all permissions from assigned roles"
+          },
+          "response": []
+        }
+      ],
+      "description": "Complete workflow examples from setup to verification"
+    }
+  ]
+}

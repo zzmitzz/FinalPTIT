@@ -124,10 +124,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/',
-     asyncHandler(eventController.listEvents)
- )
+eventRouter.get(
+    '/',
+    asyncHandler(eventController.listEvents)
+)
 
 /**
  * @swagger
@@ -162,10 +162,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/search',
-     asyncHandler(eventController.searchEvents)
- )
+eventRouter.get(
+    '/search',
+    asyncHandler(eventController.searchEvents)
+)
 
 /**
  * @swagger
@@ -182,10 +182,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/my-events',
-     asyncHandler(eventController.getMyEventsGroupedByDate)
- )
+eventRouter.get(
+    '/my-events',
+    asyncHandler(eventController.getMyEventsGroupedByDate)
+)
 
 /**
  * @swagger
@@ -223,10 +223,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/nearby',
-     asyncHandler(eventController.getNearbyEvents)
- )
+eventRouter.get(
+    '/nearby',
+    asyncHandler(eventController.getNearbyEvents)
+)
 
 /**
  * @swagger

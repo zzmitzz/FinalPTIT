@@ -1,5 +1,5 @@
-import { DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD } from './constants.js'
-import { Sequelize } from 'sequelize'
+import {DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD} from './constants.js'
+import {Sequelize} from 'sequelize'
 
 const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
     host: DB_HOST,
@@ -26,5 +26,5 @@ process.on('SIGTERM', async () => {
     process.exit(0)
 })
 
-export { sequelize }
+export {sequelize}
 export default sequelize

@@ -7,6 +7,9 @@ import swaggerJsDoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import {APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR, swaggerOptions} from './configs'
 
+// Import RBAC associations BEFORE any routes are loaded
+import './model/rbac-associations.js'
+
 import {jsonify, sendMail} from './handlers/response.handler'
 import corsHandler from './handlers/cors.handler'
 import httpRequestHandler from './handlers/http-request.handler'

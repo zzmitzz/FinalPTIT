@@ -1,62 +1,64 @@
-import  { DataTypes } from 'sequelize'
-const sequelize = require('../configs/postgre_sql.js')
-const PermissionType = require('./permission_type')
+import {DataTypes} from 'sequelize'
+import sequelize from '../configs/postgre_sql.js'
 
-interface PermissionAttributes {
-    _id: string
-    code: string
-    description?: string
-    permission_group_code?: string
-    permission_type_code: string
-    createdAt?: Date
-    updatedAt?: Date
+export interface PermissionAttributes {
+  _id: string
+  code: string
+  name: string
+  description?: string
+  resource: string
+  action: string
+  created_at?: Date
+  updated_at?: Date
 }
 
-const Permission = sequelize.define('permissions', {
+const Permission = sequelize.define(
+  'permissions',
+  {
     _id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
     },
     code: {
-        type: DataTypes.STRING,
-        allowNull: false
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      comment: 'Unique permission code (e.g., EVENT:CREATE, USER:MANAGE)',
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      comment: 'Display name of the permission',
     },
     description: {
-        type: DataTypes.STRING,
-        defaultValue: ''
+      type: DataTypes.TEXT,
+      defaultValue: '',
+      comment: 'Detailed description of what this permission allows',
     },
-    permission_group_code: {
-        type: DataTypes.STRING,
-        allowNull: true
+    resource: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      comment: 'Resource type (EVENT, USER, ORGANIZER, SESSION, etc.)',
     },
-    permission_type_code: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        references: {
-            model: 'permission_types',
-            key: 'code'
-        }
-    }
-}, {
+    action: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      comment: 'Action type (CREATE, READ, UPDATE, DELETE, APPROVE, MANAGE)',
+    },
+  },
+  {
     freezeTableName: true,
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
-})
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        unique: true,
+        fields: ['code'],
+        name: 'permissions_code_unique',
+      },
+    ],
+  }
+)
 
-// Association: Each Permission belongs to one PermissionType
-Permission.belongsTo(PermissionType, {
-    foreignKey: 'permission_type_code',
-    targetKey: 'code',
-    as: 'permissionType'
-})
-
-// Enables eager loading and nested queries
-PermissionType.hasMany(Permission, {
-    foreignKey: 'permission_type_code',
-    sourceKey: 'code',
-    as: 'permissions'
-})
-
-module.exports = Permission
+export default Permission

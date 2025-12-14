@@ -282,8 +282,8 @@ export async function getEventRegistrations(req, res) {
         // Get raw responses for the event
         const responses = await registrationResponseService.getRegistrationResponsesByEventId(eventId)
 
-    // Group responses by registration_id
-    const grouped = {}
+        // Group responses by registration_id
+        const grouped = {}
         for (const r of responses) {
             const rid = r.registration_id
             if (!grouped[rid]) {
@@ -296,19 +296,19 @@ export async function getEventRegistrations(req, res) {
                 try {
                     const reg = await registrationRepo.findRegistrationById(rid)
                     if (reg) {
-                            grouped[rid].registration = {
-                                _id: reg._id,
-                                full_name: reg.full_name || null,
-                                email: reg.email || null,
-                                phone: reg.phone || null,
-                                dob: reg.dob || null,
-                                gender: reg.gender || null,
-                                address: reg.address || null,
-                                avatar_url: reg.avatar_url || null,
-                                bio: reg.bio || null,
-                                created_at: reg.created_at || null
-                            }
+                        grouped[rid].registration = {
+                            _id: reg._id,
+                            full_name: reg.full_name || null,
+                            email: reg.email || null,
+                            phone: reg.phone || null,
+                            dob: reg.dob || null,
+                            gender: reg.gender || null,
+                            address: reg.address || null,
+                            avatar_url: reg.avatar_url || null,
+                            bio: reg.bio || null,
+                            created_at: reg.created_at || null
                         }
+                    }
                 } catch (err) {
                     // ignore fetch errors for registrant info
                 }

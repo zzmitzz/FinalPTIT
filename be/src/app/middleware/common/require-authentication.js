@@ -3,7 +3,7 @@ import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
 import {tokenBlocklist} from '@/app/services/admin/auth.service'
 import {TOKEN_TYPE} from '@/configs'
 import {abort, getToken, verifyToken} from '@/utils/helpers'
-import * as adminRepository from '@/db/admin_reporistory'
+import * as adminRbacRepository from '@/db/admin_rbac_repository'
 
 async function requireAuthentication(req, res, next) {
     try {
@@ -12,12 +12,15 @@ async function requireAuthentication(req, res, next) {
         if (token) {
             const allowedToken = _.isUndefined(await tokenBlocklist.get(token))
             if (allowedToken) {
-                const {user_id} = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
-                const admin = await adminRepository.findAdminById(user_id)
-                if (admin) {
-                    req.currentUser = admin
-                    next()
-                    return
+                const {user_id, user_type} = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
+                // Accept both 'system_user' (new RBAC) and 'admin' (legacy) for backward compatibility
+                if (user_type === 'system_user' || user_type === 'admin' || !user_type) {
+                    const admin = await adminRbacRepository.findAdminById(user_id, false)
+                    if (admin) {
+                        req.currentUser = admin
+                        next()
+                        return
+                    }
                 }
             }
         }

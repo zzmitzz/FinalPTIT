@@ -15,13 +15,13 @@ async function registrationRegisterEventSeeder(transaction) {
         const events = await Event.findAll({
             limit: 5,
             order: [['created_at', 'DESC']],
-            transaction
+            transaction,
         })
 
         const registrations = await Registration.findAll({
             limit: 10,
             order: [['created_at', 'DESC']],
-            transaction
+            transaction,
         })
 
         if (events.length === 0) {
@@ -43,27 +43,27 @@ async function registrationRegisterEventSeeder(transaction) {
         for (const event of events) {
             // Register 60-80% of users for each event
             const numToRegister = Math.floor(registrations.length * (0.6 + Math.random() * 0.2))
-            
+
             // Shuffle registrations to get random selection
             const shuffled = [...registrations].sort(() => Math.random() - 0.5)
-            
+
             for (let i = 0; i < shuffled.length; i++) {
                 const registration = shuffled[i]
                 const isRegistered = i < numToRegister
-                
+
                 // Create registration with varying dates
                 const daysAgo = Math.floor(Math.random() * 30) // Random date within last 30 days
                 const createdAt = new Date()
                 createdAt.setDate(createdAt.getDate() - daysAgo)
-                
+
                 registrationData.push({
                     event_id: event._id,
                     registration_id: registration._id,
                     is_registered: isRegistered,
                     created_at: createdAt,
-                    updated_at: createdAt
+                    updated_at: createdAt,
                 })
-                
+
                 recordCount++
             }
         }
@@ -71,11 +71,11 @@ async function registrationRegisterEventSeeder(transaction) {
         // Bulk insert with conflict handling
         const created = await RegistrationRegisterEvent.bulkCreate(registrationData, {
             ignoreDuplicates: true, // Skip duplicates instead of throwing error
-            transaction
+            transaction,
         })
 
         console.log(chalk.green(`✓ Created ${created.length} registration_register_event records`))
-        
+
         // Show statistics
         const stats = await getStatistics(transaction)
         console.log(chalk.cyan('\nStatistics:'))
@@ -83,7 +83,6 @@ async function registrationRegisterEventSeeder(transaction) {
         console.log(chalk.green(`  Registered: ${stats.registered}`))
         console.log(chalk.yellow(`  Unregistered: ${stats.unregistered}`))
         console.log(chalk.blue(`  Registration rate: ${stats.registrationRate}%`))
-
     } catch (error) {
         console.error(chalk.red('Error in registration_register_event seeder:'), error)
         throw error
@@ -94,10 +93,10 @@ async function registrationRegisterEventSeeder(transaction) {
  * Get statistics about the seeded data
  */
 async function getStatistics(transaction) {
-    const total = await RegistrationRegisterEvent.count({ transaction })
+    const total = await RegistrationRegisterEvent.count({transaction})
     const registered = await RegistrationRegisterEvent.count({
-        where: { is_registered: true },
-        transaction
+        where: {is_registered: true},
+        transaction,
     })
     const unregistered = total - registered
     const registrationRate = total > 0 ? ((registered / total) * 100).toFixed(2) : 0
@@ -106,7 +105,7 @@ async function getStatistics(transaction) {
         total,
         registered,
         unregistered,
-        registrationRate
+        registrationRate,
     }
 }
 
@@ -119,7 +118,7 @@ async function clearRegistrationRegisterEventData(transaction) {
         const deleted = await RegistrationRegisterEvent.destroy({
             where: {},
             truncate: true,
-            transaction
+            transaction,
         })
         console.log(chalk.green(`✓ Cleared ${deleted} records`))
     } catch (error) {
@@ -129,5 +128,4 @@ async function clearRegistrationRegisterEventData(transaction) {
 }
 
 export default registrationRegisterEventSeeder
-export { clearRegistrationRegisterEventData }
-
+export {clearRegistrationRegisterEventData}

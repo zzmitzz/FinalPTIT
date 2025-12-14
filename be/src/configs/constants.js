@@ -199,7 +199,7 @@ export const EVENT_CATEGORY = {
     EDUCATION: 'EDUCATION',     // Giáo dục
     HEALTH: 'HEALTH',           // Y tế
     TECHNOLOGY: 'TECHNOLOGY'    // Công nghệ
-};
+}
 
 export const RESOURCE_TYPE = {
     MAPS: 'MAPS',

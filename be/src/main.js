@@ -45,13 +45,13 @@ startServer()
 // executeScheduledTasks()
 
 // Optional: Eslint
-if (process.env.__ESLINT__ === 'true') {
-    const command = 'npm'
-    const args = ['run', 'lint:fix', '--silent']
-    const options = {stdio: 'inherit', shell: true}
-    const eslintProcess = spawn(command, args, options)
+// if (process.env.__ESLINT__ === 'true') {
+//     const command = 'npm'
+//     const args = ['run', 'lint:fix', '--silent']
+//     const options = {stdio: 'inherit', shell: true}
+//     const eslintProcess = spawn(command, args, options)
 
-    eslintProcess.on('close', function (code) {
-        if (code !== 0) process.exit(1)
-    })
-}
+//     eslintProcess.on('close', function (code) {
+//         if (code !== 0) process.exit(1)
+//     })
+// }
