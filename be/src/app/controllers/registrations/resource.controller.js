@@ -37,6 +37,16 @@ export async function getListBySessionId(req, res) {
     })
 }
 
+export async function getMapOfEventResources(req, res) {
+    const resources = await resourceService.getMapResourceByEventId(req.params.eventId)
+    const resourcesWithUrl = transformResourceUrlList(resources)
+    const total = resourcesWithUrl.length
+    res.jsonify({
+        data: resourcesWithUrl,
+        total: total,
+    })
+}
+
 export async function updateItem(req, res) {
     const updated = await resourceService.updateResource(req.params.id, req.body)
     if (!updated) {
