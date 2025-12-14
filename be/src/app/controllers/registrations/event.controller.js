@@ -181,7 +181,6 @@ export async function registerEvent(req, res) {
         const { id: eventId } = req.params
         const registrationId = req.currentRegistration._id
 
-        // 1. Check in the register_event already have the record
         const existing = await registrationRegisterEventRepo.findRegistrationRegisterEventByCompositeKey(
             eventId,
             registrationId
@@ -190,12 +189,10 @@ export async function registerEvent(req, res) {
         if (existing) {
             return abort(400, 'Bạn đã đăng ký tham gia sự kiện này rồi.')
         }
-
-        // 2. If not exist, get the form in the form table contains that id
-        const form = await formService.getFormByEventId(eventId)
+        const form = await formService.getFullFormPublic(eventId)
 
         // return the form have is_public == true one as response for this endpoint
-        if (!form || !form.is_public) {
+        if (!form) {
             return abort(404, 'Biểu mẫu đăng ký không tồn tại hoặc chưa được công khai.')
         }
 

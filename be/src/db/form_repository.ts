@@ -41,6 +41,15 @@ export const findFormByEventId = async (eventId: string) => {
         throw new Error(`Failed to find form by event ID: ${errorMsg}`)
     }
 }
+export const findFormByEventIdAndIsPublic = async (eventId: string) => {
+    try {
+        const form = await Form.findOne({ where: { event_id: eventId, is_public: true } })
+        return form?.toJSON() || null
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to find form by event ID and is_public: ${errorMsg}`)
+    }
+}
 
 export const updateFormById = async (id: string, updateData: FormUpdateData) => {
     try {

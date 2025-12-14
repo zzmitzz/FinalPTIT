@@ -275,5 +275,8 @@ sessionRegistrationRouter.get(
     asyncHandler(sessionRegistrationController.getSessionsByEvent)
 )
 
+
+
+
 export default sessionRegistrationRouter
 

@@ -74,6 +74,28 @@ export async function getFormByEventId(eventId) {
     return { ...form, fields }
 }
 
+export async function getFormsByEventId(eventId) {
+    const forms = await formRepo.findFormsByEventId(eventId)
+    return forms
+}
+
+export async function getFormsByEventIdAndIsPublic(eventId) {
+    const forms = await formRepo.findFormByEventId(eventId)
+    if (forms.is_public) {
+        return forms
+    }
+    return null
+}
+
+export async function getFullFormPublic(eventId) {
+    const form = await formRepo.findFormByEventIdAndIsPublic(eventId)
+    if (form) {
+        const fields = await formFieldRepo.findFormFieldsByFormId(form._id)
+        return { ...form, fields }
+    }
+    return null
+}
+
 export async function updateForm(id, updateData) {
     const updated = await formRepo.updateFormById(id, updateData)
     if (!updated) {
@@ -94,7 +116,7 @@ export async function updateFormWithFields(id, data) {
     // Update the form metadata
     const formData = { title, description, is_public }
     const updatedForm = await formRepo.updateFormById(id, formData)
-    
+
     if (!updatedForm) {
         return null
     }
@@ -104,10 +126,10 @@ export async function updateFormWithFields(id, data) {
         // Get existing fields
         const existingFields = await formFieldRepo.findFormFieldsByFormId(id)
         const existingFieldIds = new Set(existingFields.map(f => f._id))
-        
+
         // Track which fields are in the update
         const updatedFieldIds = new Set()
-        
+
         for (const field of fields) {
             const fieldData = {
                 field_label: field.field_label,
@@ -134,7 +156,7 @@ export async function updateFormWithFields(id, data) {
                 updatedFieldIds.add(created._id)
             }
         }
-        
+
         // Delete fields that were removed (only non-primary fields)
         for (const existingField of existingFields) {
             if (!updatedFieldIds.has(existingField._id) && !existingField.is_primary_key) {
