@@ -1,5 +1,4 @@
-
-import { Router } from 'express'
+import {Router} from 'express'
 
 import authRouter from './auth.router'
 import userRouter from './user.router'
@@ -13,6 +12,7 @@ import sessionSpeakerRouter from './session-speaker.router'
 import resourceRouter from './resource.router'
 import checkinRouter from './checkin.router'
 import placeRouter from './place.router'
+import notificationsRouter from './notifications.router'
 
 const organizerRouter = Router()
 
@@ -28,5 +28,6 @@ organizerRouter.use('/session-speakers', sessionSpeakerRouter)
 organizerRouter.use('/resources', resourceRouter)
 organizerRouter.use('/places', placeRouter)
 organizerRouter.use('/checkins', checkinRouter)
+organizerRouter.use('/notifications', notificationsRouter)
 
 export default organizerRouter

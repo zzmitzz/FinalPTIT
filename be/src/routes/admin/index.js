@@ -8,6 +8,7 @@ import eventsRouter from './events.router'
 import systemUsersRouter from './system-users.router'
 import rolesRouter from './roles.router'
 import permissionsRouter from './permissions.router'
+import notificationsRouter from './notifications.router'
 
 const adminRouter = Router()
 
@@ -21,5 +22,8 @@ adminRouter.use('/events', eventsRouter)
 adminRouter.use('/system-users', systemUsersRouter)
 adminRouter.use('/roles', rolesRouter)
 adminRouter.use('/permissions', permissionsRouter)
+
+// Notification routes
+adminRouter.use('/notifications', notificationsRouter)
 
 export default adminRouter

@@ -7,8 +7,9 @@ import swaggerJsDoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import {APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR, swaggerOptions} from './configs'
 
-// Import RBAC associations BEFORE any routes are loaded
+// Import model associations BEFORE any routes are loaded
 import './model/rbac-associations.js'
+import './model/notification-associations.js'
 
 import {jsonify, sendMail} from './handlers/response.handler'
 import corsHandler from './handlers/cors.handler'
@@ -21,6 +22,7 @@ import errorHandler from './handlers/error.handler'
 import morgan from 'morgan'
 
 import route from './routes'
+import {startScheduler} from './tasks/notification-scheduler.js'
 
 function createApp() {
     // Init app
@@ -68,6 +70,11 @@ function createApp() {
 
     // Error handler
     app.use(errorHandler)
+
+    // Start notification scheduler (runs every minute)
+    if (NODE_ENV !== 'test') {
+        startScheduler()
+    }
 
     return app
 }
