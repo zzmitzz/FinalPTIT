@@ -6,9 +6,16 @@ import * as formService from '@/app/services/organizer/form.service'
  * POST /organizer/events/forms
  */
 export async function createFormWithFields(req, res) {
+    const { event_id, is_public } = req.body
+    let formInPublic = await formService.getFormsByEventIdAndIsPublic(event_id)
+    if (formInPublic && is_public) {
+        formService.updateForm(formInPublic._id, { is_public: false })
+    }
     const result = await formService.createFormWithFields(req.body)
     res.status(201).jsonify(result, 'Tạo form và các trường thành công.')
 }
+
+
 
 /**
  * Get form by ID

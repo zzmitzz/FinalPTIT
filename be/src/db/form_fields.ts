@@ -48,6 +48,7 @@ export const findFormFieldsByFormId = async (formId: string) => {
             where: { form_id: formId },
             order: [['position', 'ASC']]
         })
+        console.log(fields)
         return fields.map(f => f.toJSON())
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
