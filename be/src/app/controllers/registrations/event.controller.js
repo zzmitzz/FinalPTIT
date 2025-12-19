@@ -1,15 +1,9 @@
 import * as eventService from '../../services/organizer/event.service'
 import * as speakerService from '../../services/organizer/speaker.service'
 import * as formService from '../../services/organizer/form.service'
-import * as registrationResponseService from '@/app/services/registrations/registration-response.service'
-import * as registrationRepo from '@/db/registration_repository'
-import { findOrganizerById } from '@/db/organizer_repo'
 import { getOrganizerDetailsByOrganizerId } from '@/app/services/organizer/organizer-details.service'
 import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
-import * as checkinHistoryService from '@/app/services/registrations/checkin-history.service'
 import { EVENT_STATUS } from '@/configs'
-import Joi from 'joi'
-import FileUpload from '@/utils/classes/file-upload'
 import * as registrationRegisterEventRepo from '@/db/registration_register_event_repository'
 import { abort } from '@/utils/helpers'
 
@@ -159,7 +153,7 @@ export async function searchEvents(req, res) {
 export async function getNearbyEvents(req, res) {
     try {
         const { lat, lng, limit = 5 } = req.query
-        if (lat === undefined || lng === undefined) {
+        if (!lat || !lng) {
             return res.status(400).jsonify(null, 'lat and lng query parameters are required')
         }
         const items = await eventService.getNearbyEvents(lat, lng, limit)

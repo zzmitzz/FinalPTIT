@@ -7,6 +7,7 @@ import { findOrganizerById } from '@/db/organizer_repo'
 import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
 import * as checkinHistoryService from '@/app/services/registrations/checkin-history.service'
 import { EVENT_STATUS } from '@/configs'
+import { abort } from '@/utils/helpers'
 import Joi from 'joi'
 import FileUpload from '@/utils/classes/file-upload'
 
@@ -77,6 +78,7 @@ export async function createEvent(req, res) {
         }
 
         // Extract speakers from request body (remove speakers_json)
+        // eslint-disable-next-line no-unused-vars
         const { speakers_json, ...eventFields } = req.body
         
         // Add organizer_id from authenticated user
@@ -282,8 +284,8 @@ export async function getEventRegistrations(req, res) {
         // Get raw responses for the event
         const responses = await registrationResponseService.getRegistrationResponsesByEventId(eventId)
 
-    // Group responses by registration_id
-    const grouped = {}
+        // Group responses by registration_id
+        const grouped = {}
         for (const r of responses) {
             const rid = r.registration_id
             if (!grouped[rid]) {
@@ -296,19 +298,19 @@ export async function getEventRegistrations(req, res) {
                 try {
                     const reg = await registrationRepo.findRegistrationById(rid)
                     if (reg) {
-                            grouped[rid].registration = {
-                                _id: reg._id,
-                                full_name: reg.full_name || null,
-                                email: reg.email || null,
-                                phone: reg.phone || null,
-                                dob: reg.dob || null,
-                                gender: reg.gender || null,
-                                address: reg.address || null,
-                                avatar_url: reg.avatar_url || null,
-                                bio: reg.bio || null,
-                                created_at: reg.created_at || null
-                            }
+                        grouped[rid].registration = {
+                            _id: reg._id,
+                            full_name: reg.full_name || null,
+                            email: reg.email || null,
+                            phone: reg.phone || null,
+                            dob: reg.dob || null,
+                            gender: reg.gender || null,
+                            address: reg.address || null,
+                            avatar_url: reg.avatar_url || null,
+                            bio: reg.bio || null,
+                            created_at: reg.created_at || null
                         }
+                    }
                 } catch (err) {
                     // ignore fetch errors for registrant info
                 }
@@ -427,7 +429,7 @@ export async function getMyEventsGroupedByDate(req, res) {
 export async function getNearbyEvents(req, res) {
     try {
         const { lat, lng, limit = 5 } = req.query
-        if (lat === undefined || lng === undefined) {
+        if (!lat || !lng) {
             return res.status(400).jsonify(null, 'lat and lng query parameters are required')
         }
         const items = await eventService.getNearbyEvents(lat, lng, limit)
@@ -472,6 +474,7 @@ export async function updateEvent(req, res) {
             speakers = req.body.speakers
         }
 
+        // eslint-disable-next-line no-unused-vars
         const { status, speakers_json, ...eventFields } = req.body
         
         if (status && !isValidStatus(status)) {
@@ -485,7 +488,7 @@ export async function updateEvent(req, res) {
         }
 
         // Handle speakers update if provided
-        if (speakers !== undefined) {
+        if (speakers !== null && speakers.length !== 0) {
             // Validate merged speakers
             if (speakers && speakers.length > 0) {
                 const speakerSchema = Joi.object({

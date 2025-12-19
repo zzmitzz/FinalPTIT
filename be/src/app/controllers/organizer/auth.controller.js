@@ -1,5 +1,5 @@
-import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE, LOGIN_EXPIRE_IN} from '@/configs'
-import {abort, generateToken, getToken} from '@/utils/helpers'
+import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE} from '@/configs'
+import {abort, generateToken} from '@/utils/helpers'
 import * as organizerAuthService from '@/app/services/organizer/organizer_auth.service'
 
 
@@ -20,9 +20,9 @@ export async function register(req, res) {
     res.status(201).jsonify(result, 'Đăng ký thành công.')
 }
 
-export async function logout(req, res) {
-    const token = getToken(req.headers)
-    await organizerAuthService.blockToken(token)
+export function logout(req, res) {
+    // const token = getToken(req.headers)
+    // await organizerAuthService.blockToken(token)
     res.jsonify('Đăng xuất thành công.')
 }
 
@@ -52,6 +52,6 @@ export function forgotPassword(req, res) {
 
 export async function resetPassword(req, res) {
     await organizerAuthService.resetPassword(req.currentUser._id, req.body.new_password)
-    await organizerAuthService.blockToken(req.params.token)
+    // await organizerAuthService.blockToken(req.params.token)
     res.status(201).jsonify('Cập nhật mật khẩu thành công.')
 }

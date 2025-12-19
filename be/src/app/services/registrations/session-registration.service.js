@@ -57,7 +57,7 @@ export async function registerUserForSession(sessionId, userId) {
     const checkedInCount = await sessionRegistrationRepo.countRegistrationsBySessionAndStatus(sessionId, 'checked_in')
     const totalRegistered = attendingCount + checkedInCount
 
-    let registrationData = {
+    const registrationData = {
         session_id: sessionId,
         user_id: userId,
         registered_at: new Date()

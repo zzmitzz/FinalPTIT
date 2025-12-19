@@ -303,7 +303,7 @@ sessionRouter.put(
     asyncHandler(sessionMiddleware.checkSessionId),
     asyncHandler(sessionMiddleware.verifySessionOwnership),
     asyncHandler(validate(sessionRequest.updateItem)),
-    asyncHandler(sessionMiddleware.validateSessionTimeRange),
+    sessionMiddleware.validateSessionTimeRange,
     asyncHandler(sessionController.updateItem)
 )
 
@@ -372,7 +372,7 @@ sessionRouter.patch(
     asyncHandler(sessionMiddleware.checkSessionId),
     asyncHandler(sessionMiddleware.verifySessionOwnership),
     asyncHandler(validate(sessionRequest.updateProperties)),
-    asyncHandler(sessionMiddleware.validateSessionTimeRange),
+    sessionMiddleware.validateSessionTimeRange,
     asyncHandler(sessionController.updateProperties)
 )
 

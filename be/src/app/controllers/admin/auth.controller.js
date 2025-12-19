@@ -1,4 +1,4 @@
-import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE, LOGIN_EXPIRE_IN} from '@/configs'
+import {LINK_RESET_PASSWORD_URL, TOKEN_TYPE} from '@/configs'
 import {abort, generateToken, getToken} from '@/utils/helpers'
 import * as adminAuthService from '@/app/services/admin/auth.service'
 

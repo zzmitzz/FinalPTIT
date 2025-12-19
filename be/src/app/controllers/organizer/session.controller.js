@@ -80,7 +80,7 @@ export async function updateProperties(req, res) {
     const allowedFields = ['title', 'description', 'start_time', 'end_time', 'place', 'capacity', 'max_waitlist', 'is_active', 'session_type', 'prerequisites', 'tags']
     
     allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) {
+        if (Object.prototype.hasOwnProperty.call(req.body, field) && req.body[field] !== null) {
             allowedUpdates[field] = req.body[field]
         }
     })

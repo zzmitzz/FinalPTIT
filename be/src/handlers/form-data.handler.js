@@ -5,7 +5,7 @@ function formDataHandler(req, res, next) {
     const files = req.files
 
     if (files) {
-        for (let file of files) {
+        for (const file of files) {
             const rawField = file.fieldname
             const uploaded = new FileUpload(file)
 

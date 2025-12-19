@@ -1,12 +1,9 @@
 import {db} from '@/configs'
-import userSeeder from './user.seeder'
 import chalk from 'chalk'
 
-async function seed() {
-    await db.transaction(async function (session) {
+function seed() {
+    return db.transaction(function () {
         console.log(chalk.bold('Initializing data...'))
-
-        await userSeeder(session)
 
         console.log(chalk.bold('Data has been initialized!'))
     })

@@ -55,7 +55,7 @@ export async function verifyEventOwnership(req, res, next) {
     next()
 }
 
-export async function validateSessionTimeRange(req, res, next) {
+export function validateSessionTimeRange(req, res, next) {
     // Validate that session times are within event time range
     const {start_time, end_time} = req.body
 
