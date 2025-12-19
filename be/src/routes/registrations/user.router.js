@@ -1,11 +1,13 @@
-import {Router} from 'express'
-import {asyncHandler} from '@/utils/helpers'
+import { Router } from 'express'
+import { asyncHandler } from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import requireRegistrationAuthentication from '@/app/middleware/registrations/require-authentication'
 import * as registrationRepo from '@/db/registration_repository'
+import { FileUpload } from '@/utils/classes'
 
 const userRouter = Router()
 
+userRouter.use(asyncHandler(requireRegistrationAuthentication))
 /**
  * @swagger
  * /registrations/users:
@@ -79,7 +81,7 @@ userRouter.get(
             registrationRepo.findAllRegistrations(page, limit),
             registrationRepo.countRegistrations(),
         ])
-        res.jsonify({total, page, per_page: limit, registrations: items})
+        res.jsonify({ total, page, per_page: limit, registrations: items })
     }),
 )
 
@@ -209,7 +211,7 @@ userRouter.put(
     '/:id',
     asyncHandler(requireRegistrationAuthentication),
     asyncHandler(async function (req, res) {
-        const {email, phone, provider_name, provider_user_id} = req.body
+        const { email, phone, provider_name, provider_user_id } = req.body
         const updated = await registrationRepo.updateRegistrationById(req.params.id, {
             email,
             phone,
@@ -275,9 +277,87 @@ userRouter.patch(
     asyncHandler(async function (req, res) {
         const bcrypt = (await import('bcrypt')).default
         const passwordHash = await bcrypt.hash(req.body.new_password, 10)
-        const updated = await registrationRepo.updateRegistrationById(req.params.id, {password: passwordHash})
+        const updated = await registrationRepo.updateRegistrationById(req.params.id, { password: passwordHash })
         if (!updated) return res.status(404).jsonify('Không tìm thấy người đăng ký.')
         res.status(201).jsonify('Cập nhật mật khẩu người đăng ký thành công.')
+    }),
+)
+
+
+/**
+ * @swagger
+ * /registrations/users/{id}/avatar:
+ *   put:
+ *     summary: Update registration avatar
+ *     description: Update avatar for registration user by ID
+ *     tags: [Registration Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Registration ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: Avatar image file
+ *     responses:
+ *       200:
+ *         description: Avatar updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *       400:
+ *         description: Invalid input or missing file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Registration not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+userRouter.put(
+    '/update-avatar',
+    asyncHandler(requireRegistrationAuthentication),
+    asyncHandler(async function (req, res) {
+        const { avatar } = req.body
+        const user = await registrationRepo.findRegistrationById(req.params.id)
+        if (!user) return res.status(404).jsonify('Không tìm thấy người đăng ký.')
+
+        if (avatar instanceof FileUpload) {
+            const avatarPath = avatar.save('registrations', 'avatars')
+
+            // Remove old avatar if exists
+            if (user.avatar_url) {
+                FileUpload.remove(user.avatar_url)
+            }
+
+            await registrationRepo.updateRegistrationById(req.params.id, { avatar_url: avatarPath })
+            return res.status(200).jsonify('Cập nhật ảnh đại diện thành công.')
+        }
+
+        res.status(400).jsonify('Vui lòng chọn file ảnh.')
     }),
 )
 

@@ -43,6 +43,10 @@ export async function getResourcesByEventId(eventId) {
     return await resourceRepo.findResourcesByEventId(eventId)
 }
 
+export async function getMapResourceByEventId(eventId) {
+    return await resourceRepo.findMapResourceByEventId(eventId)
+}
+
 export async function getAllResources(page = 1, limit = 10) {
     const normalizedPage = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1
     const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10

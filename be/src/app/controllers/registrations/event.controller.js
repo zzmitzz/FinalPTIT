@@ -6,6 +6,7 @@ import * as registrationRegisterEventService from '@/app/services/registrations/
 import { EVENT_STATUS } from '@/configs'
 import * as registrationRegisterEventRepo from '@/db/registration_register_event_repository'
 import { abort } from '@/utils/helpers'
+import * as resourceService from '@/app/services/registrations/resource.service'
 
 const buildStaticUrl = (value) => {
     if (!value || typeof value !== 'string') return value
@@ -44,8 +45,6 @@ const mapEventsResponse = (data) => {
 export async function getEventById(req, res) {
     try {
         const event = await eventService.getEventById(req.params.id)
-        console.log(event)
-
         if (!event) {
             abort(404, 'Không tìm thấy sự kiện.')
         }
@@ -64,6 +63,9 @@ export async function getEventById(req, res) {
             req.currentRegistration._id
         )
 
+        const eventMap = await resourceService.getMapResourceByEventId(req.params.id)
+
+        console.log(eventMap)
         const eventWithDetails = {
             ...serializeEvent(event),
             is_registered: !!isRegistered,
@@ -72,7 +74,8 @@ export async function getEventById(req, res) {
                 describe: organizer.description,
                 avatar: buildStaticUrl(organizer.logo_url),
             } : null,
-            speakers: (speakers || []).map(serializeSpeaker)
+            speakers: (speakers || []).map(serializeSpeaker),
+            maps: buildStaticUrl(eventMap?.url_source)
         }
 
         res.jsonify(eventWithDetails)
@@ -175,7 +178,6 @@ export async function registerEvent(req, res) {
         const { id: eventId } = req.params
         const registrationId = req.currentRegistration._id
 
-        // 1. Check in the register_event already have the record
         const existing = await registrationRegisterEventRepo.findRegistrationRegisterEventByCompositeKey(
             eventId,
             registrationId
@@ -184,12 +186,10 @@ export async function registerEvent(req, res) {
         if (existing) {
             return abort(400, 'Bạn đã đăng ký tham gia sự kiện này rồi.')
         }
-
-        // 2. If not exist, get the form in the form table contains that id
-        const form = await formService.getFormByEventId(eventId)
+        const form = await formService.getFullFormPublic(eventId)
 
         // return the form have is_public == true one as response for this endpoint
-        if (!form || !form.is_public) {
+        if (!form) {
             return abort(404, 'Biểu mẫu đăng ký không tồn tại hoặc chưa được công khai.')
         }
 

@@ -1,4 +1,4 @@
-import Resource, {RESOURCE_TYPE} from '../model/resource'
+import Resource, { RESOURCE_TYPE } from '../model/resource'
 import { Op } from 'sequelize'
 
 interface ResourceData {
@@ -17,7 +17,7 @@ interface ResourceData {
     tags?: string[]
 }
 
-interface ResourceUpdateData extends Partial<ResourceData> {}
+interface ResourceUpdateData extends Partial<ResourceData> { }
 
 // Create a new resource
 export const createResource = async (resourceData: ResourceData) => {
@@ -63,6 +63,19 @@ export const findResourcesByEventId = async (eventId: string) => {
             order: [['created_at', 'DESC']]
         })
         return resources.map(resource => resource.toJSON())
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to find resources by event ID: ${errorMsg}`)
+    }
+}
+export const findMapResourceByEventId = async (eventId: string) => {
+    try {
+        const resources = await Resource.findOne({
+            where: { event_id: eventId, resource_type: 'MAPS' },
+            order: [['created_at', 'DESC']]
+        })
+        if (!resources) return null
+        return resources.toJSON()
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to find resources by event ID: ${errorMsg}`)
@@ -189,9 +202,9 @@ export const findPublicResources = async (page: number = 1, limit: number = 10) 
 
     try {
         const resources = await Resource.findAll({
-            where: { 
+            where: {
                 is_public: true,
-                is_active: true 
+                is_active: true
             },
             order: [['created_at', 'DESC']],
             limit,
