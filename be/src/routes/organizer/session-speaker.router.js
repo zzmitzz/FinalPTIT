@@ -76,7 +76,7 @@ sessionSpeakerRouter.post(
     asyncHandler(sessionSpeakerMiddleware.checkSpeakerId),
     asyncHandler(sessionSpeakerMiddleware.verifySessionOwnership),
     asyncHandler(sessionSpeakerMiddleware.verifySpeakerOwnership),
-    asyncHandler(sessionSpeakerMiddleware.verifySameEvent),
+    sessionSpeakerMiddleware.verifySameEvent,
     asyncHandler(validate(sessionSpeakerRequest.addSpeakerToSession)),
     asyncHandler(sessionSpeakerController.addSpeakerToSession)
 )
@@ -182,7 +182,7 @@ sessionSpeakerRouter.get(
     asyncHandler(sessionSpeakerMiddleware.checkSpeakerId),
     asyncHandler(sessionSpeakerMiddleware.verifySessionOwnership),
     asyncHandler(sessionSpeakerMiddleware.verifySpeakerOwnership),
-    asyncHandler(sessionSpeakerMiddleware.verifySameEvent),
+    sessionSpeakerMiddleware.verifySameEvent,
     asyncHandler(sessionSpeakerController.getSessionSpeaker)
 )
 
@@ -246,7 +246,7 @@ sessionSpeakerRouter.put(
     asyncHandler(sessionSpeakerMiddleware.checkSpeakerId),
     asyncHandler(sessionSpeakerMiddleware.verifySessionOwnership),
     asyncHandler(sessionSpeakerMiddleware.verifySpeakerOwnership),
-    asyncHandler(sessionSpeakerMiddleware.verifySameEvent),
+    sessionSpeakerMiddleware.verifySameEvent,
     asyncHandler(validate(sessionSpeakerRequest.updateSessionSpeaker)),
     asyncHandler(sessionSpeakerController.updateSessionSpeaker)
 )
@@ -288,7 +288,7 @@ sessionSpeakerRouter.delete(
     asyncHandler(sessionSpeakerMiddleware.checkSpeakerId),
     asyncHandler(sessionSpeakerMiddleware.verifySessionOwnership),
     asyncHandler(sessionSpeakerMiddleware.verifySpeakerOwnership),
-    asyncHandler(sessionSpeakerMiddleware.verifySameEvent),
+    sessionSpeakerMiddleware.verifySameEvent,
     asyncHandler(sessionSpeakerController.removeSpeakerFromSession)
 )
 

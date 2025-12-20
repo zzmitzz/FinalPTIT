@@ -124,10 +124,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/',
-     asyncHandler(eventController.listEvents)
- )
+eventRouter.get(
+    '/',
+    asyncHandler(eventController.listEvents)
+)
 
 /**
  * @swagger
@@ -162,10 +162,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/search',
-     asyncHandler(eventController.searchEvents)
- )
+eventRouter.get(
+    '/search',
+    asyncHandler(eventController.searchEvents)
+)
 
 /**
  * @swagger
@@ -182,10 +182,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/my-events',
-     asyncHandler(eventController.getMyEventsGroupedByDate)
- )
+eventRouter.get(
+    '/my-events',
+    asyncHandler(eventController.getMyEventsGroupedByDate)
+)
 
 /**
  * @swagger
@@ -223,10 +223,10 @@ eventRouter.post(
  *       401:
  *         description: Unauthorized
  */
- eventRouter.get(
-     '/nearby',
-     asyncHandler(eventController.getNearbyEvents)
- )
+eventRouter.get(
+    '/nearby',
+    asyncHandler(eventController.getNearbyEvents)
+)
 
 /**
  * @swagger
@@ -300,10 +300,10 @@ import * as sessionMiddleware from '@/app/middleware/organizer/session.middlewar
 eventRouter.get(
     '/:id/sessions',
     // map id -> eventId for downstream handlers
-    asyncHandler(async (req, res, next) => {
+    (req, res, next) => {
         req.params.eventId = req.params.id
         return next()
-    }),
+    },
     asyncHandler(sessionMiddleware.verifyEventOwnership),
     asyncHandler(sessionController.getListByEventId)
 )

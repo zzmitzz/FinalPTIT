@@ -1,6 +1,5 @@
 import * as placeService from '@/app/services/organizer/place.service'
 import * as eventService from '@/app/services/organizer/event.service'
-import { abort } from '@/utils/helpers'
 
 export async function createPlace(req, res) {
     try {

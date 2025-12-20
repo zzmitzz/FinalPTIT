@@ -2,17 +2,17 @@
 // Run with: node generate-hashes.js
 // This outputs SQL statements with real bcrypt hashes that you can copy and paste
 
-const bcrypt = require('bcrypt');
-const fs = require('fs');
-const path = require('path');
+const bcrypt = require('bcrypt')
+const fs = require('fs')
+const path = require('path')
 
 async function generateHashes() {
-    console.log('Generating bcrypt hashes...\n');
+    console.log('Generating bcrypt hashes...\n')
     
-    const adminHash = await bcrypt.hash('admin123', 10);
-    const organizerHash = await bcrypt.hash('organizer123', 10);
+    const adminHash = await bcrypt.hash('admin123', 10)
+    const organizerHash = await bcrypt.hash('organizer123', 10)
     
-    console.log('=== Ready-to-use SQL (copy and paste into your database) ===\n');
+    console.log('=== Ready-to-use SQL (copy and paste into your database) ===\n')
     
     const sql = `-- SQL Script with real bcrypt hashes for default accounts
 -- Generated on: ${new Date().toISOString()}
@@ -43,16 +43,16 @@ VALUES (
     NOW()
 )
 ON CONFLICT (email) DO NOTHING;
-`;
+`
 
-    console.log(sql);
+    console.log(sql)
     
     // Also save to a file
-    const outputFile = path.join(__dirname, 'src', 'seeders', 'create-default-accounts-with-hashes.sql');
-    fs.writeFileSync(outputFile, sql);
-    console.log(`\n✓ SQL also saved to: ${outputFile}`);
-    console.log('\nYou can now run this SQL directly in your PostgreSQL database!');
+    const outputFile = path.join(__dirname, 'src', 'seeders', 'create-default-accounts-with-hashes.sql')
+    fs.writeFileSync(outputFile, sql)
+    console.log(`\n✓ SQL also saved to: ${outputFile}`)
+    console.log('\nYou can now run this SQL directly in your PostgreSQL database!')
 }
 
-generateHashes().catch(console.error);
+generateHashes().catch(console.error)
 

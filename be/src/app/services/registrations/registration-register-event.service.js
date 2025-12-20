@@ -222,7 +222,7 @@ export async function updateRegistrationRegisterEvent(id, updateData) {
     const filteredData = {}
 
     for (const field of allowedFields) {
-        if (updateData[field] !== undefined) {
+        if (Object.prototype.hasOwnProperty.call(updateData, field) && updateData[field] !== null) {
             filteredData[field] = updateData[field]
         }
     }

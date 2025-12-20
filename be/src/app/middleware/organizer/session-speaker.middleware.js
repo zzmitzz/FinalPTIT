@@ -66,7 +66,7 @@ export async function verifySpeakerOwnership(req, res, next) {
     next()
 }
 
-export async function verifySameEvent(req, res, next) {
+export function verifySameEvent(req, res, next) {
     // Verify that both session and speaker belong to the same event
     const session = req.sessionData
     const speaker = req.speakerData

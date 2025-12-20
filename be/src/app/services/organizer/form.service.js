@@ -38,7 +38,7 @@ export async function createFormWithFields(data) {
             field_extensions: field.field_extensions || [],
             required: field.required || false,
             is_primary_key: field.is_primary_key || false,
-            can_edit: field.can_edit !== undefined ? field.can_edit : true,
+            can_edit: (field.can_edit !== null && typeof field.can_edit !== 'undefined') ? field.can_edit : true,
             position: field.position,
         }
 
@@ -141,7 +141,7 @@ export async function updateFormWithFields(id, data) {
                 field_extensions: field.field_extensions || [],
                 required: field.required || false,
                 is_primary_key: field.is_primary_key || false,
-                can_edit: field.can_edit !== undefined ? field.can_edit : true,
+                can_edit: (field.can_edit !== null && typeof field.can_edit !== 'undefined') ? field.can_edit : true,
                 position: field.position,
             }
 

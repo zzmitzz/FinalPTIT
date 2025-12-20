@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import {findAdminByEmail, createAdmin} from '@/db/admin_reporistory'
-import {findOrganizerByEmail, createOrganizer} from '../db/organizer_repo.js'
+import {findOrganizerByEmail, createOrganizer} from '@/db/organizer_repo'
 
 /**
  * Seeder to create default admin and organizer accounts
