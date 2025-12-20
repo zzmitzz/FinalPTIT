@@ -2,133 +2,253 @@
 Function registry for chatbot function calling.
 Maps function names to their implementations and schemas.
 """
-from app.functions.sql_ops import (
-    execute_sql_query,
-    count_users,
-    get_users_by_email_domain,
-    get_users_by_age_range
+from app.functions.event_ops import (
+    get_all_events,
+    search_events,
+    get_event_details
 )
-from app.functions.user_ops import (
-    get_user_info,
-    get_all_users,
-    search_users_by_name
+from app.functions.organizer_ops import (
+    get_organizer_by_event,
+    get_organizer_by_name
 )
+from app.functions.session_ops import (
+    get_sessions_by_event,
+    search_sessions,
+    get_session_location,
+    get_sessions_at_location,
+    get_next_session,
+    get_session_count,
+    get_session_details
+)
+from app.functions.category_ops import get_all_categories
+from app.functions.registration_ops import check_registration_status
 
 # Function registry with Gemini-compatible schemas
 FUNCTION_REGISTRY = {
-    "execute_sql_query": {
-        "function": execute_sql_query,
+    "get_session_details": {
+        "function": get_session_details,
         "declaration": {
-            "name": "execute_sql_query",
-            "description": "Execute a SELECT SQL query on the database and return results. Only SELECT queries are allowed for safety. The database has a 'users' table with columns: id, name, email, age.",
+            "name": "get_session_details",
+            "description": "Get detailed info about a session including speakers and resources.",
             "parameters": {
-                "type": "object",
+                "type": "OBJECT",
                 "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "SQL SELECT query to execute (e.g., 'SELECT * FROM users WHERE age > 30')"
-                    }
+                    "session_id": {"type": "STRING", "description": "Session ID"}
                 },
-                "required": ["query"]
+                "required": ["session_id"]
             }
         }
     },
-    "count_users": {
-        "function": count_users,
+    "get_all_events": {
+        "function": get_all_events,
         "declaration": {
-            "name": "count_users",
-            "description": "Count the total number of users in the database",
+            "name": "get_all_events",
+            "description": "Get all events from the database using raw SQL.",
             "parameters": {
-                "type": "object",
+                "type": "OBJECT",
                 "properties": {},
                 "required": []
             }
         }
     },
-    "get_users_by_email_domain": {
-        "function": get_users_by_email_domain,
+    "get_event_details": {
+        "function": get_event_details,
         "declaration": {
-            "name": "get_users_by_email_domain",
-            "description": "Get all users whose email addresses belong to a specific domain",
+            "name": "get_event_details",
+            "description": "Get details of a specific event.",
             "parameters": {
-                "type": "object",
+                "type": "OBJECT",
                 "properties": {
-                    "domain": {
-                        "type": "string",
-                        "description": "Email domain to search for (e.g., 'gmail.com', 'yahoo.com')"
-                    }
+                    "event_id": {"type": "STRING", "description": "The ID of the event"}
                 },
-                "required": ["domain"]
+                "required": ["event_id"]
             }
         }
     },
-    "get_users_by_age_range": {
-        "function": get_users_by_age_range,
+    "get_organizer_by_event": {
+        "function": get_organizer_by_event,
         "declaration": {
-            "name": "get_users_by_age_range",
-            "description": "Get all users within a specific age range",
+            "name": "get_organizer_by_event",
+            "description": "Get organizer info for an event.",
             "parameters": {
-                "type": "object",
+                "type": "OBJECT",
                 "properties": {
-                    "min_age": {
-                        "type": "integer",
-                        "description": "Minimum age (inclusive)"
-                    },
-                    "max_age": {
-                        "type": "integer",
-                        "description": "Maximum age (inclusive)"
-                    }
+                    "event_id": {"type": "STRING", "description": "The ID of the event"}
                 },
-                "required": ["min_age", "max_age"]
+                "required": ["event_id"]
             }
         }
     },
-    "get_user_info": {
-        "function": get_user_info,
+    "get_sessions_by_event": {
+        "function": get_sessions_by_event,
         "declaration": {
-            "name": "get_user_info",
-            "description": "Get detailed information about a specific user by their ID",
+            "name": "get_sessions_by_event",
+            "description": "Get sessions for an event, optionally filtered by date.",
             "parameters": {
-                "type": "object",
+                "type": "OBJECT",
                 "properties": {
-                    "user_id": {
-                        "type": "integer",
-                        "description": "The ID of the user to retrieve"
-                    }
+                    "event_id": {"type": "STRING", "description": "The ID of the event"},
+                    "date": {"type": "STRING", "description": "Filter by date (YYYY-MM-DD)"}
                 },
-                "required": ["user_id"]
+                "required": ["event_id"]
             }
         }
     },
-    "get_all_users": {
-        "function": get_all_users,
+    "search_sessions": {
+        "function": search_sessions,
         "declaration": {
-            "name": "get_all_users",
-            "description": "Get all users from the database with their complete information",
+            "name": "search_sessions",
+            "description": "Search sessions by title or description.",
             "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
+                "type": "OBJECT",
+                "properties": {
+                    "query_text": {"type": "STRING", "description": "Text to search in session title/desc"},
+                    "event_id": {"type": "STRING", "description": "Optional event ID filter"}
+                },
+                "required": ["query_text"]
             }
         }
     },
-    "search_users_by_name": {
-        "function": search_users_by_name,
+    "get_sessions_at_location": {
+        "function": get_sessions_at_location,
         "declaration": {
-            "name": "search_users_by_name",
-            "description": "Search for users by name using partial matching",
+            "name": "get_sessions_at_location",
+            "description": "Find sessions happening at a specific location/room.",
             "parameters": {
-                "type": "object",
+                "type": "OBJECT",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Name or partial name to search for"
-                    }
+                    "place": {"type": "STRING", "description": "Location name (e.g. 'Hall A')"}
                 },
-                "required": ["name"]
+                "required": ["place"]
             }
         }
-    }
+    },
+    "get_next_session": {
+        "function": get_next_session,
+        "declaration": {
+            "name": "get_next_session",
+            "description": "Find the next starting session for an event.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "event_id": {"type": "STRING", "description": "The ID of the event"},
+                    "current_time": {"type": "STRING", "description": "Current ISO timestamp"}
+                },
+                "required": ["event_id", "current_time"]
+            }
+        }
+    },
+    "check_registration_status": {
+        "function": check_registration_status,
+        "declaration": {
+            "name": "check_registration_status",
+            "description": "Check if a user is registered for an event.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "user_id": {"type": "STRING", "description": "User ID"},
+                    "event_id": {"type": "STRING", "description": "Event ID"}
+                },
+                "required": ["user_id", "event_id"]
+            }
+        }
+    },
+    # "count_users": {
+    #     "function": count_users,
+    #     "declaration": {
+    #         "name": "count_users",
+    #         "description": "Count the total number of users in the database",
+    #         "parameters": {
+    #             "type": "OBJECT",
+    #             "properties": {},
+    #             "required": []
+    #         }
+    #     }
+    # },
+    # "get_users_by_email_domain": {
+    #     "function": get_users_by_email_domain,
+    #     "declaration": {
+    #         "name": "get_users_by_email_domain",
+    #         "description": "Get all users whose email addresses belong to a specific domain",
+    #         "parameters": {
+    #             "type": "OBJECT",
+    #             "properties": {
+    #                 "domain": {
+    #                     "type": "STRING",
+    #                     "description": "Email domain to search for (e.g., 'gmail.com', 'yahoo.com')"
+    #                 }
+    #             },
+    #             "required": ["domain"]
+    #         }
+    #     }
+    # },
+    # "get_users_by_age_range": {
+    #     "function": get_users_by_age_range,
+    #     "declaration": {
+    #         "name": "get_users_by_age_range",
+    #         "description": "Get all users within a specific age range",
+    #         "parameters": {
+    #             "type": "OBJECT",
+    #             "properties": {
+    #                 "min_age": {
+    #                     "type": "INTEGER",
+    #                     "description": "Minimum age (inclusive)"
+    #                 },
+    #                 "max_age": {
+    #                     "type": "INTEGER",
+    #                     "description": "Maximum age (inclusive)"
+    #                 }
+    #             },
+    #             "required": ["min_age", "max_age"]
+    #         }
+    #     }
+    # },
+    # "get_user_info": {
+    #     "function": get_user_info,
+    #     "declaration": {
+    #         "name": "get_user_info",
+    #         "description": "Get detailed information about a specific user by their ID",
+    #         "parameters": {
+    #             "type": "OBJECT",
+    #             "properties": {
+    #                 "user_id": {
+    #                     "type": "INTEGER",
+    #                     "description": "The ID of the user to retrieve"
+    #                 }
+    #             },
+    #             "required": ["user_id"]
+    #         }
+    #     }
+    # },
+    # "get_all_users": {
+    #     "function": get_all_users,
+    #     "declaration": {
+    #         "name": "get_all_users",
+    #         "description": "Get all users from the database with their complete information",
+    #         "parameters": {
+    #             "type": "OBJECT",
+    #             "properties": {},
+    #             "required": []
+    #         }
+    #     }
+    # },
+    # "search_users_by_name": {
+    #     "function": search_users_by_name,
+    #     "declaration": {
+    #         "name": "search_users_by_name",
+    #         "description": "Search for users by name using partial matching",
+    #         "parameters": {
+    #             "type": "OBJECT",
+    #             "properties": {
+    #                 "name": {
+    #                     "type": "STRING",
+    #                     "description": "Name or partial name to search for"
+    #                 }
+    #             },
+    #             "required": ["name"]
+    #         }
+    #     }
+    # }
 }
 
 

@@ -13,7 +13,7 @@ class Config:
     
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-    DB_URL = os.getenv("DB_URL", "sqlite:///./app.db")
+    DB_URL = os.getenv("DB_URL", "postgresql://iec:123456789%40@localhost:5432/event_db")
     
     @classmethod
     def validate(cls):

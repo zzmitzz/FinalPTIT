@@ -4,7 +4,7 @@ Initializes the database and starts the interactive chat.
 """
 import sys
 from app.config import config
-from app.db import init_db, seed_sample_data
+from app.db import init_db
 from app.logic.chatbot import run_interactive_chat, chat_with_gemini
 
 
@@ -12,7 +12,6 @@ def setup():
     """Initialize database and seed data"""
     print("🔧 Setting up database...")
     init_db()
-    seed_sample_data()
     print("✅ Database ready!\n")
 
 

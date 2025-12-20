@@ -2,6 +2,7 @@
 Helper utilities for the chatbot
 """
 import json
+import uuid
 from typing import Any, Dict
 
 
@@ -20,3 +21,7 @@ def truncate_text(text: str, max_length: int = 100) -> str:
 def safe_dict_get(data: Dict, key: str, default: Any = None) -> Any:
     """Safely get value from dictionary"""
     return data.get(key, default)
+
+
+# def normalize_value(value):
+#     return str

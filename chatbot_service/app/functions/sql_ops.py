@@ -3,7 +3,6 @@ SQL query operations for the chatbot.
 These functions execute SQL queries safely and return results.
 """
 from app.db import get_db
-from app.models.user import User
 from sqlalchemy import text
 
 
@@ -57,7 +56,9 @@ def count_users() -> dict:
     """
     db = get_db()
     try:
-        count = db.query(User).count()
+        result = db.execute(text("SELECT COUNT(*) FROM users"))
+        count = result.scalar()
+        
         return {
             "success": True,
             "count": count,
@@ -84,10 +85,16 @@ def get_users_by_email_domain(domain: str) -> dict:
     """
     db = get_db()
     try:
-        users = db.query(User).filter(User.email.like(f"%@{domain}")).all()
+        query = text("SELECT * FROM users WHERE email LIKE :pattern")
+        result = db.execute(query, {"pattern": f"%@{domain}"})
+        
+        rows = result.fetchall()
+        columns = result.keys()
+        users = [dict(zip(columns, row)) for row in rows]
+        
         return {
             "success": True,
-            "users": [user.to_dict() for user in users],
+            "users": users,
             "count": len(users)
         }
     except Exception as e:
@@ -112,14 +119,16 @@ def get_users_by_age_range(min_age: int, max_age: int) -> dict:
     """
     db = get_db()
     try:
-        users = db.query(User).filter(
-            User.age >= min_age,
-            User.age <= max_age
-        ).all()
+        query = text("SELECT * FROM users WHERE age >= :min_age AND age <= :max_age")
+        result = db.execute(query, {"min_age": min_age, "max_age": max_age})
+        
+        rows = result.fetchall()
+        columns = result.keys()
+        users = [dict(zip(columns, row)) for row in rows]
         
         return {
             "success": True,
-            "users": [user.to_dict() for user in users],
+            "users": users,
             "count": len(users),
             "age_range": f"{min_age}-{max_age}"
         }

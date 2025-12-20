@@ -50,19 +50,17 @@ def chat_with_gemini(user_message: str, chat_history=None, verbose=False):
     """
     if chat_history is None:
         chat_history = []
-    
+    print("Chat history initialized")
     # Initialize model with function calling
     model = genai.GenerativeModel(
         model_name=config.GEMINI_MODEL,
         tools=get_tool_declarations()
     )
-    
     # Start or continue chat
     chat = model.start_chat(history=chat_history, enable_automatic_function_calling=False)
-    
     # Send user message
     response = chat.send_message(user_message)
-    
+    print(response)
     if verbose:
         print(f"\n{'='*60}")
         print(f"User: {user_message}")
@@ -71,7 +69,6 @@ def chat_with_gemini(user_message: str, chat_history=None, verbose=False):
     # Handle function calling loop
     max_iterations = 5
     iteration = 0
-    
     while iteration < max_iterations:
         iteration += 1
         
@@ -139,17 +136,21 @@ def run_interactive_chat():
     
     while True:
         user_input = input("You: ").strip()
+        print(user_input)
         
         if user_input.lower() in ['exit', 'quit', 'bye']:
             print("\n👋 Goodbye!\n")
             break
         
         if not user_input:
+            print("\nPlease enter a valid message.\n")
             continue
-        
+    
         try:
             result = chat_with_gemini(user_input, chat_history, verbose=False)
             print(f"\n🤖 Assistant: {result['response']}\n")
             chat_history = result['chat_history']
         except Exception as e:
-            print(f"\n❌ Error: {e}\n")
+            import traceback
+            traceback.print_exc()
+            print(f"\n❌ Error: {e.__str__()}\n")
