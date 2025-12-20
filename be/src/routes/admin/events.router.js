@@ -16,7 +16,7 @@ router.get(
         // Admins see all events regardless of status
         const result = await eventService.listEvents(page, limit, null, false)
         res.jsonify(result)
-    }),
+    })
 )
 
 // Get event by id
@@ -27,7 +27,7 @@ router.get(
         const event = await eventService.getEventById(req.params.id)
         if (!event) return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         res.jsonify(event)
-    }),
+    })
 )
 
 // Update event (admin)
@@ -38,7 +38,7 @@ router.put(
         const updated = await eventService.updateEvent(req.params.id, req.body)
         if (!updated) return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         res.status(201).jsonify('Cập nhật sự kiện thành công.')
-    }),
+    })
 )
 
 // Toggle visibility/approve
@@ -51,7 +51,7 @@ router.patch(
         const updated = await eventService.updateEvent(req.params.id, { status })
         if (!updated) return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         res.jsonify({ message: visible ? 'Mở hiển thị sự kiện.' : 'Khoá sự kiện.' })
-    }),
+    })
 )
 
 // Delete event
@@ -62,7 +62,7 @@ router.delete(
         const deleted = await eventService.deleteEvent(req.params.id)
         if (!deleted) return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
         res.status(204).send()
-    }),
+    })
 )
 
 export default router

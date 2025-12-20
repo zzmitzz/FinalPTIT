@@ -1,17 +1,19 @@
 -- SQL Script with real bcrypt hashes for default accounts
 -- Generated on: 2025-11-06T17:03:02.624Z
--- Admin password: admin123
+-- System User (Admin) password: admin123
 -- Organizer password: organizer123
 
--- Create Admin Account
-INSERT INTO admins (_id, name, email, phone, password, role_ids)
+-- Create System User (Super Admin) Account
+INSERT INTO system_users (_id, name, email, phone, password, organizer_id, created_at, updated_at)
 VALUES (
     gen_random_uuid(),
     'Super Admin',
     'admin@example.com',
     '+1234567890',
     '$2b$10$etGe/ChvEyRDRrkcQLYPPOvAtmZssQbjq/eK4l6XTv3zKnx475roi',
-    ARRAY[]::UUID[]
+    NULL,
+    NOW(),
+    NOW()
 )
 ON CONFLICT (email) DO NOTHING;
 

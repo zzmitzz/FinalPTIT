@@ -34,29 +34,31 @@ export async function reverseGeocode(req, res) {
         }
 
         // Use OpenStreetMap Nominatim reverse geocoding
-        const params = new URLSearchParams({ 
-            format: 'jsonv2', 
-            lat: String(latNum), 
-            lon: String(lonNum), 
+        const params = new URLSearchParams({
+            format: 'jsonv2',
+            lat: String(latNum),
+            lon: String(lonNum),
             'accept-language': 'vi',
-            addressdetails: '1'
+            addressdetails: '1',
         })
         const url = `https://nominatim.openstreetmap.org/reverse?${params.toString()}`
 
         // Nominatim requires a valid User-Agent and Referer header
         // Use a descriptive User-Agent that identifies your application
-        const headers = { 
+        const headers = {
             'User-Agent': 'FinalPTIT-Conference-Platform/1.0 (Event Management System)',
-            'Referer': 'https://github.com/zzmitzz/FinalPTIT'
+            Referer: 'https://github.com/zzmitzz/FinalPTIT',
         }
 
         log('Requesting Nominatim:', url)
         const resp = await fetch(url, { headers })
         const txt = await resp.text()
-    
+
         if (!resp.ok) {
             log('nominatim error', resp.status, txt)
-            return res.status(502).json({ success: false, message: 'Reverse geocode provider error', details: txt })
+            return res
+                .status(502)
+                .json({ success: false, message: 'Reverse geocode provider error', details: txt })
         }
 
         let payload

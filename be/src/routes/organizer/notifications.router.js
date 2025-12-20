@@ -1,0 +1,37 @@
+import {Router} from 'express'
+import * as notificationController from '@/app/controllers/organizer/notification.controller.js'
+import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+
+const router = Router()
+
+// All routes require organizer authentication
+router.use(requireOrganizerAuthentication)
+
+// Create notification (draft)
+router.post('/', notificationController.createNotification)
+
+// List notifications (organizer's own)
+router.get('/', notificationController.listNotifications)
+
+// Get notification by ID (organizer's own)
+router.get('/:id', notificationController.getNotification)
+
+// Update notification (only draft and organizer's own)
+router.put('/:id', notificationController.updateNotification)
+
+// Delete notification (only draft and organizer's own)
+router.delete('/:id', notificationController.deleteNotification)
+
+// Send notification (organizer's own)
+router.post('/:id/send', notificationController.sendNotification)
+
+// Get notification statistics (organizer's own)
+router.get('/:id/stats', notificationController.getNotificationStats)
+
+// Cancel scheduled notification
+router.post('/:id/cancel', notificationController.cancelScheduledNotification)
+
+// Reschedule notification
+router.post('/:id/reschedule', notificationController.rescheduleNotification)
+
+export default router

@@ -2,10 +2,10 @@ import * as statsService from '@/app/services/admin/stats.service'
 
 export async function getStatistics(req, res) {
     try {
-        const year = req.query.year ? Number(req.query.year) : null
-        const month = req.query.month ? Number(req.query.month) : null
-        const limit = req.query.limit ? Number(req.query.limit) : null
-        const ttlSeconds = req.query.ttl ? Number(req.query.ttl) : null
+        const year = req.query.year ? Number(req.query.year) : undefined
+        const month = req.query.month ? Number(req.query.month) : undefined
+        const limit = req.query.limit ? Number(req.query.limit) : undefined
+        const ttlSeconds = req.query.ttl ? Number(req.query.ttl) : undefined
 
         const stats = await statsService.getAdminStatistics({ year, month, limit, ttlSeconds })
         res.json({ success: true, data: stats })

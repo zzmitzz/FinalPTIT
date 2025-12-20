@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import * as adminRepository from '@/db/admin_reporistory'
+import * as adminRepository from '@/db/admin_rbac_repository'
 import {
     MAX_STRING_SIZE,
     VALIDATE_FULL_NAME_REGEX,

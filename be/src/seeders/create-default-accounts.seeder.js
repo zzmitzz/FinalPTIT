@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
-import {findAdminByEmail, createAdmin} from '@/db/admin_reporistory'
-import {findOrganizerByEmail, createOrganizer} from '@/db/organizer_repo'
+import { findAdminByEmail, createAdmin } from '@/db/admin_rbac_repository'
+import { findOrganizerByEmail, createOrganizer } from '../db/organizer_repo.js'
 
 /**
  * Seeder to create default admin and organizer accounts
@@ -61,7 +61,7 @@ if (
     import.meta.url === `file://${process.argv[1]}` ||
     process.argv[1]?.includes('create-default-accounts.seeder')
 ) {
-    import('../configs/postgre_sql.js').then(async ({default: sequelize}) => {
+    import('../configs/postgre_sql.js').then(async ({ default: sequelize }) => {
         try {
             await sequelize.authenticate()
             console.log('Database connection established.')

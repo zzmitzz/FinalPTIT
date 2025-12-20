@@ -3,7 +3,7 @@ import {tokenBlocklist} from '../services/admin/auth.service'
 import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
 import {abort, verifyToken} from '@/utils/helpers'
 import {TOKEN_TYPE} from '@/configs'
-import * as adminRepository from '@/db/admin_reporistory'
+import * as adminRbacRepository from '@/db/admin_rbac_repository'
 
 export async function verifyForgotPasswordToken(req, res, next) {
     const token = req.params.token
@@ -11,7 +11,7 @@ export async function verifyForgotPasswordToken(req, res, next) {
         const allowedToken = _.isUndefined(await tokenBlocklist.get(token))
         if (allowedToken) {
             const {user_id} = verifyToken(token, TOKEN_TYPE.FORGOT_PASSWORD)
-            const admin = await adminRepository.findAdminById(user_id)
+            const admin = await adminRbacRepository.findAdminById(user_id, false)
             if (admin) {
                 req.currentUser = admin
                 next()
