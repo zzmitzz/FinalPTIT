@@ -1,8 +1,8 @@
 import _ from 'lodash'
-import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
-import {organizerTokenBlocklist} from '@/app/services/organizer/organizer_auth.service'
-import {TOKEN_TYPE} from '@/configs'
-import {abort, getToken, verifyToken} from '@/utils/helpers'
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
+import { organizerTokenBlocklist } from '@/app/services/organizer/organizer_auth.service'
+import { TOKEN_TYPE } from '@/configs'
+import { abort, getToken, verifyToken } from '@/utils/helpers'
 import * as organizerRepo from '@/db/organizer_repo'
 
 async function requireOrganizerAuthentication(req, res, next) {
@@ -12,7 +12,7 @@ async function requireOrganizerAuthentication(req, res, next) {
         if (token) {
             const allowedToken = _.isUndefined(await organizerTokenBlocklist.get(token))
             if (allowedToken) {
-                const {user_id} = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
+                const { user_id } = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
                 const organizer = await organizerRepo.findOrganizerById(user_id)
                 if (organizer) {
                     req.currentOrganizer = organizer

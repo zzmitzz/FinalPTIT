@@ -169,13 +169,16 @@ export const countRegisteredUsersByEventId = async (eventId: string) => {
 
 export const isUserRegisteredForEvent = async (eventId: string, registrationId: string): Promise<boolean> => {
     try {
+        console.log(eventId, registrationId)
         const registerEvent = await RegistrationRegisterEvent.findOne({
             where: {
                 event_id: eventId,
                 registration_id: registrationId,
                 is_registered: true
-            }
+            },
+            raw: true
         })
+        console.log(registerEvent)
         return registerEvent !== null
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)

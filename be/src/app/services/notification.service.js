@@ -1,12 +1,14 @@
 import * as notificationRepository from '../../db/notification_repository.js'
 import * as userDeviceRepository from '../../db/user_device_repository.js'
 import * as fcmService from './fcm.service.js'
-import {Op} from 'sequelize'
+import { Op } from 'sequelize'
+import Event from '../../model/event'
 
 /**
  * Create a notification (draft or scheduled)
  */
 export async function createNotification(data) {
+    console.log(data)
     // Validate scope matches sender
     if (data.sender_type === 'system_user' && data.scope === 'all') {
         // Admin sending global notification - OK
@@ -93,9 +95,9 @@ async function getTargetDevices(notification) {
     } else if (notification.scope === 'organizer') {
         // Organizer notification - devices of organizer's event attendees
         // Get all events for this organizer
-        const {Event} = require('../../model/event')
+        const { Event } = require('../../model/event')
         const events = await Event.findAll({
-            where: {organizer_id: notification.target_organizer_id},
+            where: { organizer_id: notification.target_organizer_id },
             attributes: ['event_id'],
         })
 
@@ -393,12 +395,13 @@ export async function processScheduledNotifications() {
  * Validate organizer owns event
  */
 export async function validateOrganizerOwnsEvent(organizerId, eventId) {
-    const {Event} = require('../../model/event')
+    console.log(eventId, organizerId)
     const event = await Event.findOne({
         where: {
-            event_id: eventId,
+            _id: eventId,
             organizer_id: organizerId,
         },
     })
+    console.log(event)
     return !!event
 }

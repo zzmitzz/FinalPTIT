@@ -1,4 +1,4 @@
-import {Router} from 'express'
+import { Router } from 'express'
 
 import authRouter from './auth.router'
 import userRouter from './user.router'
@@ -18,6 +18,6 @@ registrationsRouter.use('/responses', registrationResponseRouter)
 registrationsRouter.use('/registered-events', registrationRegisterEventRouter)
 registrationsRouter.use('/session-registrations', sessionRegistrationRouter)
 registrationsRouter.use('/resources', resourceRouter)
-registrationsRouter.use('/', deviceRouter)
+registrationsRouter.use('/devices', deviceRouter)
 
 export default registrationsRouter
