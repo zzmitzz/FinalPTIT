@@ -20,6 +20,9 @@ RUN mkdir -p /app/data
 # Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV DB_URL=sqlite:////app/data/app.db
+ENV GROQ_API_KEY=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
+ENV GROQ_MODEL=openai/gpt-oss-120b
+ENV DB_URL=postgresql://iec:123456789%40@localhost:5432/event_db
 
 # Expose port for API
 EXPOSE 5000

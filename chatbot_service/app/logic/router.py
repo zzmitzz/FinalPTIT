@@ -253,5 +253,41 @@ FUNCTION_REGISTRY = {
 
 
 def get_tool_declarations():
-    """Get list of tool declarations for Gemini"""
-    return [reg["declaration"] for reg in FUNCTION_REGISTRY.values()]
+    """Get list of tool declarations in OpenAI/Groq format"""
+    tools = []
+    for reg in FUNCTION_REGISTRY.values():
+        gemini_decl = reg["declaration"]
+        
+        # Convert Gemini format to OpenAI/Groq format
+        openai_tool = {
+            "type": "function",
+            "function": {
+                "name": gemini_decl["name"],
+                "description": gemini_decl["description"],
+                "parameters": convert_gemini_params_to_openai(gemini_decl["parameters"])
+            }
+        }
+        tools.append(openai_tool)
+    
+    return tools
+
+
+def convert_gemini_params_to_openai(gemini_params):
+    """Convert Gemini parameter schema to OpenAI format"""
+    if not gemini_params:
+        return {"type": "object", "properties": {}, "required": []}
+    
+    openai_params = {
+        "type": gemini_params.get("type", "OBJECT").lower(),
+        "properties": {},
+        "required": gemini_params.get("required", [])
+    }
+    
+    # Convert properties
+    for prop_name, prop_schema in gemini_params.get("properties", {}).items():
+        openai_params["properties"][prop_name] = {
+            "type": prop_schema.get("type", "STRING").lower(),
+            "description": prop_schema.get("description", "")
+        }
+    
+    return openai_params

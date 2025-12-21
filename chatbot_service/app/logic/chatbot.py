@@ -1,14 +1,17 @@
 """
-Gemini AI chatbot implementation with function calling.
+Groq AI chatbot implementation with function calling.
 Handles the conversation loop and function execution.
 """
 import json
-import google.generativeai as genai
+from openai import OpenAI
 from app.config import config
 from app.logic.router import FUNCTION_REGISTRY, get_tool_declarations
 
-# Configure Gemini
-genai.configure(api_key=config.GEMINI_API_KEY)
+# Configure Groq client
+client = OpenAI(
+    api_key=config.GROQ_API_KEY,
+    base_url="https://api.groq.com/openai/v1"
+)
 
 
 def execute_function_call(function_call):
@@ -36,13 +39,13 @@ def execute_function_call(function_call):
         return {"error": f"Error executing {function_name}: {str(e)}"}
 
 
-def chat_with_gemini(user_message: str, chat_history=None, verbose=False):
+def chat_with_groq(user_message: str, chat_history=None, verbose=False):
     """
-    Main chatbot function using Gemini with function calling.
+    Main chatbot function using Groq with function calling.
     
     Args:
         user_message: User's input message
-        chat_history: Optional previous chat history
+        chat_history: Optional previous chat history (list of messages)
         verbose: Whether to print debug information
         
     Returns:
@@ -50,79 +53,147 @@ def chat_with_gemini(user_message: str, chat_history=None, verbose=False):
     """
     if chat_history is None:
         chat_history = []
+        # Add system prompt for first message
+        chat_history.append({
+            "role": "system",
+            "content": """You are a friendly and helpful event support assistant. Your role is to help users find information about events, sessions, speakers, and organizers.
+
+IMPORTANT GUIDELINES:
+- You should convert all the prompt into English to analyze and after processing, you should convert it back to original language.
+- Respond in a conversational, natural, and friendly tone
+- NEVER use tables, markdown tables, or structured data formats in your responses
+- Present information in clear, easy-to-read sentences and paragraphs
+- Use bullet points or numbered lists when listing multiple items
+- Avoid technical jargon - speak like you're helping a friend
+- Be concise but informative
+- If you need to show multiple items, describe them in a flowing, narrative style
+- Always be helpful and supportive
+EXAMPLES OF GOOD RESPONSES:
+- "I found 3 upcoming sessions for you! The first one is 'Introduction to AI' starting at 2 PM in Hall A. Then there's 'Web Development Basics' at 3 PM in Room B, and finally 'Data Science Workshop' at 4 PM in Hall C."
+- "The event 'Tech Conference 2024' is organized by Tech Corp. It's scheduled for December 25th and will feature sessions on AI, web development, and cloud computing."
+
+AVOID:
+- Tables or structured formats
+- Raw data dumps
+- Technical database terminology
+- Overly formal language
+
+When you need information, use the available functions to query the database, then present the results in a friendly, conversational way."""
+        })
     print("Chat history initialized")
-    # Initialize model with function calling
-    model = genai.GenerativeModel(
-        model_name=config.GEMINI_MODEL,
-        tools=get_tool_declarations()
-    )
-    # Start or continue chat
-    chat = model.start_chat(history=chat_history, enable_automatic_function_calling=False)
-    # Send user message
-    response = chat.send_message(user_message)
-    print(response)
+    
+    # Convert chat history to OpenAI format if needed
+    messages = chat_history.copy()
+    messages.append({"role": "user", "content": user_message})
+    
     if verbose:
         print(f"\n{'='*60}")
         print(f"User: {user_message}")
         print(f"{'='*60}")
     
+    # Get tool declarations in OpenAI format
+    tools = get_tool_declarations()
+    
     # Handle function calling loop
     max_iterations = 5
     iteration = 0
+    
     while iteration < max_iterations:
         iteration += 1
         
+        # Send message to Groq
+        response = client.chat.completions.create(
+            model=config.GROQ_MODEL,
+            messages=messages,
+            tools=tools if tools else None,
+            tool_choice="auto" if tools else None
+        )
+        
+        assistant_message = response.choices[0].message
+        
+        if verbose:
+            print(f"\nIteration {iteration}")
+            print(f"Response: {assistant_message}")
+        
         # Check if model wants to call a function
-        if response.candidates[0].content.parts:
-            part = response.candidates[0].content.parts[0]
+        if assistant_message.tool_calls:
+            # Add assistant message to history
+            messages.append({
+                "role": "assistant",
+                "content": assistant_message.content,
+                "tool_calls": [
+                    {
+                        "id": tool_call.id,
+                        "type": "function",
+                        "function": {
+                            "name": tool_call.function.name,
+                            "arguments": tool_call.function.arguments
+                        }
+                    }
+                    for tool_call in assistant_message.tool_calls
+                ]
+            })
             
-            if hasattr(part, 'function_call') and part.function_call:
-                function_call = part.function_call
+            # Execute each function call
+            for tool_call in assistant_message.tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
                 
                 if verbose:
-                    print(f"\n🔧 Function Call: {function_call.name}")
-                    print(f"   Arguments: {dict(function_call.args)}")
+                    print(f"\n🔧 Function Call: {function_name}")
+                    print(f"   Arguments: {function_args}")
                 
                 # Execute the function
-                result = execute_function_call(function_call)
+                if function_name in FUNCTION_REGISTRY:
+                    func = FUNCTION_REGISTRY[function_name]["function"]
+                    try:
+                        result = func(**function_args)
+                    except Exception as e:
+                        result = {"error": f"Error executing {function_name}: {str(e)}"}
+                else:
+                    result = {"error": f"Unknown function: {function_name}"}
                 
                 if verbose:
                     print(f"   Result: {result}")
                 
-                # Send function result back to model
-                response = chat.send_message(
-                    genai.protos.Content(
-                        parts=[genai.protos.Part(
-                            function_response=genai.protos.FunctionResponse(
-                                name=function_call.name,
-                                response={'result': result}
-                            )
-                        )]
-                    )
-                )
-            else:
-                # No function call, we have the final response
-                break
+                # Add function result to messages
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(result)
+                })
         else:
-            break
+            # No function call, we have the final response
+            final_response = assistant_message.content or ""
+            
+            # Add final assistant message to history
+            messages.append({
+                "role": "assistant",
+                "content": final_response
+            })
+            
+            if verbose:
+                print(f"\n🤖 Assistant: {final_response}")
+                print(f"{'='*60}\n")
+            
+            return {
+                "response": final_response,
+                "chat_history": messages
+            }
     
-    # Extract final text response
-    final_response = response.text
-    
-    if verbose:
-        print(f"\n🤖 Assistant: {final_response}")
-        print(f"{'='*60}\n")
+    # If we hit max iterations, return what we have
+    final_response = "I apologize, but I've reached the maximum number of function calls. Please try rephrasing your question."
     
     return {
         "response": final_response,
-        "chat_history": chat.history
+        "chat_history": messages
     }
 
 
 def run_interactive_chat():
     """Run interactive chat session"""
     print("\n" + "="*60)
-    print("🤖 SQL Chatbot with Gemini AI")
+    print("🤖 SQL Chatbot with Groq AI")
     print("="*60)
     print("\nYou can ask questions about the database!")
     print("Examples:")
@@ -147,7 +218,7 @@ def run_interactive_chat():
             continue
     
         try:
-            result = chat_with_gemini(user_input, chat_history, verbose=False)
+            result = chat_with_groq(user_input, chat_history, verbose=False)
             print(f"\n🤖 Assistant: {result['response']}\n")
             chat_history = result['chat_history']
         except Exception as e:
