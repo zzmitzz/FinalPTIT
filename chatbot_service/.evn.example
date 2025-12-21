@@ -1,0 +1,3 @@
+GROQ_API_KEY=
+GROQ_MODEL=
+DB_URL=postgresql://iec:123456789%40@localhost:5432/event_db
