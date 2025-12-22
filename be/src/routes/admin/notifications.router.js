@@ -7,7 +7,7 @@ const router = Router()
 // All routes require authentication
 router.use(verifySystemUserToken)
 
-// Create notification (draft)
+// Create notification (draft, scheduled, or recurring)
 router.post('/', notificationController.createNotification)
 
 // List notifications
@@ -33,5 +33,17 @@ router.post('/:id/cancel', notificationController.cancelScheduledNotification)
 
 // Reschedule notification
 router.post('/:id/reschedule', notificationController.rescheduleNotification)
+
+// Pause recurring notification
+router.post('/:id/pause', notificationController.pauseRecurringNotification)
+
+// Resume recurring notification
+router.post('/:id/resume', notificationController.resumeRecurringNotification)
+
+// Validate cron pattern and get human-readable description
+router.post('/cron/validate', notificationController.validateCronPattern)
+
+// Get common cron patterns
+router.get('/cron/patterns', notificationController.getCommonCronPatterns)
 
 export default router

@@ -14,9 +14,16 @@ export interface NotificationData {
   scope: 'all' | 'event' | 'organizer'
   target_event_id?: string
   target_organizer_id?: string
-  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'active'
   scheduled_at?: Date
   sent_at?: Date
+  is_recurring: boolean
+  cron_pattern?: string
+  timezone?: string
+  last_sent_at?: Date
+  next_send_at?: Date
+  recurrence_end_date?: Date
+  total_executions: number
   total_recipients: number
   total_sent: number
   total_delivered: number
@@ -90,7 +97,7 @@ const Notification = sequelize.define(
       allowNull: false,
       defaultValue: 'draft',
       validate: {
-        isIn: [['draft', 'scheduled', 'sending', 'sent', 'failed']],
+        isIn: [['draft', 'scheduled', 'sending', 'sent', 'failed', 'active']],
       },
     },
     scheduled_at: {
@@ -100,6 +107,43 @@ const Notification = sequelize.define(
     sent_at: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    is_recurring: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    cron_pattern: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: 'Cron pattern for recurring notifications (e.g., "0 9 * * 1" for every Monday at 9 AM)',
+    },
+    timezone: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: 'UTC',
+      comment: 'Timezone for cron execution (e.g., "Asia/Ho_Chi_Minh")',
+    },
+    last_sent_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Last execution time for recurring notifications',
+    },
+    next_send_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Next scheduled execution time for recurring notifications',
+    },
+    recurrence_end_date: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Optional end date for recurring notifications',
+    },
+    total_executions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      comment: 'Number of times a recurring notification has been sent',
     },
     total_recipients: {
       type: DataTypes.INTEGER,

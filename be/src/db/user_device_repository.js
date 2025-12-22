@@ -1,5 +1,6 @@
 import UserDevice from '@/model/user_device'
 import Registration from '@/model/registration'
+import RegistrationRegisterEvent from '@/model/registration_register_event'
 import {Op} from 'sequelize'
 
 /**
@@ -115,7 +116,8 @@ export const getDevicesForEvent = async (eventId) => {
                     required: true,
                     include: [
                         {
-                            association: 'registration_register_events',
+                            model: RegistrationRegisterEvent,
+                            as: 'registeredEvents',
                             where: {event_id: eventId},
                             required: true,
                             attributes: [],

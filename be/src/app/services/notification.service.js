@@ -1,10 +1,12 @@
 import * as notificationRepository from '../../db/notification_repository.js'
 import * as userDeviceRepository from '../../db/user_device_repository.js'
 import * as fcmService from './fcm.service.js'
+import * as cronUtil from '../../utils/cron.util.js'
+import Event from '../../model/event.js'
 import {Op} from 'sequelize'
 
 /**
- * Create a notification (draft or scheduled)
+ * Create a notification (draft, scheduled, or recurring)
  */
 export async function createNotification(data) {
     // Validate scope matches sender
@@ -23,7 +25,45 @@ export async function createNotification(data) {
         }
     }
 
-    // Determine status based on scheduled_at
+    // Handle recurring notifications
+    if (data.is_recurring) {
+        if (!data.cron_pattern) {
+            throw new Error('Cron pattern is required for recurring notifications')
+        }
+
+        // Validate cron pattern
+        if (!cronUtil.isValidCronPattern(data.cron_pattern)) {
+            throw new Error('Invalid cron pattern')
+        }
+
+        const timezone = data.timezone || 'UTC'
+
+        // Calculate next execution time
+        const nextSendAt = cronUtil.getNextExecutionTime(data.cron_pattern, timezone)
+
+        if (!nextSendAt) {
+            throw new Error('Unable to calculate next execution time from cron pattern')
+        }
+
+        // Create recurring notification
+        const notification = await notificationRepository.createNotification({
+            ...data,
+            status: 'active', // Active status for recurring notifications
+            is_recurring: true,
+            timezone,
+            next_send_at: nextSendAt,
+            total_recipients: 0,
+            total_sent: 0,
+            total_delivered: 0,
+            total_failed: 0,
+            total_opened: 0,
+            total_executions: 0,
+        })
+
+        return notification
+    }
+
+    // Handle one-time scheduled notifications
     let status = 'draft'
     if (data.scheduled_at) {
         const scheduledDate = new Date(data.scheduled_at)
@@ -36,15 +76,17 @@ export async function createNotification(data) {
         status = 'scheduled'
     }
 
-    // Create notification
+    // Create one-time notification
     const notification = await notificationRepository.createNotification({
         ...data,
         status,
+        is_recurring: false,
         total_recipients: 0,
         total_sent: 0,
         total_delivered: 0,
         total_failed: 0,
         total_opened: 0,
+        total_executions: 0,
     })
 
     return notification
@@ -363,7 +405,7 @@ export async function processScheduledNotifications() {
         errors: [],
     }
 
-    for (const notification of dueNotifications.data) {
+    for (const notification of dueNotifications.notifications) {
         // Check if it's time to send
         if (notification.scheduled_at && new Date(notification.scheduled_at) <= now) {
             results.processed++
@@ -393,12 +435,253 @@ export async function processScheduledNotifications() {
  * Validate organizer owns event
  */
 export async function validateOrganizerOwnsEvent(organizerId, eventId) {
-    const {Event} = require('../../model/event')
     const event = await Event.findOne({
         where: {
-            event_id: eventId,
+            _id: eventId,
             organizer_id: organizerId,
         },
     })
     return !!event
+}
+
+/**
+ * Process recurring notifications based on cron patterns
+ * This should be called by a cron job every minute
+ */
+export async function processRecurringNotifications() {
+    const results = {
+        processed: 0,
+        successful: 0,
+        failed: 0,
+        errors: [],
+    }
+
+    try {
+        // Find all active recurring notifications
+        const recurringNotifications = await notificationRepository.findAllNotifications(
+            {
+                status: 'active',
+                is_recurring: true,
+            },
+            {
+                page: 1,
+                limit: 100, // Process up to 100 at a time
+            }
+        )
+
+        for (const notification of recurringNotifications.notifications) {
+            const {
+                _id: notificationId,
+                cron_pattern,
+                timezone,
+                last_sent_at,
+                next_send_at,
+                recurrence_end_date,
+            } = notification
+
+            // Check if recurrence has ended
+            if (recurrence_end_date && new Date(recurrence_end_date) < new Date()) {
+                await notificationRepository.updateNotification(notificationId, {
+                    status: 'sent', // Mark as completed
+                })
+                continue
+            }
+
+            // Check if it's time to execute based on cron pattern
+            const shouldExecute = cronUtil.shouldExecuteNow(cron_pattern, last_sent_at, timezone || 'UTC')
+
+            if (shouldExecute) {
+                results.processed++
+
+                try {
+                    // Send the notification
+                    await sendRecurringNotification(notificationId)
+
+                    // Calculate next execution time
+                    const nextExecution = cronUtil.getNextExecutionTime(
+                        cron_pattern,
+                        timezone || 'UTC',
+                        new Date()
+                    )
+
+                    // Update notification
+                    await notificationRepository.updateNotification(notificationId, {
+                        last_sent_at: new Date(),
+                        next_send_at: nextExecution,
+                        total_executions: (notification.total_executions || 0) + 1,
+                    })
+
+                    results.successful++
+                } catch (error) {
+                    results.failed++
+                    results.errors.push({
+                        notification_id: notificationId,
+                        error: error.message,
+                    })
+                    console.error(`[Recurring Notification] Failed to send ${notificationId}:`, error)
+                }
+            }
+        }
+    } catch (error) {
+        console.error('[Recurring Notification] Error processing recurring notifications:', error)
+    }
+
+    return results
+}
+
+/**
+ * Send a recurring notification (doesn't change status to 'sent')
+ */
+async function sendRecurringNotification(notificationId) {
+    const notification = await notificationRepository.findNotificationById(notificationId, {
+        includeRecipients: false,
+        includeSender: false,
+        includeTarget: false,
+    })
+
+    if (!notification) {
+        throw new Error('Notification not found')
+    }
+
+    if (notification.status !== 'active') {
+        throw new Error('Only active recurring notifications can be sent')
+    }
+
+    try {
+        // Get target devices
+        const devices = await getTargetDevices(notification)
+
+        if (devices.length === 0) {
+            console.log(`[Recurring Notification] No active devices for notification ${notificationId}`)
+            return {
+                success: true,
+                message: 'No active devices to send notification to',
+                stats: {
+                    total_recipients: 0,
+                    total_sent: 0,
+                    total_failed: 0,
+                },
+            }
+        }
+
+        // Prepare FCM tokens
+        const fcmTokens = devices.map((d) => d.fcm_token)
+
+        // Send via FCM
+        const result = await fcmService.sendToBatches(fcmTokens, notification, {
+            notification_id: notificationId,
+            action_type: notification.action_type || '',
+            action_data: notification.action_data || {},
+        })
+
+        // Process responses
+        let totalSent = 0
+        let totalFailed = 0
+
+        for (const response of result.allResponses) {
+            if (response.success) {
+                totalSent++
+            } else {
+                totalFailed++
+
+                // If token is invalid, deactivate the device
+                if (
+                    response.error?.code === 'messaging/invalid-registration-token' ||
+                    response.error?.code === 'messaging/registration-token-not-registered'
+                ) {
+                    const device = devices.find((d) => d.fcm_token === response.token)
+                    if (device) {
+                        await userDeviceRepository.deactivateDevice(device._id)
+                    }
+                }
+            }
+        }
+
+        // Update cumulative stats
+        await notificationRepository.updateNotification(notificationId, {
+            total_recipients: (notification.total_recipients || 0) + devices.length,
+            total_sent: (notification.total_sent || 0) + totalSent,
+            total_failed: (notification.total_failed || 0) + totalFailed,
+        })
+
+        return {
+            success: true,
+            message: 'Recurring notification sent successfully',
+            stats: {
+                total_recipients: devices.length,
+                total_sent: totalSent,
+                total_failed: totalFailed,
+            },
+        }
+    } catch (error) {
+        throw error
+    }
+}
+
+/**
+ * Pause a recurring notification
+ */
+export async function pauseRecurringNotification(notificationId) {
+    const notification = await notificationRepository.findNotificationById(notificationId)
+
+    if (!notification) {
+        throw new Error('Notification not found')
+    }
+
+    if (!notification.is_recurring) {
+        throw new Error('Only recurring notifications can be paused')
+    }
+
+    if (notification.status !== 'active') {
+        throw new Error('Only active recurring notifications can be paused')
+    }
+
+    return await notificationRepository.updateNotification(notificationId, {
+        status: 'draft', // Paused state
+    })
+}
+
+/**
+ * Resume a paused recurring notification
+ */
+export async function resumeRecurringNotification(notificationId) {
+    const notification = await notificationRepository.findNotificationById(notificationId)
+
+    if (!notification) {
+        throw new Error('Notification not found')
+    }
+
+    if (!notification.is_recurring) {
+        throw new Error('Only recurring notifications can be resumed')
+    }
+
+    if (notification.status !== 'draft') {
+        throw new Error('Only paused recurring notifications can be resumed')
+    }
+
+    // Recalculate next execution time
+    const nextExecution = cronUtil.getNextExecutionTime(
+        notification.cron_pattern,
+        notification.timezone || 'UTC',
+        new Date()
+    )
+
+    return await notificationRepository.updateNotification(notificationId, {
+        status: 'active',
+        next_send_at: nextExecution,
+    })
+}
+
+/**
+ * Get cron pattern description
+ */
+export async function getCronDescription(cronPattern, timezone = 'UTC') {
+    return cronUtil.validateAndDescribeCron(cronPattern, timezone)
+}
+
+/**
+ * Get common cron patterns
+ */
+export async function getCommonCronPatterns() {
+    return cronUtil.getCommonCronPatterns()
 }
