@@ -1,4 +1,4 @@
-import {db} from '@/configs'
+import { db } from '@/configs'
 import chalk from 'chalk'
 
 function seed() {

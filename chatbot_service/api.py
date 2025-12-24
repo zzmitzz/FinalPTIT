@@ -7,6 +7,8 @@ from flask_cors import CORS
 from app.config import config
 from app.db import init_db
 from app.logic.chatbot import chat_with_groq
+from app.service.chat_service import ChatService
+from app.data.chat_history_retrieve import ChatHistoryManager
 
 app = Flask(__name__)
 CORS(app)
@@ -14,9 +16,9 @@ CORS(app)
 # Initialize database on startup
 init_db()
 
-# Store chat sessions (in production, use Redis or database)
-chat_sessions = {}
 
+# Save map sessionID with the ChatService
+session_chat = {}
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -29,15 +31,6 @@ def health():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    """
-    Chat endpoint
-    
-    Request body:
-    {
-        "message": "user message",
-        "session_id": "optional session id"
-    }
-    """
     try:
         data = request.get_json()
         
@@ -48,48 +41,23 @@ def chat():
         
         message = data['message']
         session_id = data.get('session_id', 'default')
+        user_id = data.get('user_id', 'guest')
+
+        chat_service = session_chat.get(session_id)
+        if(chat_service is None):
+            chat_service = ChatService()
+            session_chat[session_id] = chat_service
         
-        # Get or create chat history for this session
-        chat_history = chat_sessions.get(session_id, [])
-        
-        # Get response from chatbot
-        result = chat_with_groq(message, chat_history, verbose=False)
-        
-        # Update session history
-        chat_sessions[session_id] = result['chat_history']
-        
+        response = chat_service.chat(user_id, message)
+
         return jsonify({
-            "response": result['response'],
+            "response": response,
             "session_id": session_id
         })
-        
     except Exception as e:
         return jsonify({
             "error": str(e)
         }), 500
-
-
-@app.route('/clear_session', methods=['POST'])
-def clear_session():
-    """Clear chat session"""
-    data = request.get_json()
-    session_id = data.get('session_id', 'default')
-    
-    if session_id in chat_sessions:
-        del chat_sessions[session_id]
-    
-    return jsonify({
-        "message": f"Session {session_id} cleared"
-    })
-
-
-@app.route('/sessions', methods=['GET'])
-def list_sessions():
-    """List active sessions"""
-    return jsonify({
-        "sessions": list(chat_sessions.keys()),
-        "count": len(chat_sessions)
-    })
 
 
 if __name__ == '__main__':

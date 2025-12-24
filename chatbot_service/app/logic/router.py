@@ -22,6 +22,7 @@ from app.functions.session_ops import (
 )
 from app.functions.category_ops import get_all_categories
 from app.functions.registration_ops import check_registration_status
+from app.functions.user_ops import get_user_info
 
 # Function registry with Gemini-compatible schemas
 FUNCTION_REGISTRY = {
@@ -153,112 +154,30 @@ FUNCTION_REGISTRY = {
             }
         }
     },
-    # "count_users": {
-    #     "function": count_users,
-    #     "declaration": {
-    #         "name": "count_users",
-    #         "description": "Count the total number of users in the database",
-    #         "parameters": {
-    #             "type": "OBJECT",
-    #             "properties": {},
-    #             "required": []
-    #         }
-    #     }
-    # },
-    # "get_users_by_email_domain": {
-    #     "function": get_users_by_email_domain,
-    #     "declaration": {
-    #         "name": "get_users_by_email_domain",
-    #         "description": "Get all users whose email addresses belong to a specific domain",
-    #         "parameters": {
-    #             "type": "OBJECT",
-    #             "properties": {
-    #                 "domain": {
-    #                     "type": "STRING",
-    #                     "description": "Email domain to search for (e.g., 'gmail.com', 'yahoo.com')"
-    #                 }
-    #             },
-    #             "required": ["domain"]
-    #         }
-    #     }
-    # },
-    # "get_users_by_age_range": {
-    #     "function": get_users_by_age_range,
-    #     "declaration": {
-    #         "name": "get_users_by_age_range",
-    #         "description": "Get all users within a specific age range",
-    #         "parameters": {
-    #             "type": "OBJECT",
-    #             "properties": {
-    #                 "min_age": {
-    #                     "type": "INTEGER",
-    #                     "description": "Minimum age (inclusive)"
-    #                 },
-    #                 "max_age": {
-    #                     "type": "INTEGER",
-    #                     "description": "Maximum age (inclusive)"
-    #                 }
-    #             },
-    #             "required": ["min_age", "max_age"]
-    #         }
-    #     }
-    # },
-    # "get_user_info": {
-    #     "function": get_user_info,
-    #     "declaration": {
-    #         "name": "get_user_info",
-    #         "description": "Get detailed information about a specific user by their ID",
-    #         "parameters": {
-    #             "type": "OBJECT",
-    #             "properties": {
-    #                 "user_id": {
-    #                     "type": "INTEGER",
-    #                     "description": "The ID of the user to retrieve"
-    #                 }
-    #             },
-    #             "required": ["user_id"]
-    #         }
-    #     }
-    # },
-    # "get_all_users": {
-    #     "function": get_all_users,
-    #     "declaration": {
-    #         "name": "get_all_users",
-    #         "description": "Get all users from the database with their complete information",
-    #         "parameters": {
-    #             "type": "OBJECT",
-    #             "properties": {},
-    #             "required": []
-    #         }
-    #     }
-    # },
-    # "search_users_by_name": {
-    #     "function": search_users_by_name,
-    #     "declaration": {
-    #         "name": "search_users_by_name",
-    #         "description": "Search for users by name using partial matching",
-    #         "parameters": {
-    #             "type": "OBJECT",
-    #             "properties": {
-    #                 "name": {
-    #                     "type": "STRING",
-    #                     "description": "Name or partial name to search for"
-    #                 }
-    #             },
-    #             "required": ["name"]
-    #         }
-    #     }
-    # }
+    "get_user_info": {
+        "function": get_user_info,
+        "declaration": {
+            "name": "get_user_info",
+            "description": "Get detailed information about a specific user by their ID",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "user_id": {
+                        "type": "INTEGER",
+                        "description": "The ID of the user to retrieve"
+                    }
+                },
+                "required": ["user_id"]
+            }
+        }
+    },
 }
 
 
 def get_tool_declarations():
-    """Get list of tool declarations in OpenAI/Groq format"""
     tools = []
     for reg in FUNCTION_REGISTRY.values():
         gemini_decl = reg["declaration"]
-        
-        # Convert Gemini format to OpenAI/Groq format
         openai_tool = {
             "type": "function",
             "function": {
@@ -273,7 +192,6 @@ def get_tool_declarations():
 
 
 def convert_gemini_params_to_openai(gemini_params):
-    """Convert Gemini parameter schema to OpenAI format"""
     if not gemini_params:
         return {"type": "object", "properties": {}, "required": []}
     
@@ -282,8 +200,6 @@ def convert_gemini_params_to_openai(gemini_params):
         "properties": {},
         "required": gemini_params.get("required", [])
     }
-    
-    # Convert properties
     for prop_name, prop_schema in gemini_params.get("properties", {}).items():
         openai_params["properties"][prop_name] = {
             "type": prop_schema.get("type", "STRING").lower(),

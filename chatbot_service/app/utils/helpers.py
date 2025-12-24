@@ -23,5 +23,6 @@ def safe_dict_get(data: Dict, key: str, default: Any = None) -> Any:
     return data.get(key, default)
 
 
-# def normalize_value(value):
-#     return str
+def read_text_file(file_path: str) -> str:
+    with open(file_path, "r", encoding="utf-8") as file:
+        return file.read()

@@ -25,7 +25,7 @@ def main():
     except ValueError as e:
         print(f"\n❌ Configuration Error: {e}")
         print("\nPlease ensure you have set up your .env file with:")
-        print("  GEMINI_API_KEY=your_api_key_here")
+        print("  GROQ_API_KEY=your_api_key_here")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n👋 Goodbye!\n")
