@@ -8,7 +8,7 @@ export async function registerDevice(req, res, next) {
     try {
         const registrationId = req.user.user_id
 
-        const {device_id, device_type, fcm_token, device_name, os_version, app_version} = req.body
+        const { device_id, device_type, fcm_token, device_name, os_version, app_version } = req.body
 
         // Validate required fields
         if (!device_id || !device_type || !fcm_token) {
@@ -61,7 +61,7 @@ export async function getMyDevices(req, res, next) {
 export async function updateDeviceSettings(req, res, next) {
     try {
         const registrationId = req.user.user_id
-        const {device_id} = req.params
+        const { device_id } = req.params
 
         // Verify device belongs to user
         const device = await userDeviceService.getDeviceById(device_id)
@@ -79,7 +79,7 @@ export async function updateDeviceSettings(req, res, next) {
             })
         }
 
-        const {notifications_enabled, device_name} = req.body
+        const { notifications_enabled, device_name } = req.body
 
         const updated = await userDeviceService.updateDeviceSettings(device_id, {
             notifications_enabled,
@@ -101,8 +101,8 @@ export async function updateDeviceSettings(req, res, next) {
  */
 export async function deactivateDevice(req, res, next) {
     try {
-        const registrationId = req.user.user_id
-        const {device_id} = req.params
+        const registrationId = req.currentRegistration._id
+        const { device_id } = req.params
 
         // Verify device belongs to user
         const device = await userDeviceService.getDeviceById(device_id)
@@ -136,9 +136,9 @@ export async function deactivateDevice(req, res, next) {
  */
 export async function getReceivedNotifications(req, res, next) {
     try {
-        const registrationId = req.user.user_id
+        const registrationId = req.currentRegistration._id
 
-        const {page = 1, limit = 20, status} = req.query
+        const { page = 1, limit = 20, status } = req.query
 
         const filters = {}
         if (status) filters.status = status
@@ -164,9 +164,9 @@ export async function getReceivedNotifications(req, res, next) {
  */
 export async function markNotificationOpened(req, res, next) {
     try {
-        const registrationId = req.user.user_id
-        const {notification_id} = req.params
-        const {device_id} = req.body
+        const registrationId = req.currentRegistration._id
+        const { notification_id } = req.params
+        const { device_id } = req.body
 
         if (!device_id) {
             return res.status(400).json({

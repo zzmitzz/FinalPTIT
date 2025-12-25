@@ -1,4 +1,4 @@
-import {Router} from 'express'
+import { Router } from 'express'
 import * as notificationController from '@/app/controllers/organizer/notification.controller.js'
 import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
 

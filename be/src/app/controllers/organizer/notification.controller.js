@@ -8,8 +8,6 @@ export async function createNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
 
-        const { title, body, image_url, scope, target_event_id, action_type, action_data, scheduled_at } =
-            req.body
         const {
             title,
             body,

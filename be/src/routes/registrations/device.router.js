@@ -1,4 +1,4 @@
-import {Router} from 'express'
+import { Router } from 'express'
 import * as deviceController from '@/app/controllers/registrations/device.controller.js'
 import requireRegistrationAuthentication from '@/app/middleware/registrations/require-authentication'
 
