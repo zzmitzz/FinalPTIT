@@ -122,7 +122,7 @@ export const findAllNotifications = async (filters = {}) => {
         })
 
         return {
-            data: rows.map((n) => n.toJSON()),
+            notifications: rows.map((n) => n.toJSON()),
             pagination: {
                 total: count,
                 page,

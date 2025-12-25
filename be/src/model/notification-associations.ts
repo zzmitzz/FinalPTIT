@@ -18,6 +18,7 @@ import Event from './event.js'
 import UserDevice from './user_device.js'
 import Notification from './notification.js'
 import NotificationRecipient from './notification_recipient.js'
+import RegistrationRegisterEvent from './registration_register_event.js'
 
 // ==========================================
 // Registration ↔ UserDevice (One-to-Many)
@@ -129,6 +130,20 @@ UserDevice.hasMany(NotificationRecipient, {
 NotificationRecipient.belongsTo(UserDevice, {
   foreignKey: 'device_id',
   as: 'device',
+})
+
+// ==========================================
+// Registration ↔ RegistrationRegisterEvent (One-to-Many)
+// ==========================================
+
+Registration.hasMany(RegistrationRegisterEvent, {
+  foreignKey: 'registration_id',
+  as: 'registeredEvents',
+})
+
+RegistrationRegisterEvent.belongsTo(Registration, {
+  foreignKey: 'registration_id',
+  as: 'registration',
 })
 
 console.log('✅ Notification system model associations loaded')

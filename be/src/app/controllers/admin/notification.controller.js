@@ -2,7 +2,7 @@ import * as notificationService from '../../services/notification.service.js'
 import * as adminRepository from '../../../db/admin_rbac_repository.js'
 
 /**
- * Create notification (draft)
+ * Create notification (draft, scheduled, or recurring)
  */
 export async function createNotification(req, res, next) {
     try {
@@ -27,6 +27,10 @@ export async function createNotification(req, res, next) {
             action_type,
             action_data,
             scheduled_at,
+            is_recurring,
+            cron_pattern,
+            timezone,
+            recurrence_end_date,
         } = req.body
 
         // Validate required fields
@@ -44,8 +48,31 @@ export async function createNotification(req, res, next) {
             })
         }
 
-        // Validate scheduled_at if provided
-        if (scheduled_at) {
+        // Validate recurring notification
+        if (is_recurring) {
+            if (!cron_pattern) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cron pattern is required for recurring notifications',
+                })
+            }
+
+            // Validate cron pattern
+            const cronValidation = await notificationService.getCronDescription(
+                cron_pattern,
+                timezone || 'UTC'
+            )
+            if (!cronValidation.isValid) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid cron pattern',
+                    error: cronValidation.error,
+                })
+            }
+        }
+
+        // Validate scheduled_at if provided (for one-time scheduled)
+        if (scheduled_at && !is_recurring) {
             const scheduledDate = new Date(scheduled_at)
             if (isNaN(scheduledDate.getTime())) {
                 return res.status(400).json({
@@ -83,11 +110,19 @@ export async function createNotification(req, res, next) {
             action_type,
             action_data,
             scheduled_at: scheduled_at || null,
+            is_recurring: is_recurring || false,
+            cron_pattern: cron_pattern || null,
+            timezone: timezone || 'UTC',
+            recurrence_end_date: recurrence_end_date || null,
         })
 
-        const message = scheduled_at
-            ? `Notification scheduled for ${new Date(scheduled_at).toISOString()}`
-            : 'Notification created successfully'
+        let message = 'Notification created successfully'
+        if (is_recurring) {
+            const cronInfo = await notificationService.getCronDescription(cron_pattern, timezone || 'UTC')
+            message = `Recurring notification activated: ${cronInfo.description}`
+        } else if (scheduled_at) {
+            message = `Notification scheduled for ${new Date(scheduled_at).toISOString()}`
+        }
 
         return res.status(201).json({
             success: true,
@@ -527,6 +562,137 @@ export async function rescheduleNotification(req, res, next) {
             success: true,
             message: `Notification rescheduled for ${scheduledDate.toISOString()}`,
             data: updated,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/**
+ * Pause recurring notification
+ */
+export async function pauseRecurringNotification(req, res, next) {
+    try {
+        const systemUserId = req.currentUser._id
+        const {id} = req.params
+
+        // Check permission
+        const hasPermission = await adminRepository.adminHasPermission(systemUserId, 'NOTIFICATION:MANAGE')
+        if (!hasPermission) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to manage notifications',
+            })
+        }
+
+        const notification = await notificationService.getNotificationById(id)
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                message: 'Notification not found',
+            })
+        }
+
+        // Verify it's a system_user notification
+        if (notification.sender_type !== 'system_user') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied',
+            })
+        }
+
+        const updated = await notificationService.pauseRecurringNotification(id)
+
+        return res.status(200).json({
+            success: true,
+            message: 'Recurring notification paused successfully',
+            data: updated,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/**
+ * Resume recurring notification
+ */
+export async function resumeRecurringNotification(req, res, next) {
+    try {
+        const systemUserId = req.currentUser._id
+        const {id} = req.params
+
+        // Check permission
+        const hasPermission = await adminRepository.adminHasPermission(systemUserId, 'NOTIFICATION:MANAGE')
+        if (!hasPermission) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to manage notifications',
+            })
+        }
+
+        const notification = await notificationService.getNotificationById(id)
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                message: 'Notification not found',
+            })
+        }
+
+        // Verify it's a system_user notification
+        if (notification.sender_type !== 'system_user') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied',
+            })
+        }
+
+        const updated = await notificationService.resumeRecurringNotification(id)
+
+        return res.status(200).json({
+            success: true,
+            message: 'Recurring notification resumed successfully',
+            data: updated,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/**
+ * Validate cron pattern and get human-readable description
+ */
+export async function validateCronPattern(req, res, next) {
+    try {
+        const {cron_pattern, timezone} = req.body
+
+        if (!cron_pattern) {
+            return res.status(400).json({
+                success: false,
+                message: 'cron_pattern is required',
+            })
+        }
+
+        const cronInfo = await notificationService.getCronDescription(cron_pattern, timezone || 'UTC')
+
+        return res.status(200).json({
+            success: true,
+            data: cronInfo,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/**
+ * Get common cron patterns
+ */
+export async function getCommonCronPatterns(req, res, next) {
+    try {
+        const patterns = await notificationService.getCommonCronPatterns()
+
+        return res.status(200).json({
+            success: true,
+            data: patterns,
         })
     } catch (error) {
         next(error)
