@@ -13,14 +13,14 @@ router.post('/devices', deviceController.registerDevice)
 // Get user's devices
 router.get('/devices', deviceController.getMyDevices)
 
-// Update device settings
+// Update device settings on/off notification
 router.put('/devices/:device_id', deviceController.updateDeviceSettings)
 
 // Deactivate device (logout)
 router.delete('/devices/:device_id', deviceController.deactivateDevice)
 
 // Get received notifications
-router.get('/notifications', deviceController.getReceivedNotifications)
+router.get('/notifications/:device_id', deviceController.getReceivedNotifications)
 
 // Mark notification as opened
 router.post('/notifications/:notification_id/opened', deviceController.markNotificationOpened)

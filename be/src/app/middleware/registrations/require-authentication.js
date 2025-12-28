@@ -1,8 +1,8 @@
 import _ from 'lodash'
-import {JsonWebTokenError, TokenExpiredError} from 'jsonwebtoken'
-import {registrationTokenBlocklist} from '@/app/services/registrations/auth.service'
-import {TOKEN_TYPE} from '@/configs'
-import {abort, getToken, verifyToken} from '@/utils/helpers'
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
+import { registrationTokenBlocklist } from '@/app/services/registrations/auth.service'
+import { TOKEN_TYPE } from '@/configs'
+import { abort, getToken, verifyToken } from '@/utils/helpers'
 import * as registrationRepo from '@/db/registration_repository'
 
 async function requireRegistrationAuthentication(req, res, next) {
@@ -12,7 +12,7 @@ async function requireRegistrationAuthentication(req, res, next) {
         if (token) {
             const allowedToken = _.isUndefined(await registrationTokenBlocklist.get(token))
             if (allowedToken) {
-                const {user_id} = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
+                const { user_id } = verifyToken(token, TOKEN_TYPE.AUTHORIZATION)
                 const user = await registrationRepo.findRegistrationById(user_id)
                 if (user) {
                     req.currentRegistration = user
@@ -21,15 +21,19 @@ async function requireRegistrationAuthentication(req, res, next) {
                 }
             }
         }
+
+        const error = new Error('Unauthorized')
+        error.status = 401
+        next(error)
     } catch (error) {
-        if (!(error instanceof JsonWebTokenError)) {
-            throw error
-        }
         if (error instanceof TokenExpiredError) {
-            abort(401, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập để tiếp tục!')
+            const expiredError = new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập để tiếp tục!')
+            expiredError.status = 401
+            next(expiredError)
+            return
         }
+        next(error)
     }
-    abort(401)
 }
 
 export default requireRegistrationAuthentication 

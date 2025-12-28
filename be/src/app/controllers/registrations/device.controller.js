@@ -6,7 +6,7 @@ import * as notificationService from '../../services/notification.service.js'
  */
 export async function registerDevice(req, res, next) {
     try {
-        const registrationId = req.user.user_id
+        const registrationId = req.currentRegistration._id
 
         const { device_id, device_type, fcm_token, device_name, os_version, app_version } = req.body
 
@@ -27,13 +27,13 @@ export async function registerDevice(req, res, next) {
             app_version,
         })
 
-        return res.status(200).json({
-            success: true,
-            message: 'Device registered successfully',
-            data: device,
-        })
+        return res.jsonify(device)
     } catch (error) {
-        next(error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to register device',
+        })
     }
 }
 
@@ -42,16 +42,17 @@ export async function registerDevice(req, res, next) {
  */
 export async function getMyDevices(req, res, next) {
     try {
-        const registrationId = req.user.user_id
+        const registrationId = req.currentRegistration._id
 
         const devices = await userDeviceService.getDevicesByRegistration(registrationId)
 
-        return res.status(200).json({
-            success: true,
-            data: devices,
-        })
+        return res.jsonify(devices)
     } catch (error) {
-        next(error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to get user devices',
+        })
     }
 }
 
@@ -60,13 +61,14 @@ export async function getMyDevices(req, res, next) {
  */
 export async function updateDeviceSettings(req, res, next) {
     try {
-        const registrationId = req.user.user_id
+        const registrationId = req.currentRegistration._id
         const { device_id } = req.params
 
         // Verify device belongs to user
         const device = await userDeviceService.getDeviceById(device_id)
         if (!device) {
             return res.status(404).json({
+                status: 404,
                 success: false,
                 message: 'Device not found',
             })
@@ -74,6 +76,7 @@ export async function updateDeviceSettings(req, res, next) {
 
         if (device.registration_id !== registrationId) {
             return res.status(403).json({
+                status: 403,
                 success: false,
                 message: 'Access denied',
             })
@@ -86,13 +89,14 @@ export async function updateDeviceSettings(req, res, next) {
             device_name,
         })
 
-        return res.status(200).json({
-            success: true,
-            message: 'Device settings updated successfully',
-            data: updated,
-        })
+        return res.jsonify(updated)
     } catch (error) {
-        next(error)
+        console.log(error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to update device settings',
+        })
     }
 }
 
@@ -108,6 +112,7 @@ export async function deactivateDevice(req, res, next) {
         const device = await userDeviceService.getDeviceById(device_id)
         if (!device) {
             return res.status(404).json({
+                status: 404,
                 success: false,
                 message: 'Device not found',
             })
@@ -115,6 +120,7 @@ export async function deactivateDevice(req, res, next) {
 
         if (device.registration_id !== registrationId) {
             return res.status(403).json({
+                status: 403,
                 success: false,
                 message: 'Access denied',
             })
@@ -122,12 +128,16 @@ export async function deactivateDevice(req, res, next) {
 
         await userDeviceService.deactivateDevice(device_id)
 
-        return res.status(200).json({
+        return res.jsonify({
             success: true,
             message: 'Device deactivated successfully',
         })
     } catch (error) {
-        next(error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to deactivate device',
+        })
     }
 }
 
@@ -137,25 +147,30 @@ export async function deactivateDevice(req, res, next) {
 export async function getReceivedNotifications(req, res, next) {
     try {
         const registrationId = req.currentRegistration._id
+        const { device_id } = req.params
 
         const { page = 1, limit = 20, status } = req.query
 
         const filters = {}
         if (status) filters.status = status
 
-        const result = await notificationService.getReceivedNotifications(registrationId, {
+        const result = await notificationService.getReceivedNotifications(registrationId, device_id, {
             page: parseInt(page),
             limit: parseInt(limit),
             ...filters,
         })
-
-        return res.status(200).json({
-            success: true,
-            data: result.notifications,
+        console.log(result)
+        return res.jsonify({
+            notifications: result.data,
             pagination: result.pagination,
         })
     } catch (error) {
-        next(error)
+        console.log(error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to get received notifications',
+        })
     }
 }
 
@@ -170,6 +185,7 @@ export async function markNotificationOpened(req, res, next) {
 
         if (!device_id) {
             return res.status(400).json({
+                status: 400,
                 success: false,
                 message: 'device_id is required',
             })
@@ -179,6 +195,7 @@ export async function markNotificationOpened(req, res, next) {
         const device = await userDeviceService.getDeviceById(device_id)
         if (!device || device.registration_id !== registrationId) {
             return res.status(403).json({
+                status: 403,
                 success: false,
                 message: 'Invalid device',
             })
@@ -186,11 +203,15 @@ export async function markNotificationOpened(req, res, next) {
 
         await notificationService.markNotificationOpened(notification_id, registrationId, device_id)
 
-        return res.status(200).json({
+        return res.jsonify({
             success: true,
             message: 'Notification marked as opened',
         })
     } catch (error) {
-        next(error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to mark notification as opened',
+        })
     }
 }

@@ -4,7 +4,8 @@ import SystemUser from '@/model/system_user'
 import Organizer from '@/model/organizer'
 import Event from '@/model/event'
 import Registration from '@/model/registration'
-import {Op} from 'sequelize'
+import { Op } from 'sequelize'
+import UserDevice from '@/model/user_device'
 
 /**
  * Create notification
@@ -23,7 +24,7 @@ export const createNotification = async (notificationData) => {
  * Find notification by ID
  */
 export const findNotificationById = async (notificationId, options = {}) => {
-    const {includeRecipients = false, includeSender = false, includeTarget = false} = options
+    const { includeRecipients = false, includeSender = false, includeTarget = false } = options
 
     try {
         const include = []
@@ -72,7 +73,7 @@ export const findNotificationById = async (notificationId, options = {}) => {
             })
         }
 
-        const notification = await Notification.findByPk(notificationId, {include})
+        const notification = await Notification.findByPk(notificationId, { include })
         return notification?.toJSON() || null
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -84,7 +85,7 @@ export const findNotificationById = async (notificationId, options = {}) => {
  * Find all notifications with filters
  */
 export const findAllNotifications = async (filters = {}) => {
-    const {page = 1, limit = 10, sender_type, system_user_id, organizer_id, status, scope} = filters
+    const { page = 1, limit = 10, sender_type, system_user_id, organizer_id, status, scope } = filters
 
     try {
         const offset = (page - 1) * limit
@@ -96,7 +97,7 @@ export const findAllNotifications = async (filters = {}) => {
         if (status) whereConditions.status = status
         if (scope) whereConditions.scope = scope
 
-        const {rows, count} = await Notification.findAndCountAll({
+        const { rows, count } = await Notification.findAndCountAll({
             where: whereConditions,
             include: [
                 {
@@ -216,12 +217,42 @@ export const updateRecipientStatus = async (recipientId, statusData) => {
 }
 
 /**
+ * Update notification recipient status by composite key
+ */
+export const updateRecipientStatusByCompositeKey = async (
+    notificationId,
+    registrationId,
+    deviceId,
+    statusData
+) => {
+    try {
+        const recipient = await NotificationRecipient.findOne({
+            where: {
+                notification_id: notificationId,
+                registration_id: registrationId,
+                device_id: deviceId,
+            },
+        })
+
+        if (!recipient) {
+            throw new Error('Recipient not found')
+        }
+
+        await recipient.update(statusData)
+        return recipient.toJSON()
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to update recipient: ${errorMsg}`)
+    }
+}
+
+/**
  * Update notification statistics
  */
 export const updateNotificationStats = async (notificationId, stats) => {
     try {
         await Notification.update(stats, {
-            where: {_id: notificationId},
+            where: { _id: notificationId },
         })
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -270,14 +301,17 @@ export const getNotificationStats = async (notificationId) => {
 /**
  * Get notifications received by a registration
  */
-export const getReceivedNotifications = async (registrationId, options = {}) => {
-    const {page = 1, limit = 20} = options
+export const getReceivedNotifications = async (registrationId, deviceId, options = {}) => {
+    const { page = 1, limit = 20 } = options
 
     try {
         const offset = (page - 1) * limit
-
-        const {rows, count} = await NotificationRecipient.findAndCountAll({
-            where: {registration_id: registrationId},
+        const result = await UserDevice.findOne({ where: { device_id: deviceId } })
+        if (!result) {
+            throw new Error('Device not found')
+        }
+        const { rows, count } = await NotificationRecipient.findAndCountAll({
+            where: { registration_id: registrationId, device_id: result._id },
             include: [
                 {
                     model: Notification,
@@ -344,7 +378,7 @@ export const markNotificationOpened = async (notificationId, registrationId, dev
 
             // Increment total_opened in notification
             await Notification.increment('total_opened', {
-                where: {_id: notificationId},
+                where: { _id: notificationId },
             })
         }
 

@@ -11,7 +11,7 @@ import {
     VIEW_DIR,
 } from '@/configs'
 import path from 'path'
-import {normalizeError} from '@/utils/helpers'
+import { normalizeError } from '@/utils/helpers'
 
 export function jsonify(data, message) {
     const status = this.statusCode || 200
@@ -26,11 +26,11 @@ export function jsonify(data, message) {
     if (!_.isString(message)) {
         message = STATUS_DEFAULT_MESSAGE[status] ?? statuses(status)
     }
-    return this.json({status, success, message, data})
+    return this.json({ status, success, message, data })
 }
 
 export function sendMail(to, subject, template, data, mailOptions) {
-    ejs.renderFile(path.join(VIEW_DIR, template + '.ejs'), {...this.locals, ...data}, function (err, html) {
+    ejs.renderFile(path.join(VIEW_DIR, template + '.ejs'), { ...this.locals, ...data }, function (err, html) {
         if (err) throw err
         mailTransporter.sendMail(
             {

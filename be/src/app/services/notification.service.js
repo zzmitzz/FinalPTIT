@@ -184,12 +184,6 @@ export async function sendNotification(notificationId) {
         throw new Error('Notification is currently being sent')
     }
 
-    if (notification.status === 'scheduled') {
-        throw new Error(
-            'Cannot manually send a scheduled notification. Cancel the schedule first or wait for automatic delivery.'
-        )
-    }
-
     // Update status to sending
     await notificationRepository.updateNotification(notificationId, {
         status: 'sending',
@@ -219,12 +213,13 @@ export async function sendNotification(notificationId) {
                 },
             }
         }
+        console.log(devices)
 
         // Create recipients
         const recipients = devices.map((device) => ({
             notification_id: notificationId,
             registration_id: device.registration_id,
-            device_id: device.device_id,
+            device_id: device._id,
             status: 'pending',
         }))
 
@@ -255,10 +250,10 @@ export async function sendNotification(notificationId) {
 
             if (response.success) {
                 totalSent++
-                await notificationRepository.updateRecipientStatus(
+                await notificationRepository.updateRecipientStatusByCompositeKey(
                     notificationId,
                     device.registration_id,
-                    device.device_id,
+                    device._id,
                     {
                         status: 'sent',
                         fcm_message_id: response.messageId,
@@ -267,10 +262,10 @@ export async function sendNotification(notificationId) {
                 )
             } else {
                 totalFailed++
-                await notificationRepository.updateRecipientStatus(
+                await notificationRepository.updateRecipientStatusByCompositeKey(
                     notificationId,
                     device.registration_id,
-                    device.device_id,
+                    device._id,
                     {
                         status: 'failed',
                         error_message: response.error?.message || 'Unknown error',
@@ -283,7 +278,7 @@ export async function sendNotification(notificationId) {
                     response.error?.code === 'messaging/invalid-registration-token' ||
                     response.error?.code === 'messaging/registration-token-not-registered'
                 ) {
-                    await userDeviceRepository.deactivateDevice(device.device_id)
+                    await userDeviceRepository.deactivateDevice(device._id)
                 }
             }
         }
@@ -330,8 +325,8 @@ export async function markNotificationOpened(notificationId, registrationId, dev
 /**
  * Get received notifications for a registration
  */
-export async function getReceivedNotifications(registrationId, options = {}) {
-    return await notificationRepository.getReceivedNotifications(registrationId, options)
+export async function getReceivedNotifications(registrationId, deviceId, options = {}) {
+    return await notificationRepository.getReceivedNotifications(registrationId, deviceId, options)
 }
 
 /**
@@ -405,24 +400,23 @@ export async function processScheduledNotifications() {
         failed: 0,
         errors: [],
     }
-
     for (const notification of dueNotifications.notifications) {
         // Check if it's time to send
         if (notification.scheduled_at && new Date(notification.scheduled_at) <= now) {
             results.processed++
 
             try {
-                await sendNotification(notification.notification_id)
+                await sendNotification(notification._id)
                 results.successful++
             } catch (error) {
                 results.failed++
                 results.errors.push({
-                    notification_id: notification.notification_id,
+                    notification_id: notification._id,
                     error: error.message,
                 })
 
                 // Mark as failed
-                await notificationRepository.updateNotification(notification.notification_id, {
+                await notificationRepository.updateNotification(notification._id, {
                     status: 'failed',
                 })
             }

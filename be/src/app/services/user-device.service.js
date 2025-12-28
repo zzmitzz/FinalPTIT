@@ -4,7 +4,7 @@ import * as userDeviceRepository from '../../db/user_device_repository.js'
  * Register or update device token
  */
 export async function registerDevice(registrationId, deviceData) {
-    const {device_id, device_type, fcm_token, device_name, os_version, app_version} = deviceData
+    const { device_id, device_type, fcm_token, device_name, os_version, app_version } = deviceData
 
     // Validate required fields
     if (!device_id) {

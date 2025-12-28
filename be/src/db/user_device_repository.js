@@ -1,13 +1,13 @@
 import UserDevice from '@/model/user_device'
 import Registration from '@/model/registration'
 import RegistrationRegisterEvent from '@/model/registration_register_event'
-import {Op} from 'sequelize'
+import { Op } from 'sequelize'
 
 /**
  * Create or update user device FCM token
  */
 export const upsertDevice = async (registrationId, deviceData) => {
-    const {fcm_token, device_type, device_id, device_name, app_version, os_version} = deviceData
+    const { fcm_token, device_type, device_id, device_name, app_version, os_version } = deviceData
 
     try {
         // If device_id exists, try to find and update
@@ -58,7 +58,11 @@ export const upsertDevice = async (registrationId, deviceData) => {
  */
 export const findDeviceById = async (deviceId) => {
     try {
-        const device = await UserDevice.findByPk(deviceId)
+        const device = await UserDevice.findOne({
+            where: {
+                device_id: deviceId,
+            },
+        })
         return device?.toJSON() || null
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -86,6 +90,29 @@ export const findDevicesByRegistration = async (registrationId) => {
 }
 
 /**
+ * Update device fields
+ */
+export const updateDevice = async (deviceId, updates) => {
+    try {
+        const device = await UserDevice.findOne({
+            where: {
+                device_id: deviceId,
+            },
+        })
+
+        if (!device) {
+            throw new Error('Device not found')
+        }
+
+        await device.update(updates)
+        return device.toJSON()
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to update device: ${errorMsg}`)
+    }
+}
+
+/**
  * Deactivate device
  */
 export const deactivateDevice = async (deviceId) => {
@@ -95,7 +122,7 @@ export const deactivateDevice = async (deviceId) => {
             throw new Error('Device not found')
         }
 
-        await device.update({is_active: false})
+        await device.update({ is_active: false })
         return device.toJSON()
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -118,7 +145,7 @@ export const getDevicesForEvent = async (eventId) => {
                         {
                             model: RegistrationRegisterEvent,
                             as: 'registeredEvents',
-                            where: {event_id: eventId},
+                            where: { event_id: eventId },
                             required: true,
                             attributes: [],
                         },
@@ -169,7 +196,7 @@ export const getAllActiveDevices = async () => {
  */
 export const updateDeviceLastUsed = async (deviceId) => {
     try {
-        await UserDevice.update({last_used_at: new Date()}, {where: {_id: deviceId}})
+        await UserDevice.update({ last_used_at: new Date() }, { where: { _id: deviceId } })
     } catch (error) {
         // Silent fail - not critical
         console.error('Failed to update device last used:', error)
@@ -185,7 +212,7 @@ export const cleanupInactiveDevices = async () => {
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
         const result = await UserDevice.update(
-            {is_active: false},
+            { is_active: false },
             {
                 where: {
                     last_used_at: {
