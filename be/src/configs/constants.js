@@ -87,7 +87,10 @@ assert(!_.isEmpty(MAIL_PASSWORD), assertMsg('MAIL_PASSWORD'))
 export const TOKEN_TYPE = {
     AUTHORIZATION: 'AUTHORIZATION',
     FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+    EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
 }
+
+export const LINK_VERIFY_EMAIL_URL = `${APP_URL_API}/registrations/auth/verify-email`
 export const MAX_STRING_SIZE = 255
 
 export const UUID_TRANSLATOR = short()
@@ -103,8 +106,8 @@ export const STATUS_DEFAULT_MESSAGE = {
 export const JOI_DEFAULT_OPTIONS = {
     abortEarly: false,
     errors: {
-        wrap: {label: false},
-        language: {'any.exists': 'any.exists'},
+        wrap: { label: false },
+        language: { 'any.exists': 'any.exists' },
     },
     externals: false,
     stripUnknown: true,

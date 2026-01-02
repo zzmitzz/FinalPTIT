@@ -14,6 +14,7 @@ export interface RegistrationData {
     address?: string,
     avatar_url?: string,
     bio?: string,
+    is_active: boolean,
     created_at: Date,
     updated_at: Date
 }
@@ -62,6 +63,10 @@ const Registration = sequelize.define('registrations', {
     },
     bio: {
         type: DataTypes.TEXT,
+    },
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     created_at: {
         type: DataTypes.DATE,

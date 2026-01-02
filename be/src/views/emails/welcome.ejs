@@ -1,0 +1,43 @@
+<%- include('./partials/header') %>
+
+    <h1>Chào mừng bạn, <%= name %>!</h1>
+
+    <p>
+        Rất vui khi được chào đón bạn gia nhập cộng đồng <strong>
+            <%= APP_NAME %>
+        </strong>. Chúng tôi đã thiết lập mọi thứ sẵn sàng để bạn có thể bắt đầu khám phá ngay hôm nay.
+    </p>
+
+    <div class="features-box">
+        <h3 style="margin-top: 0; color: #374151; font-size: 18px;">Bạn có thể làm gì tiếp theo?</h3>
+        <div class="feature-item"><strong>Hoàn thiện hồ sơ:</strong> Cập nhật thông tin cá nhân để nhận được các đề
+            xuất chính xác nhất.</div>
+        <div class="feature-item"><strong>Khám phá tính năng:</strong> Tìm kiếm các sự kiện, hội thảo xung quanh bạn
+        </div>
+        <div class="feature-item"><strong>Kết nối:</strong> Tham gia vào cộng đồng và mở rộng mối quan hệ chất lượng.
+        </div>
+    </div>
+
+    <p>
+        Hãy nhấn vào nút bên dưới để bắt đầu hành trình của bạn cùng chúng tôi:
+    </p>
+
+    <div style="text-align: center;">
+        <a href="<%= APP_URL_CLIENT %>" class="btn">Bắt đầu ngay</a>
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+        <p style="font-size: 14px; color: #4b5563;">
+            <strong>Bạn cần trợ giúp?</strong><br />
+            Nếu bạn có bất kỳ câu hỏi nào về cách hoạt động của hệ thống, hãy phản hồi trực tiếp email này hoặc truy cập
+            <a href="<%= APP_URL_CLIENT %>/support" style="color: #2563eb; text-decoration: none;">Trung tâm hỗ trợ</a>
+            của chúng tôi.
+        </p>
+    </div>
+
+    <p style="margin-top: 24px;">
+        Chúc bạn có một trải nghiệm tuyệt vời!<br />
+        <strong>Đội ngũ <%= APP_NAME %></strong>
+    </p>
+
+    <%- include('./partials/footer') %>

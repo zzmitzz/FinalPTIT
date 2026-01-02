@@ -79,3 +79,7 @@ export async function blockToken(token) {
     await registrationTokenBlocklist.set(token, 1, expiresIn - now)
 }
 
+export async function activateAccount(userId) {
+    await registrationRepo.updateRegistrationById(userId, { is_active: true })
+}
+

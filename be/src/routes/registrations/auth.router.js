@@ -1,5 +1,5 @@
-import {Router} from 'express'
-import {asyncHandler} from '@/utils/helpers'
+import { Router } from 'express'
+import { asyncHandler } from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import requireRegistrationAuthentication from '@/app/middleware/registrations/require-authentication'
 import * as authMiddleware from '@/app/middleware/registrations/auth.middleware'
@@ -99,6 +99,52 @@ authRouter.post(
     '/register',
     asyncHandler(validate(authRequest.register)),
     asyncHandler(authController.register)
+)
+
+/**
+ * @swagger
+ * /registrations/auth/verify-email/{token}:
+ *   get:
+ *     summary: Verify email and activate account
+ *     description: Verify registration user email using verification token sent to email
+ *     tags: [Registration Auth]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Email verification token
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *       400:
+ *         description: Account already activated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       410:
+ *         description: Token expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+authRouter.get(
+    '/verify-email/:token',
+    asyncHandler(authMiddleware.verifyEmailVerificationToken),
+    asyncHandler(authController.verifyEmail)
 )
 
 /**

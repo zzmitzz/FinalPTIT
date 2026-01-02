@@ -13,6 +13,7 @@ interface RegistrationData {
     address?: string
     avatar_url?: string
     bio?: string
+    is_active?: boolean
 }
 
 interface RegistrationUpdateData extends Partial<RegistrationData> { }

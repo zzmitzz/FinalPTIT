@@ -1,16 +1,15 @@
+require('dotenv').config();
+
 import nodeMailer from 'nodemailer'
-import {MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_SECURE} from '@/configs'
+import { MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_SECURE, MAIL_PASS } from '@/configs'
 
 const mailTransporter = nodeMailer.createTransport({
-    host: MAIL_HOST,
-    port: MAIL_PORT,
-    secure: MAIL_SECURE,
+    host: process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT,
+    secure: false,
     auth: {
-        user: MAIL_USERNAME,
-        pass: MAIL_PASSWORD,
-    },
-    tls: {
-        rejectUnauthorized: false,
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASS,
     },
 })
 
