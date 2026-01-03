@@ -4,7 +4,7 @@ import SystemUser from '@/model/system_user'
 import Organizer from '@/model/organizer'
 import Event from '@/model/event'
 import Registration from '@/model/registration'
-import { Op } from 'sequelize'
+import {Op} from 'sequelize'
 import UserDevice from '@/model/user_device'
 
 /**
@@ -24,7 +24,7 @@ export const createNotification = async (notificationData) => {
  * Find notification by ID
  */
 export const findNotificationById = async (notificationId, options = {}) => {
-    const { includeRecipients = false, includeSender = false, includeTarget = false } = options
+    const {includeRecipients = false, includeSender = false, includeTarget = false} = options
 
     try {
         const include = []
@@ -73,7 +73,7 @@ export const findNotificationById = async (notificationId, options = {}) => {
             })
         }
 
-        const notification = await Notification.findByPk(notificationId, { include })
+        const notification = await Notification.findByPk(notificationId, {include})
         return notification?.toJSON() || null
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -85,7 +85,16 @@ export const findNotificationById = async (notificationId, options = {}) => {
  * Find all notifications with filters
  */
 export const findAllNotifications = async (filters = {}) => {
-    const { page = 1, limit = 10, sender_type, system_user_id, organizer_id, status, scope } = filters
+    const {
+        page = 1,
+        limit = 10,
+        sender_type,
+        system_user_id,
+        organizer_id,
+        status,
+        scope,
+        target_event_id,
+    } = filters
 
     try {
         const offset = (page - 1) * limit
@@ -96,8 +105,9 @@ export const findAllNotifications = async (filters = {}) => {
         if (organizer_id) whereConditions.organizer_id = organizer_id
         if (status) whereConditions.status = status
         if (scope) whereConditions.scope = scope
+        if (target_event_id) whereConditions.target_event_id = target_event_id
 
-        const { rows, count } = await Notification.findAndCountAll({
+        const {rows, count} = await Notification.findAndCountAll({
             where: whereConditions,
             include: [
                 {
@@ -252,7 +262,7 @@ export const updateRecipientStatusByCompositeKey = async (
 export const updateNotificationStats = async (notificationId, stats) => {
     try {
         await Notification.update(stats, {
-            where: { _id: notificationId },
+            where: {_id: notificationId},
         })
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -302,16 +312,16 @@ export const getNotificationStats = async (notificationId) => {
  * Get notifications received by a registration
  */
 export const getReceivedNotifications = async (registrationId, deviceId, options = {}) => {
-    const { page = 1, limit = 20 } = options
+    const {page = 1, limit = 20} = options
 
     try {
         const offset = (page - 1) * limit
-        const result = await UserDevice.findOne({ where: { device_id: deviceId } })
+        const result = await UserDevice.findOne({where: {device_id: deviceId}})
         if (!result) {
             throw new Error('Device not found')
         }
-        const { rows, count } = await NotificationRecipient.findAndCountAll({
-            where: { registration_id: registrationId, device_id: result._id },
+        const {rows, count} = await NotificationRecipient.findAndCountAll({
+            where: {registration_id: registrationId, device_id: result._id},
             include: [
                 {
                     model: Notification,
@@ -378,7 +388,7 @@ export const markNotificationOpened = async (notificationId, registrationId, dev
 
             // Increment total_opened in notification
             await Notification.increment('total_opened', {
-                where: { _id: notificationId },
+                where: {_id: notificationId},
             })
         }
 

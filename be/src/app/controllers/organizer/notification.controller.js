@@ -146,7 +146,7 @@ export async function listNotifications(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
 
-        const { page = 1, limit = 20, status, scope, from_date, to_date } = req.query
+        const {page = 1, limit = 20, status, scope, target_event_id, from_date, to_date} = req.query
 
         const filters = {
             sender_type: 'organizer',
@@ -154,6 +154,7 @@ export async function listNotifications(req, res, next) {
         }
         if (status) filters.status = status
         if (scope) filters.scope = scope
+        if (target_event_id) filters.target_event_id = target_event_id
         if (from_date) filters.from_date = from_date
         if (to_date) filters.to_date = to_date
 
@@ -178,7 +179,7 @@ export async function listNotifications(req, res, next) {
 export async function getNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id, {
             includeRecipients: true,
@@ -216,7 +217,7 @@ export async function getNotification(req, res, next) {
 export async function updateNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -234,7 +235,7 @@ export async function updateNotification(req, res, next) {
             })
         }
 
-        const { title, body, image_url, scope, target_event_id, action_type, action_data } = req.body
+        const {title, body, image_url, scope, target_event_id, action_type, action_data} = req.body
 
         // Organizers cannot change scope to 'all'
         if (scope === 'all') {
@@ -293,7 +294,7 @@ export async function updateNotification(req, res, next) {
 export async function deleteNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -328,7 +329,7 @@ export async function deleteNotification(req, res, next) {
 export async function sendNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -378,7 +379,7 @@ export async function sendNotification(req, res, next) {
 export async function getNotificationStats(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -413,7 +414,7 @@ export async function getNotificationStats(req, res, next) {
 export async function cancelScheduledNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -449,8 +450,8 @@ export async function cancelScheduledNotification(req, res, next) {
 export async function rescheduleNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
-        const { scheduled_at } = req.body
+        const {id} = req.params
+        const {scheduled_at} = req.body
 
         if (!scheduled_at) {
             return res.status(400).json({
@@ -502,7 +503,7 @@ export async function rescheduleNotification(req, res, next) {
 export async function pauseRecurringNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -538,7 +539,7 @@ export async function pauseRecurringNotification(req, res, next) {
 export async function resumeRecurringNotification(req, res, next) {
     try {
         const organizerId = req.currentOrganizer._id
-        const { id } = req.params
+        const {id} = req.params
 
         const notification = await notificationService.getNotificationById(id)
         if (!notification) {
@@ -573,7 +574,7 @@ export async function resumeRecurringNotification(req, res, next) {
  */
 export async function validateCronPattern(req, res, next) {
     try {
-        const { cron_pattern, timezone } = req.body
+        const {cron_pattern, timezone} = req.body
 
         if (!cron_pattern) {
             return res.status(400).json({
