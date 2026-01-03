@@ -2,6 +2,7 @@ import * as eventService from '../../services/organizer/event.service'
 import * as speakerService from '../../services/organizer/speaker.service'
 import * as formService from '../../services/organizer/form.service'
 import { getOrganizerDetailsByOrganizerId } from '@/app/services/organizer/organizer-details.service'
+import * as organizerRepo from '@/db/organizer_repo'
 import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
 import { EVENT_STATUS } from '@/configs'
 import * as registrationRegisterEventRepo from '@/db/registration_register_event_repository'
@@ -54,7 +55,15 @@ export async function getEventById(req, res) {
             abort(404, 'Không tìm thấy sự kiện.')
         }
 
-        const organizer = event.organizer_id ? await getOrganizerDetailsByOrganizerId(event.organizer_id) : null
+        const organizerDetails = event.organizer_id ? await getOrganizerDetailsByOrganizerId(event.organizer_id) : null
+        let organizerBase = null
+        if (event.organizer_id) {
+            try {
+                organizerBase = await organizerRepo.findOrganizerById(event.organizer_id)
+            } catch (e) {
+                organizerBase = null
+            }
+        }
         const speakers = await speakerService.getSpeakersByEventId(req.params.id)
 
         // Check if user is registered
@@ -69,10 +78,10 @@ export async function getEventById(req, res) {
         const eventWithDetails = {
             ...serializeEvent(event),
             is_registered: !!isRegistered,
-            organizer: organizer ? {
-                name: organizer.organization_name,
-                describe: organizer.description,
-                avatar: buildStaticUrl(organizer.logo_url),
+            organizer: (organizerDetails || organizerBase) ? {
+                name: organizerDetails?.organization_name || organizerBase?.name || null,
+                describe: organizerDetails?.description || null,
+                avatar: buildStaticUrl(organizerDetails?.logo_url || organizerBase?.avatar || null),
             } : null,
             speakers: (speakers || []).map(serializeSpeaker),
             maps: buildStaticUrl(eventMap?.url_source)

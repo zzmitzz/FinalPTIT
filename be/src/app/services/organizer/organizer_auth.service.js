@@ -37,8 +37,12 @@ export async function profile(userId) {
 }
 
 export async function updateProfile(currentOrganizer, updateData) {
-    const {name, email, phone, avatar} = updateData
-    const dataToUpdate = {name, email, phone}
+    const { name, avatar } = updateData
+    const dataToUpdate = {}
+
+    if (name) {
+        dataToUpdate.name = name
+    }
 
     // Handle avatar file upload
     if (avatar instanceof FileUpload) {

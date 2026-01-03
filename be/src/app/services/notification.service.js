@@ -2,7 +2,7 @@ import * as notificationRepository from '../../db/notification_repository.js'
 import * as userDeviceRepository from '../../db/user_device_repository.js'
 import * as fcmService from './fcm.service.js'
 import * as cronUtil from '../../utils/cron.util.js'
-import Event from '../../model/event.js'
+import Event from '../../model/event'
 import { Op } from 'sequelize'
 
 /**

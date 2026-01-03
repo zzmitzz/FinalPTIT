@@ -9,7 +9,7 @@ import {getInterfaceIp} from './utils/helpers'
 sourceMapSupport.install()
 
 // Bind all IP so that Kubernetes probes and Traefik can connect
-const host = process.env.HOST || '0.0.0.0'
+const host = '0.0.0.0'
 const port = parseInt(process.env.PORT, 10) || 3456
 
 const app = createApp()

@@ -11,14 +11,14 @@
  * - Events → Notifications (One-to-Many)
  */
 
-import Registration from './registration.js'
-import SystemUser from './system_user.js'
-import Organizer from './organizer.js'
-import Event from './event.js'
-import UserDevice from './user_device.js'
-import Notification from './notification.js'
-import NotificationRecipient from './notification_recipient.js'
-import RegistrationRegisterEvent from './registration_register_event.js'
+import Registration from './registration'
+import SystemUser from './system_user'
+import Organizer from './organizer'
+import Event from './event'
+import UserDevice from './user_device'
+import Notification from './notification'
+import NotificationRecipient from './notification_recipient'
+import RegistrationRegisterEvent from './registration_register_event'
 
 // ==========================================
 // Registration ↔ UserDevice (One-to-Many)

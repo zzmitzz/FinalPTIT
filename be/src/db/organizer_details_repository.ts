@@ -11,6 +11,12 @@ interface OrganizerDetailsData {
 
 interface OrganizerDetailsUpdateData extends Partial<Omit<OrganizerDetailsData, 'organizer_id'>> { }
 
+const normalizeOptionalString = (value?: string) => {
+    if (value === undefined || value === null) return undefined
+    const trimmed = String(value).trim()
+    return trimmed === '' ? undefined : trimmed
+}
+
 export const createOrganizerDetails = async (data: OrganizerDetailsData) => {
     try {
         const details = await OrganizerDetails.create(data as any)
@@ -97,12 +103,26 @@ export const organizerDetailsExists = async (organizerId: string): Promise<boole
 export const upsertOrganizerDetails = async (data: OrganizerDetailsData) => {
     try {
         const exists = await organizerDetailsExists(data.organizer_id)
+
+        const updatePayload: OrganizerDetailsUpdateData = {
+            organization_name: data.organization_name,
+            address: normalizeOptionalString(data.address),
+            website: normalizeOptionalString(data.website),
+            description: normalizeOptionalString(data.description),
+            logo_url: normalizeOptionalString(data.logo_url)
+        }
         
         if (exists) {
-            await updateOrganizerDetailsByOrganizerId(data.organizer_id, data)
+            await updateOrganizerDetailsByOrganizerId(data.organizer_id, updatePayload)
             return await findOrganizerDetailsByOrganizerId(data.organizer_id)
         } else {
-            return await createOrganizerDetails(data)
+            return await createOrganizerDetails({
+                ...data,
+                address: normalizeOptionalString(data.address),
+                website: normalizeOptionalString(data.website),
+                description: normalizeOptionalString(data.description),
+                logo_url: normalizeOptionalString(data.logo_url)
+            })
         }
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)

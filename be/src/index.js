@@ -8,8 +8,8 @@ import swaggerUi from 'swagger-ui-express'
 import {APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR, swaggerOptions} from './configs'
 
 // Import model associations BEFORE any routes are loaded
-import './model/rbac-associations.js'
-import './model/notification-associations.js'
+import './model/rbac-associations'
+import './model/notification-associations'
 
 import {jsonify, sendMail} from './handlers/response.handler'
 import corsHandler from './handlers/cors.handler'

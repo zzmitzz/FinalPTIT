@@ -2,6 +2,24 @@ import {abort} from '@/utils/helpers'
 import * as speakerService from '@/app/services/organizer/speaker.service'
 import { FileUpload } from '@/utils/classes'
 
+const buildStaticUrl = (value) => {
+    if (!value || typeof value !== 'string') return value
+    if (/^https?:\/\//i.test(value)) return value
+    const base = (process.env.APP_URL_API || '').replace(/\/+$/, '')
+    const path = value.startsWith('/') ? value : `/${value}`
+    const withStatic = path.startsWith('/static/') ? path : `/static${path}`
+    return `${base}${withStatic}`
+}
+
+const serializeSpeaker = (speaker) => {
+    if (!speaker) return speaker
+    const obj = typeof speaker.toJSON === 'function' ? speaker.toJSON() : speaker
+    return {
+        ...obj,
+        photo_url: buildStaticUrl(obj.photo_url),
+    }
+}
+
 export async function createItem(req, res) {
     // If a file upload was provided in photo_url, save it and convert to URL/path
     const payload = { ...req.body }
@@ -15,7 +33,7 @@ export async function createItem(req, res) {
     }
 
     const speaker = await speakerService.createSpeaker(payload)
-    res.status(201).jsonify(speaker, 'Tạo diễn giả thành công.')
+    res.status(201).jsonify(serializeSpeaker(speaker), 'Tạo diễn giả thành công.')
 }
 
 export async function getItem(req, res) {
@@ -23,14 +41,14 @@ export async function getItem(req, res) {
     if (!speaker) {
         abort(404, 'Không tìm thấy diễn giả.')
     }
-    res.jsonify(speaker)
+    res.jsonify(serializeSpeaker(speaker))
 }
 
 export async function getListByEventId(req, res) {
     const speakers = await speakerService.getSpeakersByEventId(req.params.eventId)
     const total = await speakerService.countSpeakersByEventId(req.params.eventId)
     res.jsonify({
-        data: speakers,
+        data: Array.isArray(speakers) ? speakers.map(serializeSpeaker) : speakers,
         total: total,
     })
 }
@@ -38,7 +56,11 @@ export async function getListByEventId(req, res) {
 export async function getAllItems(req, res) {
     const {page = 1, limit = 10} = req.query
     const result = await speakerService.getAllSpeakers(page, limit)
-    res.jsonify(result)
+    res.jsonify({
+        ...result,
+        items: Array.isArray(result.items) ? result.items.map(serializeSpeaker) : result.items,
+        data: Array.isArray(result.data) ? result.data.map(serializeSpeaker) : result.data,
+    })
 }
 
 export async function updateItem(req, res) {
@@ -59,7 +81,7 @@ export async function updateItem(req, res) {
     }
 
     const updated = await speakerService.updateSpeaker(req.params.id, updatePayload)
-    res.jsonify(updated, 'Cập nhật diễn giả thành công.')
+    res.jsonify(serializeSpeaker(updated), 'Cập nhật diễn giả thành công.')
 }
 
 export async function updateProperties(req, res) {
@@ -93,7 +115,7 @@ export async function updateProperties(req, res) {
     }
 
     const updated = await speakerService.updateSpeaker(req.params.id, allowedUpdates)
-    res.jsonify(updated, 'Cập nhật thuộc tính diễn giả thành công.')
+    res.jsonify(serializeSpeaker(updated), 'Cập nhật thuộc tính diễn giả thành công.')
 }
 
 export async function deleteItem(req, res) {
@@ -115,7 +137,7 @@ export async function searchItems(req, res) {
 export async function getKeynoteSpeakers(req, res) {
     const speakers = await speakerService.getKeynoteSpeakers()
     res.jsonify({
-        data: speakers,
+        data: Array.isArray(speakers) ? speakers.map(serializeSpeaker) : speakers,
         total: speakers.length,
     })
 }
@@ -123,7 +145,7 @@ export async function getKeynoteSpeakers(req, res) {
 export async function getActiveSpeakers(req, res) {
     const speakers = await speakerService.getActiveSpeakers()
     res.jsonify({
-        data: speakers,
+        data: Array.isArray(speakers) ? speakers.map(serializeSpeaker) : speakers,
         total: speakers.length,
     })
 }
@@ -137,7 +159,7 @@ export async function getSpeakersByExpertise(req, res) {
     const expertiseAreas = Array.isArray(expertise) ? expertise : [expertise]
     const speakers = await speakerService.getSpeakersByExpertise(expertiseAreas)
     res.jsonify({
-        data: speakers,
+        data: Array.isArray(speakers) ? speakers.map(serializeSpeaker) : speakers,
         total: speakers.length,
     })
 }
@@ -146,7 +168,7 @@ export async function getSpeakersByOrganization(req, res) {
     const {organization} = req.params
     const speakers = await speakerService.getSpeakersByOrganization(organization)
     res.jsonify({
-        data: speakers,
+        data: Array.isArray(speakers) ? speakers.map(serializeSpeaker) : speakers,
         total: speakers.length,
     })
 }

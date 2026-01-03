@@ -10,7 +10,11 @@ export async function createOrganizerDetails(req, res) {
     // Check if details already exist
     const exists = await organizerDetailsService.organizerDetailsExists(req.currentOrganizer._id)
     if (exists) {
-        return res.status(409).jsonify(null, 'Thông tin chi tiết của tổ chức đã tồn tại. Vui lòng sử dụng API cập nhật.')
+        return res.status(409).json({
+            status: 409,
+            success: false,
+            message: 'Thông tin chi tiết của tổ chức đã tồn tại. Vui lòng sử dụng API cập nhật.'
+        })
     }
 
     const details = await organizerDetailsService.createOrganizerDetails(detailsData)
@@ -22,7 +26,11 @@ export async function getOrganizerDetails(req, res) {
     const details = await organizerDetailsService.getOrganizerDetailsByOrganizerId(req.currentOrganizer._id)
     
     if (!details) {
-        return res.status(404).jsonify(null, 'Không tìm thấy thông tin chi tiết tổ chức.')
+        return res.status(404).json({
+            status: 404,
+            success: false,
+            message: 'Không tìm thấy thông tin chi tiết tổ chức.'
+        })
     }
     
     res.jsonify(details)
@@ -33,7 +41,11 @@ export async function getOrganizerDetailsById(req, res) {
     const details = await organizerDetailsService.getOrganizerDetailsByOrganizerId(req.params.organizerId)
     
     if (!details) {
-        return res.status(404).jsonify(null, 'Không tìm thấy thông tin chi tiết tổ chức.')
+        return res.status(404).json({
+            status: 404,
+            success: false,
+            message: 'Không tìm thấy thông tin chi tiết tổ chức.'
+        })
     }
     
     res.jsonify(details)
@@ -65,7 +77,11 @@ export async function updateOrganizerDetails(req, res) {
     )
     
     if (!details) {
-        return res.status(404).jsonify(null, 'Không tìm thấy thông tin chi tiết tổ chức.')
+        return res.status(404).json({
+            status: 404,
+            success: false,
+            message: 'Không tìm thấy thông tin chi tiết tổ chức.'
+        })
     }
     
     res.jsonify(details, 'Cập nhật thông tin chi tiết tổ chức thành công.')
@@ -76,7 +92,11 @@ export async function deleteOrganizerDetails(req, res) {
     const result = await organizerDetailsService.deleteOrganizerDetails(req.currentOrganizer._id)
     
     if (!result) {
-        return res.status(404).jsonify(null, 'Không tìm thấy thông tin chi tiết tổ chức.')
+        return res.status(404).json({
+            status: 404,
+            success: false,
+            message: 'Không tìm thấy thông tin chi tiết tổ chức.'
+        })
     }
     
     res.status(204).send()

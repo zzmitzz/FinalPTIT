@@ -8,12 +8,12 @@
  * - SystemUserRoles → Organizers (Many-to-One for scoping)
  */
 
-import SystemUser from './system_user.js'
-import Role from './role.js'
-import Permission from './permission.js'
-import Organizer from './organizer.js'
-import SystemUserRole from './system_user_role.js'
-import RolePermission from './role_permission.js'
+import SystemUser from './system_user'
+import Role from './role'
+import Permission from './permission'
+import Organizer from './organizer'
+import SystemUserRole from './system_user_role'
+import RolePermission from './role_permission'
 
 // ==========================================
 // SystemUser ↔ Role (Many-to-Many)
