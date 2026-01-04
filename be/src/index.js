@@ -5,13 +5,13 @@ import helmet from 'helmet'
 import multer from 'multer'
 import swaggerJsDoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
-import {APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR, swaggerOptions} from './configs'
+import { APP_DEBUG, NODE_ENV, PUBLIC_DIR, VIEW_DIR, swaggerOptions } from './configs'
 
 // Import model associations BEFORE any routes are loaded
 import './model/rbac-associations'
 import './model/notification-associations'
 
-import {jsonify, sendMail} from './handlers/response.handler'
+import { jsonify, sendMail } from './handlers/response.handler'
 import corsHandler from './handlers/cors.handler'
 import httpRequestHandler from './handlers/http-request.handler'
 import limiter from './handlers/rate-limit.handler'
@@ -22,7 +22,7 @@ import errorHandler from './handlers/error.handler'
 import morgan from 'morgan'
 
 import route from './routes'
-import {startScheduler} from './tasks/notification-scheduler.js'
+import { startScheduler } from './tasks/notification-scheduler.js'
 
 function createApp() {
     // Init app
@@ -45,9 +45,9 @@ function createApp() {
     app.use('/static', express.static(PUBLIC_DIR))
     app.use(helmet())
     app.use(express.json())
-    app.use(express.urlencoded({extended: true}))
+    app.use(express.urlencoded({ extended: true }))
 
-    app.use(multer({storage: multer.memoryStorage()}).any())
+    app.use(multer({ storage: multer.memoryStorage() }).any())
     app.use(formDataHandler)
     app.use(initLocalsHandler)
     app.use(morgan('dev'))

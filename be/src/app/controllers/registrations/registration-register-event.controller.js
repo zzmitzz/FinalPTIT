@@ -1,4 +1,24 @@
 import * as registrationRegisterEventService from '@/app/services/registrations/registration-register-event.service'
+
+const buildStaticUrl = (value) => {
+    if (!value || typeof value !== 'string') return value
+    if (/^https?:\/\//i.test(value)) return value
+    const base = (process.env.APP_URL_API || '').replace(/\/+$/, '')
+    const path = value.startsWith('/') ? value : `/${value}`
+    const withStatic = path.startsWith('/static/') ? path : `/static${path}`
+    return `${base}${withStatic}`
+}
+
+const serializeEvent = (event) => {
+    if (!event) return event
+    const obj = typeof event.toJSON === 'function' ? event.toJSON() : event
+    return {
+        ...obj,
+        thumbnail: buildStaticUrl(obj.thumbnail),
+        logo: buildStaticUrl(obj.logo),
+    }
+}
+
 /**
  * Get all events the authenticated user is registered for
  * GET /registrations/registered-events
@@ -7,7 +27,8 @@ export async function getMyRegisteredEvents(req, res) {
     const events = await registrationRegisterEventService.getRegisteredEventsByUser(
         req.currentRegistration._id
     )
-    res.jsonify(events)
+    const serializedEvents = events.map(serializeEvent)
+    res.jsonify(serializedEvents)
 }
 
 /**
@@ -22,7 +43,8 @@ export async function getMyRegisteredEventsByMonth(req, res) {
         parseInt(month),
         parseInt(year)
     )
-    res.jsonify(events)
+    const serializedEvents = events.map(serializeEvent)
+    res.jsonify(serializedEvents)
 }
 
 
