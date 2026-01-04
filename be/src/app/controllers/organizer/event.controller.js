@@ -77,9 +77,9 @@ export async function createEvent(req, res) {
             speakers = req.body.speakers
         }
 
-        // Extract speakers from request body (remove speakers_json)
+        // Extract speakers/social links from request body (do not pass into events table)
         // eslint-disable-next-line no-unused-vars
-        const { speakers_json, ...eventFields } = req.body
+        const { speakers_json, social_links_json, social_links, ...eventFields } = req.body
         
         // Add organizer_id from authenticated user
         const eventData = {
@@ -89,6 +89,11 @@ export async function createEvent(req, res) {
 
         // Create event first
         const event = await eventService.createEvent(eventData)
+
+        // Social links: replace all if provided
+        if (social_links !== undefined) {
+            await eventService.replaceSocialLinks(event._id, social_links)
+        }
         
         // Post-merge validation: ensure each speaker has required fields after merging speakers_json and uploaded files
         if (speakers && speakers.length > 0) {
@@ -130,10 +135,12 @@ export async function createEvent(req, res) {
         // Fetch event with speakers
         const eventWithSpeakers = await eventService.getEventById(event._id)
         const speakersList = await speakerService.getSpeakersByEventId(event._id)
+        const socialLinks = await eventService.listSocialLinks(event._id)
         
         const result = {
             ...serializeEvent(eventWithSpeakers),
-            speakers: (speakersList || []).map(serializeSpeaker)
+            speakers: (speakersList || []).map(serializeSpeaker),
+            social_links: socialLinks || [],
         }
         // Create a default registration form for this event (non-blocking)
         try {
@@ -146,7 +153,7 @@ export async function createEvent(req, res) {
                 fields: [
                     {
                         field_label: 'Họ và tên',
-                        field_description: '',
+                        field_description: 'Vui lòng nhập họ và tên đầy đủ.',
                         field_type: 'TEXT',
                         field_options: [],
                         field_has_other_option: false,
@@ -159,7 +166,7 @@ export async function createEvent(req, res) {
                     },
                     {
                         field_label: 'Email liên hệ',
-                        field_description: '',
+                        field_description: 'Email dùng để liên hệ và xác nhận đăng ký.',
                         field_type: 'EMAIL',
                         field_options: [],
                         field_has_other_option: false,
@@ -172,7 +179,7 @@ export async function createEvent(req, res) {
                     },
                     {
                         field_label: 'Ngày sinh',
-                        field_description: '',
+                        field_description: 'Vui lòng chọn ngày sinh.',
                         field_type: 'DATE',
                         field_options: [],
                         field_has_other_option: false,
@@ -185,7 +192,7 @@ export async function createEvent(req, res) {
                     },
                     {
                         field_label: 'Giới tính',
-                        field_description: '',
+                        field_description: 'Vui lòng chọn giới tính.',
                         field_type: 'RADIO',
                         field_options: ['Nam', 'Nữ', 'Khác'],
                         field_has_other_option: false,
@@ -227,6 +234,7 @@ export async function getEventById(req, res) {
 
         const organizer = event.organizer_id ? await findOrganizerById(event.organizer_id) : null
         const speakers = await speakerService.getSpeakersByEventId(req.params.id)
+        const socialLinks = await eventService.listSocialLinks(req.params.id)
 
         const eventWithDetails = {
             ...serializeEvent(event),
@@ -237,7 +245,8 @@ export async function getEventById(req, res) {
                 phone: organizer.phone,
                 avatar: buildStaticUrl(organizer.avatar)
             } : null,
-            speakers: (speakers || []).map(serializeSpeaker)
+            speakers: (speakers || []).map(serializeSpeaker),
+            social_links: socialLinks || [],
         }
 
         res.jsonify(eventWithDetails)
@@ -475,7 +484,7 @@ export async function updateEvent(req, res) {
         }
 
         // eslint-disable-next-line no-unused-vars
-        const { status, speakers_json, ...eventFields } = req.body
+        const { status, speakers_json, social_links_json, social_links, ...eventFields } = req.body
         
         if (status && !isValidStatus(status)) {
             return res.status(400).jsonify(null, 'Trạng thái không hợp lệ, phải là một trong: ' + Object.values(EVENT_STATUS).join(', '))
@@ -485,6 +494,11 @@ export async function updateEvent(req, res) {
         const event = await eventService.updateEvent(req.params.id, eventFields)
         if (!event) {
             return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
+        }
+
+        // Social links: replace all if provided (including empty array to clear)
+        if (social_links !== undefined) {
+            await eventService.replaceSocialLinks(req.params.id, social_links)
         }
 
         // Handle speakers update if provided
@@ -537,10 +551,12 @@ export async function updateEvent(req, res) {
         // Fetch updated event with speakers
         const updatedEvent = await eventService.getEventById(req.params.id)
         const speakersList = await speakerService.getSpeakersByEventId(req.params.id)
+        const socialLinks = await eventService.listSocialLinks(req.params.id)
         
         const result = {
             ...serializeEvent(updatedEvent),
-            speakers: (speakersList || []).map(serializeSpeaker)
+            speakers: (speakersList || []).map(serializeSpeaker),
+            social_links: socialLinks || [],
         }
         
         res.jsonify(result, 'Cập nhật sự kiện thành công.')

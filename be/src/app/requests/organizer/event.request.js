@@ -183,6 +183,19 @@ export const createItem = Joi.object({
         .default([])
         .label('Danh sách diễn giả'),
 
+    social_links: Joi.array()
+        .items(
+            Joi.object({
+                platform: Joi.string().trim().max(50).required().label('Nền tảng'),
+                url: Joi.string().trim().uri().required().label('Liên kết'),
+                label: Joi.string().trim().max(100).allow('').optional().label('Nhãn'),
+                position: Joi.number().integer().min(0).optional().label('Vị trí'),
+            })
+        )
+        .optional()
+        .default([])
+        .label('Liên kết mạng xã hội'),
+
 })
 
 export const updateItem = Joi.object({
@@ -228,6 +241,18 @@ export const updateItem = Joi.object({
         .messages({
             'date.min': '{{#label}} không được nhỏ hơn thời gian hiện tại.'
         }),
+
+    social_links: Joi.array()
+        .items(
+            Joi.object({
+                platform: Joi.string().trim().max(50).required().label('Nền tảng'),
+                url: Joi.string().trim().uri().required().label('Liên kết'),
+                label: Joi.string().trim().max(100).allow('').optional().label('Nhãn'),
+                position: Joi.number().integer().min(0).optional().label('Vị trí'),
+            })
+        )
+        .optional()
+        .label('Liên kết mạng xã hội'),
     
     end_time: Joi.date()
         .when('start_time', {

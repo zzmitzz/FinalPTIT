@@ -112,6 +112,29 @@ export async function updateResource(id, updateData) {
         delete resourceData.file
     }
 
+    // Handle file upload for MAPS type resources
+    if (updateData.maps instanceof FileUpload) {
+        const file = updateData.maps
+
+        // Get existing resource to delete old file
+        const existingResource = await resourceRepo.findResourceById(id)
+        if (existingResource && existingResource.resource_type === RESOURCE_TYPE.MAPS) {
+            try {
+                FileUpload.remove(existingResource.url_source)
+            } catch (error) {
+                console.error('Failed to delete old maps file:', error)
+            }
+        }
+
+        const filepath = file.save('resources')
+
+        resourceData.url_source = filepath
+        resourceData.file_size_bytes = Buffer.byteLength(file.buffer)
+        resourceData.mime_type = file.mimetype
+
+        delete resourceData.maps
+    }
+
     const updated = await resourceRepo.updateResourceById(id, resourceData)
     if (!updated) {
         return null
@@ -129,8 +152,8 @@ export async function deleteResource(id) {
         return null
     }
 
-    // Delete file if it's a FILE type resource
-    if (resource.resource_type === RESOURCE_TYPE.FILE && resource.url_source) {
+    // Delete file if it's a FILE or MAPS type resource
+    if ((resource.resource_type === RESOURCE_TYPE.FILE || resource.resource_type === RESOURCE_TYPE.MAPS) && resource.url_source) {
         try {
             FileUpload.remove(resource.url_source)
         } catch (error) {

@@ -64,6 +64,19 @@ function formDataHandler(req, res, next) {
             }
         }
 
+        // If client sent social_links_json (stringified array), expose a unified `req.body.social_links`
+        // for Joi validation (stripUnknown would otherwise remove the *_json field).
+        if (req.body && req.body.social_links_json) {
+            try {
+                const parsed = JSON.parse(req.body.social_links_json)
+                if (Array.isArray(parsed)) {
+                    req.body.social_links = parsed
+                }
+            } catch (err) {
+                // ignore
+            }
+        }
+
         delete req.files
     }
 

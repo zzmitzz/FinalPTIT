@@ -18,6 +18,7 @@ import { deleteSessionRegistrationsBySessionId } from '../../../db/session_regis
 import { deletePlacesByEventId } from '../../../db/place_repository'
 import { deleteFormByEventId } from '../../../db/form_repository'
 import { deleteResourcesByEventId } from '../../../db/resource_repository'
+import { deleteByEventId as deleteSocialLinksByEventId, replaceAllForEvent as replaceAllSocialLinksForEvent, listByEventId as listSocialLinksByEventId } from '../../../db/event_social_link_repository'
 import { deleteCheckinHistoryByEventId } from '../../../db/checkin_history_repository'
 import { deleteRegistrationResponsesByEventId } from '../../../db/registration_responses_repository'
 import { deleteRegistrationRegisterEventByEventId } from '../../../db/registration_register_event_repository'
@@ -53,6 +54,14 @@ export const createEvent = async (eventData) => {
 
 export const getEventById = async (id) => {
     return await findEventById(id)
+}
+
+export const listSocialLinks = async (eventId) => {
+    return await listSocialLinksByEventId(eventId)
+}
+
+export const replaceSocialLinks = async (eventId, links) => {
+    return await replaceAllSocialLinksForEvent(eventId, Array.isArray(links) ? links : [])
 }
 
 export const getEventByPinCode = async (pinCode) => {
@@ -105,6 +114,7 @@ export const deleteEvent = async (id) => {
     await deleteRegistrationResponsesByEventId(id)   // Delete registration responses
     await deleteRegistrationRegisterEventByEventId(id) // Delete event registrations
     await deleteResourcesByEventId(id)               // Delete resources
+    await deleteSocialLinksByEventId(id)             // Delete social links
     await deletePlacesByEventId(id)                  // Delete places/rooms
     await deleteFormByEventId(id)                    // Delete form (and its fields via cascade)
     

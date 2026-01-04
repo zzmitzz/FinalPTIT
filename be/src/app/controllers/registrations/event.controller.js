@@ -37,6 +37,36 @@ const serializeEvent = (event) => {
     }
 }
 
+const buildOrganizerPayload = async (organizerId) => {
+    if (!organizerId) return null
+
+    const [organizerDetails, organizerBase] = await Promise.all([
+        getOrganizerDetailsByOrganizerId(organizerId).catch(() => null),
+        organizerRepo.findOrganizerById(organizerId).catch(() => null),
+    ])
+
+    if (!organizerDetails && !organizerBase) return null
+
+    return {
+        _id: organizerId,
+        name: organizerDetails?.organization_name || organizerBase?.name || null,
+        describe: organizerDetails?.description || null,
+        avatar: buildStaticUrl(organizerDetails?.logo_url || organizerBase?.avatar || null),
+    }
+}
+
+const serializeEventWithOrganizer = async (event) => {
+    const serialized = serializeEvent(event)
+    const organizer = await buildOrganizerPayload(serialized?.organizer_id)
+    return {
+        ...serialized,
+        organizer,
+        organizer_name: organizer?.name || null,
+        organizer_avatar: organizer?.avatar || null,
+        organizer_description: organizer?.describe || null,
+    }
+}
+
 const mapEventsResponse = (data) => {
     if (Array.isArray(data)) return data.map(serializeEvent)
     if (data && Array.isArray(data.items)) return { ...data, items: data.items.map(serializeEvent) }
@@ -132,7 +162,11 @@ export async function listEvents(req, res) {
         const limit = limitParam ?? per_page ?? page_size ?? 10
         // Filter by PUBLISHED status for public endpoints
         const result = await eventService.listEvents(page, limit, null, true)
-        res.jsonify(mapEventsResponse(result))
+        const items = await Promise.all((result?.items || []).map(serializeEventWithOrganizer))
+        res.jsonify({
+            ...result,
+            items,
+        })
     } catch (error) {
         console.error('Error in listEvents:', error)
         return res.status(500).json({
@@ -150,7 +184,13 @@ export async function searchEvents(req, res) {
         // Filter by PUBLISHED status for public endpoints
         const result = await eventService.searchEvents(q, page, limit, null, true)
         console.log(result)
-        res.jsonify(mapEventsResponse(result))
+        const items = Array.isArray(result?.items)
+            ? await Promise.all(result.items.map(serializeEventWithOrganizer))
+            : []
+        res.jsonify({
+            ...result,
+            items,
+        })
     } catch (error) {
         console.error('Error in searchEvents:', error)
         return res.status(500).json({
@@ -169,7 +209,7 @@ export async function getNearbyEvents(req, res) {
             return res.status(400).jsonify(null, 'lat and lng query parameters are required')
         }
         const items = await eventService.getNearbyEvents(lat, lng, limit)
-        const serialized = items.map(serializeEvent)
+        const serialized = await Promise.all((items || []).map(serializeEventWithOrganizer))
         res.jsonify({ items: serialized, total: serialized.length })
     } catch (error) {
         console.error('Error in getNearbyEvents:', error)

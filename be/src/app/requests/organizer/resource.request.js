@@ -123,8 +123,16 @@ export const createItem = Joi.object({
         })
             .unknown(true)
             .instance(FileUpload)
-            .required()
+            .optional()
             .label('Tệp'),
+        otherwise: Joi.forbidden()
+    }),
+    url_source: Joi.when('resource_type', {
+        is: RESOURCE_TYPE.MAPS,
+        then: Joi.string()
+            .uri()
+            .optional()
+            .label('URL nguồn'),
         otherwise: Joi.forbidden()
     }),
     description: Joi.string()
@@ -143,7 +151,21 @@ export const createItem = Joi.object({
         .items(Joi.string().trim())
         .default([])
         .label('Thẻ')
-})
+}).custom((value, helpers) => {
+    // For MAPS resources, require exactly one of: maps file OR url_source
+    if (value?.resource_type === RESOURCE_TYPE.MAPS) {
+        const hasMaps = !!value.maps
+        const hasUrl = typeof value.url_source === 'string' && value.url_source.trim().length > 0
+
+        if (hasMaps && hasUrl) {
+            return helpers.error('any.custom', { message: 'Chỉ được cung cấp maps hoặc url_source, không được cả hai.' })
+        }
+        if (!hasMaps && !hasUrl) {
+            return helpers.error('any.custom', { message: 'Phải cung cấp maps hoặc url_source cho loại MAPS.' })
+        }
+    }
+    return value
+}, 'MAPS upload/url validation')
 
 export const updateItem = Joi.object({
     resource_type: Joi.string()
@@ -186,6 +208,30 @@ export const updateItem = Joi.object({
                 .label('Tệp tải lên')
                 .messages({
                     'binary.max': '{{#label}} không được vượt quá 10MB.'
+                })
+        })
+            .unknown(true)
+            .instance(FileUpload)
+            .optional()
+            .label('Tệp'),
+        otherwise: Joi.forbidden()
+    }),
+    maps: Joi.when('resource_type', {
+        is: RESOURCE_TYPE.MAPS,
+        then: Joi.object({
+            originalname: Joi.string()
+                .trim()
+                .required()
+                .label('Tên tệp'),
+            mimetype: Joi.string()
+                .required()
+                .label('Định dạng tệp'),
+            buffer: Joi.binary()
+                .max(50 * 1024 * 1024) // 50MB limit
+                .required()
+                .label('Tệp tải lên')
+                .messages({
+                    'binary.max': '{{#label}} không được vượt quá 50MB.'
                 })
         })
             .unknown(true)

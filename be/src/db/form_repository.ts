@@ -1,5 +1,6 @@
 
 import Form from '../model/form'
+import { deleteFormFieldsByFormId } from './form_fields'
 
 
 interface FormData {
@@ -73,6 +74,20 @@ export const deleteFormById = async (id: string) => {
 
 export const deleteFormByEventId = async (eventId: string) => {
     try {
+        // forms -> form_fields has a FK without ON DELETE CASCADE, so we must delete
+        // dependent form_fields first to avoid constraint violations.
+        const forms = await Form.findAll({
+            where: { event_id: eventId },
+            attributes: ['_id'],
+        })
+
+        for (const form of forms) {
+            const formId = form.getDataValue('_id') as string
+            if (formId) {
+                await deleteFormFieldsByFormId(formId)
+            }
+        }
+
         const deletedRows = await Form.destroy({ where: { event_id: eventId } })
         return deletedRows
     } catch (error: unknown) {
