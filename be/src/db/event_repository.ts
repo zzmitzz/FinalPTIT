@@ -1,4 +1,5 @@
 import Event from '../model/event'
+import OrganizerDetails from '../model/organizer_details'
 import { Op, literal } from 'sequelize'
 import { EVENT_STATUS, EVENT_STATE, EVENT_CATEGORY } from '../configs/constants'
 import sequelize from '../configs/postgre_sql.js'
@@ -45,20 +46,20 @@ export const createEvent = async (eventData: EventData) => {
     const finalCategoryId = category_id || EVENT_CATEGORY.TECHNOLOGY
     const finalTags = tags || []
     try {
-        const newEvent = await Event.create({ 
-            organizer_id, 
-            name, 
-            thumbnail, 
-            logo, 
-            description, 
-            start_time, 
-            end_time, 
-            location, 
-            status, 
-            state, 
-            lat, 
-            lng, 
-            category_id: finalCategoryId, 
+        const newEvent = await Event.create({
+            organizer_id,
+            name,
+            thumbnail,
+            logo,
+            description,
+            start_time,
+            end_time,
+            location,
+            status,
+            state,
+            lat,
+            lng,
+            category_id: finalCategoryId,
             capacity,
             tags: finalTags
         })
@@ -151,7 +152,7 @@ export const findAllEvents = async (page: number = 1, limit: number = 10, organi
         if (filterPublished) {
             whereClause.status = EVENT_STATUS.PUBLISHED
         }
-        
+
         const events = await Event.findAll({
             where: whereClause,
             order: [["start_time", "ASC"], ["_id", "DESC"]],
@@ -190,19 +191,39 @@ export const findEventByPinCode = async (pin_code: string) => {
 
 export const findNearbyEvents = async (lat: number, lng: number, limit: number = 5) => {
     try {
-        // Simple squared distance ordering (sufficient for nearest-neighbor ranking)
+        const now = new Date()
         const distanceExpr = `( (lat - ${lat})*(lat - ${lat}) + (lng - ${lng})*(lng - ${lng}) )`
         const events = await Event.findAll({
             where: {
-                status: EVENT_STATUS.PUBLISHED
+                status: EVENT_STATUS.PUBLISHED,
+                end_time: {
+                    [Op.gte]: now
+                },
+                start_time: {
+                    [Op.lte]: now
+                }
             },
             attributes: {
                 include: [[literal(distanceExpr), 'distance']],
             },
+            include: [{
+                model: OrganizerDetails,
+                as: 'organizer_detail',
+                attributes: ['organization_name'],
+                required: false
+            }],
             order: [literal('distance ASC')],
             limit,
         })
-        return events.map(event => event.toJSON())
+        return events.map(event => {
+            const eventData = event.toJSON() as any
+            const organizerName = eventData.organizer_detail?.organization_name || 'Unknown Organizer'
+            delete eventData.organizer_detail
+            return {
+                ...eventData,
+                organizer_name: organizerName
+            }
+        })
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to find nearby events: ${errorMsg}`)
@@ -227,16 +248,16 @@ export const searchEvents = async (searchTerm: string, page: number = 1, limit: 
                 { description: { [Op.iLike]: likePattern } },
             ]
         }
-        
+
         if (organizerId) {
             where.organizer_id = organizerId
         }
-        
+
         // Filter by PUBLISHED status for public endpoints
         if (filterPublished) {
             where.status = EVENT_STATUS.PUBLISHED
         }
-        
+
         console.log('where clause:', JSON.stringify(where, null, 2))
 
         const [events, total] = await Promise.all([
