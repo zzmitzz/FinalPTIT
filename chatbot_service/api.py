@@ -25,7 +25,7 @@ def health():
     """Health check endpoint"""
     return jsonify({
         "status": "healthy",
-        "model": config.GEMINI_MODEL
+        "model": config.GROQ_MODEL
     })
 
 
