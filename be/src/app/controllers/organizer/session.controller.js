@@ -85,7 +85,14 @@ export async function updateProperties(req, res) {
         }
     })
 
-    const updated = await sessionService.updateSession(req.params.id, allowedUpdates)
+    if (Object.prototype.hasOwnProperty.call(req.body, 'speakers') && req.body.speakers !== null) {
+        allowedUpdates.speakers = req.body.speakers
+    }
+
+    let updated = session
+    if (Object.keys(allowedUpdates).length > 0) {
+        updated = await sessionService.updateSession(req.params.id, allowedUpdates)
+    }
     res.jsonify(serializeSession(updated), 'Cập nhật thuộc tính phiên thành công.')
 }
 

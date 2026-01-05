@@ -256,6 +256,11 @@ export const updateProperties = Joi.object({
         .items(Joi.string().trim().max(MAX_STRING_SIZE))
         .optional()
         .label('Thẻ'),
+
+    speakers: Joi.array()
+        .items(Joi.number().integer().min(1))
+        .optional()
+        .label('Diễn giả'),
 })
 
 export const getListByEventId = Joi.object({

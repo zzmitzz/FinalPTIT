@@ -286,6 +286,18 @@ export async function getEventRegistrations(req, res) {
     try {
         const eventId = req.params.id
 
+        // Preload check-in history for the event so we can mark check-in status per registration
+        const checkins = (await checkinHistoryService.getCheckinHistoryByEventId(eventId)) || []
+        // checkins are ordered DESC by checkin time in repository; keep latest per registration
+        const latestCheckinByRegistration = {}
+        for (const c of checkins) {
+            const rid = c?.registration_id
+            if (!rid) continue
+            if (!latestCheckinByRegistration[rid]) {
+                latestCheckinByRegistration[rid] = c
+            }
+        }
+
         // Get form and its fields (if any)
         const form = await formService.getFormByEventId(eventId)
         const fields = form ? (form.fields || []) : []
@@ -301,7 +313,9 @@ export async function getEventRegistrations(req, res) {
                 grouped[rid] = {
                     registration_id: rid,
                     created_at: r.created_at,
-                    responses: {}
+                    responses: {},
+                    checked_in: Boolean(latestCheckinByRegistration[rid]),
+                    checked_in_at: latestCheckinByRegistration[rid]?.checkin || null,
                 }
                 // Try to attach registration basic info if available
                 try {

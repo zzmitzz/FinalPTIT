@@ -1,5 +1,6 @@
 import * as sessionRepo from '@/db/session_repository'
 import * as sessionSpeakerRepo from '@/db/session_speaker_repository'
+import * as speakerRepo from '@/db/speaker_repository'
 
 export async function createSession(data) {
     // create session and attach speakers if provided
@@ -20,7 +21,16 @@ export async function createSession(data) {
 }
 
 export async function getSessionById(id) {
-    return await sessionRepo.findSessionById(id)
+    const session = await sessionRepo.findSessionById(id)
+    if (!session) return null
+
+    try {
+        const speakers = await sessionSpeakerRepo.findSpeakersBySessionId(session.id)
+        return { ...session, speakers }
+    } catch (err) {
+        console.error('Failed to attach speakers to session', err)
+        return session
+    }
 }
 
 export async function getSessionsByEventId(eventId) {
@@ -56,11 +66,43 @@ export async function getAllSessions(page = 1, limit = 10) {
 }
 
 export async function updateSession(id, updateData) {
-    const updated = await sessionRepo.updateSessionById(id, updateData)
-    if (!updated) {
-        return null
+    const sid = Number(id)
+    if (Number.isNaN(sid)) return null
+
+    const existing = await sessionRepo.findSessionById(sid)
+    if (!existing) return null
+
+    const { speakers, ...sessionUpdates } = updateData || {}
+
+    if (Object.prototype.hasOwnProperty.call(updateData || {}, 'speakers')) {
+        const speakerIdsRaw = Array.isArray(speakers) ? speakers : []
+        const speakerIds = [...new Set(speakerIdsRaw.map(Number).filter((n) => Number.isFinite(n) && n > 0))]
+
+        // Validate that all provided speakers belong to the same event as the session
+        if (speakerIds.length > 0) {
+            const speakersInEvent = await speakerRepo.findSpeakersByIdsAndEventId(speakerIds, existing.event_id)
+            if (speakersInEvent.length !== speakerIds.length) {
+                const foundIds = new Set(speakersInEvent.map((s) => s.id))
+                const invalidIds = speakerIds.filter((idVal) => !foundIds.has(idVal))
+                const err = new Error(`Invalid speakers for this event: ${invalidIds.join(', ')}`)
+                ;(err).status = 400
+                throw err
+            }
+        }
+
+        // Replace session-speaker relationships
+        await sessionSpeakerRepo.deleteSessionSpeakersBySessionId(sid)
+        if (speakerIds.length > 0) {
+            const payload = speakerIds.map((spId) => ({ session_id: sid, speaker_id: spId }))
+            await sessionSpeakerRepo.bulkCreateSessionSpeakers(payload)
+        }
     }
-    return await sessionRepo.findSessionById(id)
+
+    if (sessionUpdates && Object.keys(sessionUpdates).length > 0) {
+        await sessionRepo.updateSessionById(sid, sessionUpdates)
+    }
+
+    return await getSessionById(sid)
 }
 
 export async function deleteSession(id) {

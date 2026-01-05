@@ -33,6 +33,22 @@ export const getSpeakersWithEvent = async (eventId: string) => {
     }
 }
 
+export const findSpeakersByIdsAndEventId = async (ids: number[], eventId: string) => {
+    try {
+        if (!Array.isArray(ids) || ids.length === 0) return []
+        const speakers = await Speaker.findAll({
+            where: {
+                id: { [Op.in]: ids },
+                event_id: eventId,
+            },
+        })
+        return speakers.map(speaker => speaker.toJSON())
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to fetch speakers by ids and event: ${errorMsg}`)
+    }
+}
+
 // Create a new speaker
 export const createSpeaker = async (speakerData: SpeakerData) => {
     try {
