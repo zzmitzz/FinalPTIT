@@ -1,14 +1,15 @@
 import Event from './event.js'
+import Organizer from './organizer.js'
 import OrganizerDetails from './organizer_details.js'
 
-Event.belongsTo(OrganizerDetails, {
+Event.belongsTo(Organizer, {
     foreignKey: 'organizer_id',
-    targetKey: 'organizer_id',
-    as: 'organizer_detail'
+    targetKey: '_id',
+    as: 'organizer'
 })
 
-OrganizerDetails.hasMany(Event, {
+Organizer.hasMany(Event, {
     foreignKey: 'organizer_id',
-    sourceKey: 'organizer_id',
+    sourceKey: '_id',
     as: 'events'
 })

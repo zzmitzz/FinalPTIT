@@ -1,13 +1,13 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import * as organizerRepo from '@/db/organizer_repo'
-import {cache, LOGIN_EXPIRE_IN, TOKEN_TYPE} from '@/configs'
-import {generateToken} from '@/utils/helpers'
-import {FileUpload} from '@/utils/classes'
+import { cache, LOGIN_EXPIRE_IN, TOKEN_TYPE } from '@/configs'
+import { generateToken } from '@/utils/helpers'
+import { FileUpload } from '@/utils/classes'
 
 export const organizerTokenBlocklist = cache.create('organizer-token-block-list')
 
-export async function checkValidLogin({email, password}) {
+export async function checkValidLogin({ email, password }) {
     const organizer = await organizerRepo.findOrganizerByEmail(email)
     if (organizer) {
         const verified = await bcrypt.compare(password, organizer.password)
@@ -17,7 +17,7 @@ export async function checkValidLogin({email, password}) {
 }
 
 export function authToken(organizer) {
-    const accessToken = generateToken({user_id: organizer._id}, TOKEN_TYPE.AUTHORIZATION, LOGIN_EXPIRE_IN)
+    const accessToken = generateToken({ user_id: organizer._id }, TOKEN_TYPE.AUTHORIZATION, LOGIN_EXPIRE_IN)
     const decode = jwt.decode(accessToken)
     const expireIn = decode.exp - decode.iat
     return {
@@ -27,9 +27,9 @@ export function authToken(organizer) {
     }
 }
 
-export async function register({name, email, phone = '', password}) {
+export async function register({ name, email, phone = '', password }) {
     const passwordHash = await bcrypt.hash(password, 10)
-    return await organizerRepo.createOrganizer({name, email, phone, password: passwordHash})
+    return await organizerRepo.createOrganizer({ name, email, phone, password: passwordHash })
 }
 
 export async function profile(userId) {
@@ -60,5 +60,5 @@ export async function updateProfile(currentOrganizer, updateData) {
 
 export async function resetPassword(userId, newPassword) {
     const passwordHash = await bcrypt.hash(newPassword, 10)
-    await organizerRepo.updateOrganizerById(userId, {password: passwordHash})
+    await organizerRepo.updateOrganizerById(userId, { password: passwordHash })
 } 

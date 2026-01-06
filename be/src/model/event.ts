@@ -27,13 +27,17 @@ export interface EventAttributes {
 
 const Event = sequelize.define('events', {
     _id: {
-        type: DataTypes.UUID, 
+        type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
     organizer_id: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: {
+            model: 'organizers',
+            key: '_id'
+        }
     },
     name: {
         type: DataTypes.STRING,
@@ -41,7 +45,7 @@ const Event = sequelize.define('events', {
     },
     thumbnail: {
         type: DataTypes.STRING,
-        allowNull: false,   
+        allowNull: false,
     },
     capacity: {
         type: DataTypes.INTEGER,
@@ -64,7 +68,7 @@ const Event = sequelize.define('events', {
     location: {
         type: DataTypes.STRING,
         allowNull: false,
-    },  
+    },
     lat: {
         type: DataTypes.FLOAT,
         allowNull: false,
@@ -109,6 +113,6 @@ const Event = sequelize.define('events', {
         allowNull: false,
         field: 'updated_at'
     },
-})  
+})
 
 export default Event
