@@ -97,8 +97,16 @@ export async function resetPassword(req, res) {
 }
 
 export async function verifyEmail(req, res) {
-    await registrationAuthService.activateAccount(req.currentRegistration._id)
-    await registrationAuthService.blockToken(req.verificationToken)
+    try {
+        await registrationAuthService.activateAccount(req.currentRegistration._id)
+    } catch (error) {
+        console.log(error)
+    }
+    try {
+        await registrationAuthService.blockToken(req.verificationToken)
+    } catch (error) {
+        console.log(error)
+    }
 
     EmailService.sendWelcomeEmail(req.currentRegistration).catch(err => {
         console.error('Failed to send welcome email:', err)
