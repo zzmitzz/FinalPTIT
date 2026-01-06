@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import { findAdminByEmail, createAdmin } from '@/db/admin_rbac_repository'
-import { findOrganizerByEmail, createOrganizer } from '../db/organizer_repo.js'
+import { findOrganizerByEmail, createOrganizer } from '@/db/organizer_repo'
 
 /**
  * Seeder to create default admin and organizer accounts
@@ -52,27 +52,6 @@ async function createDefaultAccounts() {
         console.error('❌ Error creating default accounts:', error)
         throw error
     }
-}
-
-// Run seeder if called directly
-// Use: node -r ts-node/register src/seeders/create-default-accounts.seeder.js
-// Or: babel-node src/seeders/create-default-accounts.seeder.js
-if (
-    import.meta.url === `file://${process.argv[1]}` ||
-    process.argv[1]?.includes('create-default-accounts.seeder')
-) {
-    import('../configs/postgre_sql.js').then(async ({ default: sequelize }) => {
-        try {
-            await sequelize.authenticate()
-            console.log('Database connection established.')
-            await createDefaultAccounts()
-            await sequelize.close()
-            process.exit(0)
-        } catch (error) {
-            console.error('Error:', error)
-            process.exit(1)
-        }
-    })
 }
 
 export default createDefaultAccounts

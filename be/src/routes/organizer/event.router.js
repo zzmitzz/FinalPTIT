@@ -187,6 +187,12 @@ eventRouter.get(
     asyncHandler(eventController.getMyEventsGroupedByDate)
 )
 
+// Organizer dashboard aggregated statistics
+eventRouter.get(
+    '/dashboard-stats',
+    asyncHandler(eventController.getOrganizerDashboardStats)
+)
+
 /**
  * @swagger
  * /organizer/events/nearby:

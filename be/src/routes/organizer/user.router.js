@@ -4,6 +4,7 @@ import validate from '@/app/middleware/common/validate'
 import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
 import * as authRequest from '@/app/requests/organizer/auth.request'
 import * as organizerRepo from '@/db/organizer_repo'
+import {buildStaticUrl} from '@/utils/url-builder'
 
 const userRouter = Router()
 
@@ -77,7 +78,8 @@ userRouter.get(
             organizerRepo.findAllOrganizers(page, limit),
             organizerRepo.countOrganizers(),
         ])
-        res.jsonify({total, page, per_page: limit, organizers: items})
+        const organizers = (items || []).map((o) => ({...o, avatar: buildStaticUrl(o.avatar)}))
+        res.jsonify({total, page, per_page: limit, organizers})
     }),
 )
 
@@ -140,7 +142,7 @@ userRouter.get(
     asyncHandler(async function (req, res) {
         const organizer = await organizerRepo.findOrganizerById(req.params.id)
         if (!organizer) return res.status(404).jsonify('Không tìm thấy ban tổ chức.')
-        res.jsonify(organizer)
+        res.jsonify({...organizer, avatar: buildStaticUrl(organizer.avatar)})
     }),
 )
 

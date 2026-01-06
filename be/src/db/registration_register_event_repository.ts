@@ -1,6 +1,7 @@
 import RegistrationRegisterEvent from '../model/registration_register_event'
 import Event from '../model/event'
 import { Op } from 'sequelize'
+import sequelize from '../configs/postgre_sql.js'
 
 interface RegistrationRegisterEventData {
     event_id: string
@@ -164,6 +165,73 @@ export const countRegisteredUsersByEventId = async (eventId: string) => {
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to count registered users by event ID: ${errorMsg}`)
+    }
+}
+
+export const countRegisteredUsersGroupedByEventIds = async (eventIds: string[]) => {
+    try {
+        const ids = Array.isArray(eventIds) ? eventIds.filter(Boolean) : []
+        if (ids.length === 0) return {}
+
+        const rows = await RegistrationRegisterEvent.findAll({
+            attributes: [
+                'event_id',
+                [sequelize.fn('COUNT', sequelize.col('registration_id')), 'registered_count'],
+            ],
+            where: {
+                event_id: { [Op.in]: ids },
+                is_registered: true,
+            },
+            group: ['event_id'],
+            raw: true,
+        })
+
+        const out: Record<string, number> = {}
+        for (const r of rows as any[]) {
+            const eventId = String(r.event_id)
+            const n = Number(r.registered_count)
+            out[eventId] = Number.isFinite(n) ? n : 0
+        }
+        return out
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to count registered users grouped by event IDs: ${errorMsg}`)
+    }
+}
+
+export const countRegisteredUsersGroupedByEventIdsInCreatedAtRange = async (
+    eventIds: string[],
+    start: Date,
+    end: Date
+) => {
+    try {
+        const ids = Array.isArray(eventIds) ? eventIds.filter(Boolean) : []
+        if (ids.length === 0) return {}
+
+        const rows = await RegistrationRegisterEvent.findAll({
+            attributes: [
+                'event_id',
+                [sequelize.fn('COUNT', sequelize.col('registration_id')), 'registered_count'],
+            ],
+            where: {
+                event_id: { [Op.in]: ids },
+                is_registered: true,
+                created_at: { [Op.between]: [start, end] },
+            },
+            group: ['event_id'],
+            raw: true,
+        })
+
+        const out: Record<string, number> = {}
+        for (const r of rows as any[]) {
+            const eventId = String(r.event_id)
+            const n = Number(r.registered_count)
+            out[eventId] = Number.isFinite(n) ? n : 0
+        }
+        return out
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to count registered users grouped by event IDs in date range: ${errorMsg}`)
     }
 }
 

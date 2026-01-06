@@ -5,6 +5,7 @@ import requireOrganizerAuthentication from '@/app/middleware/organizer/require-a
 import * as organizerAuthService from '@/app/services/organizer/organizer_auth.service'
 import * as authRequest from '@/app/requests/organizer/auth.request'
 import * as authController from '@/app/controllers/organizer/auth.controller'
+import {buildStaticUrl} from '@/utils/url-builder'
 const authRouter = Router()
 
 /**
@@ -149,7 +150,7 @@ authRouter.get(
     asyncHandler(requireOrganizerAuthentication),
     asyncHandler(async function (req, res) {
         const profile = await organizerAuthService.profile(req.currentOrganizer._id)
-        res.jsonify(profile)
+        res.jsonify({...profile, avatar: buildStaticUrl(profile?.avatar)})
     })
 )
 

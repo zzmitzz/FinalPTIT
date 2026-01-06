@@ -449,6 +449,56 @@ export async function getMyEventsGroupedByDate(req, res) {
     }
 }
 
+/**
+ * Get organizer dashboard statistics
+ * GET /organizer/events/dashboard-stats
+ * - overall registrations across all organizer events
+ * - top 3 most-registered conferences (overall)
+ */
+export async function getOrganizerDashboardStats(req, res) {
+    try {
+        const organizerId = req.currentOrganizer._id
+        const eventsRaw = await eventService.getOrganizerEventsGroupedByDate(organizerId)
+        const events = Array.isArray(eventsRaw) ? eventsRaw : []
+
+        const eventIds = events
+            .map((e) => e?._id || e?.id)
+            .filter(Boolean)
+
+        const registrationsByEventId = await registrationRegisterEventService.getRegisteredCountsByEventIds(eventIds)
+        const totalRegistrations = Object.values(registrationsByEventId || {}).reduce((sum, n) => sum + (Number(n) || 0), 0)
+
+        const topToday = events
+            .map((e) => {
+                const id = e?._id || e?.id
+                return {
+                    ...serializeEvent(e),
+                    registrations: (registrationsByEventId && id) ? (registrationsByEventId[id] || 0) : 0,
+                }
+            })
+            .filter((e) => (e.registrations || 0) > 0)
+            .sort((a, b) => (b.registrations || 0) - (a.registrations || 0))
+            .slice(0, 3)
+
+        res.jsonify({
+            overall: {
+                total_events: events.length,
+                total_registrations: totalRegistrations,
+            },
+            registrations_by_event_id: registrationsByEventId || {},
+            top_today: topToday,
+        })
+    } catch (error) {
+        console.error('Error in getOrganizerDashboardStats:', error)
+        return res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Đã xảy ra lỗi khi lấy thống kê tổng quan.',
+            error: error.message,
+        })
+    }
+}
+
 export async function getNearbyEvents(req, res) {
     try {
         const { lat, lng, limit = 5 } = req.query

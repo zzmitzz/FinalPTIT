@@ -9,6 +9,7 @@ import systemUsersRouter from './system-users.router'
 import rolesRouter from './roles.router'
 import permissionsRouter from './permissions.router'
 import notificationsRouter from './notifications.router'
+import registrationUsersRouter from './registration-users.router'
 
 const adminRouter = Router()
 
@@ -17,6 +18,9 @@ adminRouter.use('/users', userRouter)
 adminRouter.use('/stats', statsRouter)
 adminRouter.use('/organizers', organizersRouter)
 adminRouter.use('/events', eventsRouter)
+
+// Regular app users (registrations table)
+adminRouter.use('/registration-users', registrationUsersRouter)
 
 // RBAC routes
 adminRouter.use('/system-users', systemUsersRouter)

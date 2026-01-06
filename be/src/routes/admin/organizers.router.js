@@ -2,6 +2,7 @@ import {Router} from 'express'
 import {asyncHandler} from '@/utils/helpers'
 import requireAuthentication from '@/app/middleware/common/require-authentication'
 import * as organizerRepo from '@/db/organizer_repo'
+import {buildStaticUrl} from '@/utils/url-builder'
 
 const router = Router()
 
@@ -19,7 +20,8 @@ router.get(
             organizerRepo.countOrganizers(),
         ])
 
-        res.jsonify({total, page, per_page: limit, organizers: items})
+        const organizers = (items || []).map((o) => ({...o, avatar: buildStaticUrl(o.avatar)}))
+        res.jsonify({total, page, per_page: limit, organizers})
     })
 )
 
@@ -30,7 +32,7 @@ router.get(
     asyncHandler(async (req, res) => {
         const organizer = await organizerRepo.findOrganizerById(req.params.id)
         if (!organizer) return res.status(404).jsonify('Không tìm thấy tổ chức.')
-        res.jsonify(organizer)
+        res.jsonify({...organizer, avatar: buildStaticUrl(organizer.avatar)})
     })
 )
 
@@ -55,7 +57,10 @@ router.post(
                 password: passwordHash,
                 avatar,
             })
-            res.status(201).jsonify({message: 'Tạo tài khoản tổ chức thành công.', organizer: created})
+            res.status(201).jsonify({
+                message: 'Tạo tài khoản tổ chức thành công.',
+                organizer: {...created, avatar: buildStaticUrl(created.avatar)},
+            })
         } catch (error) {
             const errorMsg = error.message || String(error)
             if (errorMsg.includes('Email already exists') || errorMsg.includes('already exists')) {
@@ -83,7 +88,10 @@ router.put(
 
         const updated = await organizerRepo.updateOrganizerById(id, updateData)
         if (!updated) return res.status(404).jsonify('Không tìm thấy tổ chức.')
-        res.status(201).jsonify({message: 'Cập nhật tổ chức thành công.', organizer: updated})
+        res.status(201).jsonify({
+            message: 'Cập nhật tổ chức thành công.',
+            organizer: {...updated, avatar: buildStaticUrl(updated.avatar)},
+        })
     })
 )
 
@@ -101,7 +109,7 @@ router.patch(
         if (!updated) return res.status(404).jsonify('Không tìm thấy tổ chức.')
         res.status(200).jsonify({
             message: is_active ? 'Kích hoạt tổ chức thành công.' : 'Vô hiệu hoá tổ chức thành công.',
-            organizer: updated,
+            organizer: {...updated, avatar: buildStaticUrl(updated.avatar)},
         })
     })
 )

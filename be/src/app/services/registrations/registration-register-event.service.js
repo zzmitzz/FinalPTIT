@@ -158,6 +158,21 @@ export async function getEventRegistrationStats(eventId) {
 }
 
 /**
+ * Get registered user counts grouped by event IDs
+ */
+export async function getRegisteredCountsByEventIds(eventIds) {
+    return await registrationRegisterEventRepo.countRegisteredUsersGroupedByEventIds(eventIds)
+}
+
+export async function getRegisteredCountsByEventIdsInCreatedAtRange(eventIds, start, end) {
+    return await registrationRegisterEventRepo.countRegisteredUsersGroupedByEventIdsInCreatedAtRange(
+        eventIds,
+        start,
+        end
+    )
+}
+
+/**
  * Get registration statistics for a user
  */
 export async function getUserRegistrationStats(registrationId) {

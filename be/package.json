@@ -10,6 +10,7 @@
   "scripts": {
     "start": "nodemon",
     "seed": "babel-node src/seeders",
+    "seed:accounts": "babel-node --extensions .js,.ts src/seeders/run-create-default-accounts.js",
     "migrate": "babel-node src/migrations/run-migration.js",
     "build": "del-cli build dist && cross-env NODE_ENV=build babel src -d build -D --extensions \".js,.ts\" --copy-files && npx tsc -p tsconfig.json --module commonjs --outDir dist",
     "lint": "eslint .",
