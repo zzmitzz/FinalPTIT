@@ -110,6 +110,8 @@ export const updateEvent = async (id, updateData) => {
         updateData.logo = savedLogos[0] || ''
     }
 
+    console.log(updateData)
+
     return await updateEventById(id, updateData)
 }
 
