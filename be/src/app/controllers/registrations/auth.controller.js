@@ -112,5 +112,92 @@ export async function verifyEmail(req, res) {
         console.error('Failed to send welcome email:', err)
     })
 
-    res.status(200).jsonify('Xác thực tài khoản thành công. Bạn có thể đăng nhập ngay bây giờ.')
+    res.status(200).send(`
+        <!DOCTYPE html>
+        <html lang="vi">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Xác thực thành công</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    background: linear-gradient(135deg, #ffffffff 0%, #494949ff 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+                .container {
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    padding: 48px;
+                    max-width: 500px;
+                    width: 100%;
+                    text-align: center;
+                }
+                .success-icon {
+                    width: 80px;
+                    height: 80px;
+                    background: linear-gradient(135deg, #c3c3c4ff 0%, #494949ff 100%);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 24px;
+                    animation: scaleIn 0.5s ease-out;
+                }
+                .success-icon svg {
+                    width: 48px;
+                    height: 48px;
+                    stroke: white;
+                    stroke-width: 3;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    fill: none;
+                }
+                h1 {
+                    color: #1a202c;
+                    font-size: 28px;
+                    margin-bottom: 16px;
+                    font-weight: 700;
+                }
+                p {
+                    color: #4a5568;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    margin-bottom: 32px;
+                }
+                @keyframes scaleIn {
+                    from {
+                        transform: scale(0);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h1>Xác thực thành công!</h1>
+                <p>Tài khoản của bạn đã được kích hoạt. Bạn có thể đăng nhập ngay bây giờ.</p>
+            </div>
+        </body>
+        </html>
+    `)
 }
