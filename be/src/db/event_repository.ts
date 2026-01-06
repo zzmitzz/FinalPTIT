@@ -206,24 +206,31 @@ export const findNearbyEvents = async (lat: number, lng: number, limit: number =
             attributes: {
                 include: [[literal(distanceExpr), 'distance']],
             },
-            include: [{
-                model: OrganizerDetails,
-                as: 'organizer_detail',
-                attributes: ['organization_name'],
-                required: false
-            }],
             order: [literal('distance ASC')],
             limit,
         })
-        return events.map(event => {
-            const eventData = event.toJSON() as any
-            const organizerName = eventData.organizer_detail?.organization_name || 'Unknown Organizer'
-            delete eventData.organizer_detail
-            return {
-                ...eventData,
-                organizer_name: organizerName
-            }
-        })
+
+
+        const eventsWithOrganizerName = await Promise.all(
+            events.map(async (event) => {
+                const eventData = event.toJSON() as any
+                const organizerId = eventData.organizer_id
+
+                const organizerDetail = await OrganizerDetails.findOne({
+                    where: { _id: organizerId },
+                    attributes: ['organization_name']
+                })
+
+                const organizerName = organizerDetail?.toJSON()?.organization_name || 'Unknown Organizer'
+
+                return {
+                    ...eventData,
+                    organizer_name: organizerName
+                }
+            })
+        )
+
+        return eventsWithOrganizerName
     } catch (error: unknown) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         throw new Error(`Failed to find nearby events: ${errorMsg}`)

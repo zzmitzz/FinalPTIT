@@ -1,6 +1,6 @@
 {
   "user_uuid": "guest",
-  "last_updated": "2025-12-24T00:55:52.055459",
+  "last_updated": "2026-01-06T23:46:09.917489",
   "messages": [
     {
       "role": "user",
@@ -105,6 +105,38 @@
     {
       "role": "assistant",
       "content": "Tôi xin lỗi, nhưng không thể tìm thấy thông tin về sự kiện \"CHATGPT Conference 2025\". Có thể sự kiện này không tồn tại trong cơ sở dữ liệu hoặc không có thông tin đầy đủ.\n\nNếu bạn muốn tìm kiếm các sự kiện khác hoặc cần hỗ trợ thêm, hãy cho mình biết nhé!"
+    },
+    {
+      "role": "user",
+      "content": "Xin chao! "
+    },
+    {
+      "role": "assistant",
+      "content": "Xin chào! 😊"
+    },
+    {
+      "role": "user",
+      "content": "Có sự kiện nào gần đây không!?"
+    },
+    {
+      "role": "assistant",
+      "content": "Dưới đây là danh sách các sự kiện gần đây:\n\n1. **Tech Conference 2025**  \n   - Ngày: 2/1/2026 - 30/12/2026  \n   - Địa điểm: Trung tâm Hội nghị Hà Nội  \n   - Chủ đề: Công nghệ  \n\n2. **TEST 2**  \n   - Ngày: 6/1/2026 - 8/1/2026  \n   - Địa điểm: Chợ Vân, Ngõ 448 Đường Hà Huy Tập, Tổ Vân, Xã Phú Đổng, Hà Nội  \n\n3. **Tech Conference 2026**  \n   - Ngày: 15/2/2026  \n   - Địa điểm: Trung tâm Hội nghị Hà Nội  \n   - Chủ đề: Công nghệ  \n\n4. **asdfasdf**  \n   - Ngày: 7/1/2026 - 20/1/2026  \n   - Địa điểm: Nhà Hàng Java Sea Food, 45, Phố Vũ Miên, Yên Phụ, Phường Tây Hồ, Hà Nội  \n\n5. **Tech PCoin Conference 2025**  \n   - Ngày: 21/12/2025 - 21/12/2026  \n   - Địa điểm: Trung tâm Hội nghị Hà Nội  \n   - Chủ đề: Công nghệ PCoin  \n\n6. **88 Pages Conference 2025**  \n   - Ngày: 1/12/2025 - 28/12/2026  \n   - Địa điểm: Trung tâm Hội nghị Hà Nội  \n   - Chủ đề: Công nghệ  \n\n7. **CHATGPT Conference 2025**  \n   - Ngày: 22/12/2025 - 28/12/2026  \n   - Địa điểm: Trung tâm Hội nghị Hà Nội  \n   - Chủ đề: Trí tuệ nhân tạo và ChatGPT  \n\n8. **Thành Tới**  \n   - Ngày: 23/12/2025 - 27/12/2026  \n   - Địa điểm: Khu vui chơi Cầu Trắng, Phố Nhuệ Giang, Phường Hào Động, Hà Nội  \n\nNếu bạn cần biết thêm thông tin chi tiết hoặc muốn đăng ký tham gia một sự kiện nào đó, hãy cho mình biết nhé!"
+    },
+    {
+      "role": "user",
+      "content": "tôi muốn học vềjavascriopt thì đi sự kiện nào"
+    },
+    {
+      "role": "assistant",
+      "content": "Nếu bạn muốn học về JavaScript, có thể tham khảo sự kiện **Tech Conference 2025** hoặc **Tech Conference 2026**. Cả hai sự kiện này đều diễn ra tại Trung tâm Hội nghị Hà Nội và có chủ đề về công nghệ, có thể bao gồm các buổi thuyết trình và hội thảo về JavaScript.\n\nTuy nhiên, để chắc chắn, bạn có thể kiểm tra thông tin chi tiết về các sự kiện này hoặc tìm kiếm các sự kiện khác có liên quan đến JavaScript.\n\nNếu bạn cần thêm thông tin, hãy cho mình biết nhé!"
+    },
+    {
+      "role": "user",
+      "content": "có các phiên nào vềJavascriopt ?!"
+    },
+    {
+      "role": "assistant",
+      "content": "Xin lỗi vì trước đó không có thông tin cụ thể về các phiên về JavaScript.\n\nTuy nhiên, bạn có thể thử tìm kiếm các sự kiện sau:\n\n1. **Tech Conference 2025**: Có thể có các phiên về JavaScript như:\n * \"JavaScript cơ bản\"\n * \"JavaScript nâng cao\"\n * \"Ứng dụng JavaScript trong phát triển web\"\n * \"JavaScript và framework hiện đại\"\n2. **Tech Conference 2026**: Có thể có các phiên về JavaScript như:\n * \"JavaScript và TypeScript\"\n * \"JavaScript và React\"\n * \"JavaScript và Node.js\"\n * \"JavaScript và bảo mật\"\n\nĐể có thông tin chính xác, bạn nên kiểm tra chương trình nghị sự của các sự kiện này hoặc liên hệ với tổ chức sự kiện.\n\nNếu bạn cần thêm thông tin, hãy cho mình biết nhé!"
     }
   ]
 }
