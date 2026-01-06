@@ -84,31 +84,57 @@ export const listEvents = async (page = 1, limit = 10, organizerId = null, filte
 }
 
 export const updateEvent = async (id, updateData) => {
+    const { thumbnail, logo } = updateData
+
+    if (thumbnail !== undefined) {
+        const savedThumbnail = thumbnail instanceof FileUpload ? thumbnail.save() : thumbnail
+        updateData.thumbnail = savedThumbnail
+    }
+
+    if (logo !== undefined) {
+        let logos = []
+        if (Array.isArray(logo)) {
+            logos = logo
+        } else if (logo) {
+            logos = [logo]
+        }
+
+        const savedLogos = logos
+            .filter((img) => img instanceof FileUpload)
+            .map((img) => img.save())
+            .concat(
+                logos
+                    .filter((img) => !(img instanceof FileUpload) && typeof img === 'string' && img.trim())
+            )
+
+        updateData.logo = savedLogos[0] || ''
+    }
+
     return await updateEventById(id, updateData)
 }
 
 export const deleteEvent = async (id) => {
     // Delete all related records first to avoid foreign key constraint violations
     // Order matters: delete dependent records before the main event
-    
+
     // 1. Get all sessions and speakers for this event
     const sessions = await findSessionsByEventId(id)
     const speakers = await getSpeakersWithEvent(id)
-    
+
     // 2. Delete session registrations for all sessions
     for (const session of sessions) {
         await deleteSessionRegistrationsBySessionId(session.id)
     }
-    
+
     // 3. Delete session-speaker relationships (can be done by session or speaker)
     for (const session of sessions) {
         await deleteSessionSpeakersBySessionId(session.id)
     }
-    
+
     // 4. Now safe to delete sessions and speakers
     await deleteSessionsByEventId(id)
     await deleteSpeakersByEventId(id)
-    
+
     // 5. Delete other related records
     await deleteCheckinHistoryByEventId(id)          // Delete check-in history
     await deleteRegistrationResponsesByEventId(id)   // Delete registration responses
@@ -117,7 +143,7 @@ export const deleteEvent = async (id) => {
     await deleteSocialLinksByEventId(id)             // Delete social links
     await deletePlacesByEventId(id)                  // Delete places/rooms
     await deleteFormByEventId(id)                    // Delete form (and its fields via cascade)
-    
+
     // 6. Finally delete the event itself
     return await deleteEventById(id)
 }
@@ -147,10 +173,10 @@ export const getNearbyEvents = async (lat, lng, limit = 5) => {
 
 export const createSpeakersForEvent = async (eventId, speakersData) => {
     const createdSpeakers = []
-    
+
     for (const speakerData of speakersData) {
         const { photo_url, ...speakerFields } = speakerData
-        
+
         // Save photo if provided
         let savedPhotoUrl = ''
         if (photo_url instanceof FileUpload) {
@@ -158,17 +184,17 @@ export const createSpeakersForEvent = async (eventId, speakersData) => {
         } else if (typeof photo_url === 'string' && photo_url.trim()) {
             savedPhotoUrl = photo_url
         }
-        
+
         const speakerPayload = {
             ...speakerFields,
             event_id: eventId,
             photo_url: savedPhotoUrl || null,
         }
-        
+
         const speaker = await speakerService.createSpeaker(speakerPayload)
         createdSpeakers.push(speaker)
     }
-    
+
     return createdSpeakers
 }
 

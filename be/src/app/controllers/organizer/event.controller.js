@@ -549,8 +549,10 @@ export async function updateEvent(req, res) {
             speakers = req.body.speakers
         }
 
+
         // eslint-disable-next-line no-unused-vars
         const { status, speakers_json, social_links_json, social_links, ...eventFields } = req.body
+        console.log(eventFields)
 
         if (status && !isValidStatus(status)) {
             return res.status(400).jsonify(null, 'Trạng thái không hợp lệ, phải là một trong: ' + Object.values(EVENT_STATUS).join(', '))
