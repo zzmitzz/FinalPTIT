@@ -4,7 +4,9 @@ import * as sessionRegistrationRepo from '@/db/session_registration_repository'
 import * as registrationRepo from '@/db/registration_repository'
 import * as eventRepo from '@/db/event_repository'
 import * as sessionSpeakerRepo from '@/db/session_speaker_repository'
-
+import * as resourceRepo from '@/db/resource_repository'
+import * as resourceService from '@/app/services/registrations/resource.service'
+import { buildStaticUrl } from '@/utils/url-builder'
 /**
  * Register a user for a session
  */
@@ -240,18 +242,28 @@ export async function getSessionsByEventId(eventId) {
             const attendingCount = await sessionRegistrationRepo.countRegistrationsBySessionAndStatus(session.id, 'attending')
             const checkedInCount = await sessionRegistrationRepo.countRegistrationsBySessionAndStatus(session.id, 'checked_in')
             const waitlistCount = await sessionRegistrationRepo.countRegistrationsBySessionAndStatus(session.id, 'waitlist')
-
+            const resource = (await resourceService.getResourcesBySessionId(session.id)).map(r => ({
+                id: r.id,
+                name: r.name,
+                description: r.description,
+                resource_type: r.resource_type,
+                url_source: buildStaticUrl(r.url_source),
+                file_size_bytes: r.file_size_bytes,
+                mime_type: r.mime_type
+            }))
             // Fetch speakers for this session
             const speakers = (await sessionSpeakerRepo.findSpeakersBySessionId(session.id)).map(s => ({
                 id: s.id,
-                photo_url: s.photo_url}))
+                photo_url: s.photo_url
+            }))
 
             return {
                 ...session,
                 registered_count: attendingCount + checkedInCount,
                 waitlist_count: waitlistCount,
                 available_spots: Math.max(0, session.capacity - (attendingCount + checkedInCount)),
-                speakers: speakers || []
+                speakers: speakers || [],
+                resource: resource || null
             }
         })
     )

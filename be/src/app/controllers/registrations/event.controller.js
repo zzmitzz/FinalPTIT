@@ -103,6 +103,7 @@ export async function getEventById(req, res) {
         )
 
         const eventMap = await resourceService.getMapResourceByEventId(req.params.id)
+        const eventSocialLinks = await eventService.listSocialLinks(req.params.id)
 
         console.log(eventMap)
         const eventWithDetails = {
@@ -114,13 +115,14 @@ export async function getEventById(req, res) {
                 avatar: buildStaticUrl(organizerDetails?.logo_url || organizerBase?.avatar || null),
             } : null,
             speakers: (speakers || []).map(serializeSpeaker),
-            maps: buildStaticUrl(eventMap?.url_source)
+            maps: buildStaticUrl(eventMap?.url_source),
+            social_links: eventSocialLinks
         }
 
         res.jsonify(eventWithDetails)
     } catch (error) {
         console.error('Error in getEventById:', error)
-        return res.status(500).json({
+        return res.status(500).jsonify({
             status: 500,
             success: false,
             message: 'Đã xảy ra lỗi khi lấy thông tin sự kiện.',
@@ -143,7 +145,25 @@ export async function getEventByPinCode(req, res) {
         res.jsonify(serializeEvent(event))
     } catch (error) {
         console.error('Error in getEventByPinCode:', error)
-        return res.status(500).json({
+        return res.status(500).jsonify({
+            status: 500,
+            success: false,
+            message: 'Đã xảy ra lỗi khi lấy thông tin sự kiện.',
+            error: error.message
+        })
+    }
+}
+
+export async function getEventSocialLinks(req, res) {
+    try {
+        const event = await eventService.listSocialLinks(req.params.id)
+        if (!event) {
+            return res.status(404).jsonify(null, 'Không tìm thấy sự kiện.')
+        }
+        res.jsonify(event)
+    } catch (error) {
+        console.error('Error in getEventSocialLinks:', error)
+        return res.status(500).jsonify({
             status: 500,
             success: false,
             message: 'Đã xảy ra lỗi khi lấy thông tin sự kiện.',
@@ -169,7 +189,7 @@ export async function listEvents(req, res) {
         })
     } catch (error) {
         console.error('Error in listEvents:', error)
-        return res.status(500).json({
+        return res.status(500).jsonify({
             status: 500,
             success: false,
             message: 'Đã xảy ra lỗi khi lấy danh sách sự kiện.',
