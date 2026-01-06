@@ -80,12 +80,14 @@ export async function createEvent(req, res) {
         // Extract speakers/social links from request body (do not pass into events table)
         // eslint-disable-next-line no-unused-vars
         const { speakers_json, social_links_json, social_links, ...eventFields } = req.body
-        
+
         // Add organizer_id from authenticated user
         const eventData = {
             ...eventFields,
             organizer_id: req.currentOrganizer._id,
         }
+
+        console.log(eventData)
 
         // Create event first
         const event = await eventService.createEvent(eventData)
@@ -94,7 +96,7 @@ export async function createEvent(req, res) {
         if (social_links !== undefined) {
             await eventService.replaceSocialLinks(event._id, social_links)
         }
-        
+
         // Post-merge validation: ensure each speaker has required fields after merging speakers_json and uploaded files
         if (speakers && speakers.length > 0) {
             const speakerSchema = Joi.object({
@@ -136,7 +138,7 @@ export async function createEvent(req, res) {
         const eventWithSpeakers = await eventService.getEventById(event._id)
         const speakersList = await speakerService.getSpeakersByEventId(event._id)
         const socialLinks = await eventService.listSocialLinks(event._id)
-        
+
         const result = {
             ...serializeEvent(eventWithSpeakers),
             speakers: (speakersList || []).map(serializeSpeaker),
@@ -210,7 +212,7 @@ export async function createEvent(req, res) {
         } catch (err) {
             console.error('Failed to create default form for event:', event._id, err)
         }
-        
+
         res.status(201).jsonify(result, 'Tạo sự kiện thành công.')
     } catch (error) {
         console.error('Error in createEvent:', error)
@@ -549,7 +551,7 @@ export async function updateEvent(req, res) {
 
         // eslint-disable-next-line no-unused-vars
         const { status, speakers_json, social_links_json, social_links, ...eventFields } = req.body
-        
+
         if (status && !isValidStatus(status)) {
             return res.status(400).jsonify(null, 'Trạng thái không hợp lệ, phải là một trong: ' + Object.values(EVENT_STATUS).join(', '))
         }
@@ -616,13 +618,13 @@ export async function updateEvent(req, res) {
         const updatedEvent = await eventService.getEventById(req.params.id)
         const speakersList = await speakerService.getSpeakersByEventId(req.params.id)
         const socialLinks = await eventService.listSocialLinks(req.params.id)
-        
+
         const result = {
             ...serializeEvent(updatedEvent),
             speakers: (speakersList || []).map(serializeSpeaker),
             social_links: socialLinks || [],
         }
-        
+
         res.jsonify(result, 'Cập nhật sự kiện thành công.')
     } catch (error) {
         console.error('Error in updateEvent:', error)
@@ -656,7 +658,7 @@ export async function deleteEvent(req, res) {
 export async function togglePublishEvent(req, res) {
     try {
         const { published } = req.body
-        
+
         if (typeof published !== 'boolean') {
             return res.status(400).jsonify(null, 'Trường "published" phải là boolean.')
         }
@@ -676,8 +678,8 @@ export async function togglePublishEvent(req, res) {
         const newStatus = published ? EVENT_STATUS.PUBLISHED : EVENT_STATUS.WAITING
         const updatedEvent = await eventService.updateEvent(req.params.id, { status: newStatus })
 
-        const message = published 
-            ? 'Sự kiện đã được xuất bản thành công.' 
+        const message = published
+            ? 'Sự kiện đã được xuất bản thành công.'
             : 'Sự kiện đã được chuyển về trạng thái riêng tư.'
 
         res.jsonify(serializeEvent(updatedEvent), message)
