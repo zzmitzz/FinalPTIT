@@ -68,7 +68,16 @@ export async function logout(req, res) {
  */
 export async function me(req, res) {
     const result = await systemUserService.profile(req.currentUser._id)
-    res.jsonify(result)
+
+    // Add scope information for frontend routing
+    const isGlobalAdmin = req.currentUser.organizer_id === null
+    const scope = isGlobalAdmin ? 'GLOBAL' : 'ORGANIZER'
+
+    res.jsonify({
+        ...result,
+        scope: scope,
+        is_global_admin: isGlobalAdmin,
+    })
 }
 
 /**
@@ -163,14 +172,14 @@ export async function activateSystemUser(req, res) {
  * Assign roles to system user
  */
 export async function assignRoles(req, res) {
-    const {role_ids} = req.body
+    const {role_ids, organizer_id = null} = req.body
 
     if (!Array.isArray(role_ids) || role_ids.length === 0) {
         abort(400, 'role_ids phải là một mảng không rỗng')
     }
 
     await canModifyUser(req.currentUser, req.params.id)
-    await systemUserService.assignRoles(req.params.id, role_ids)
+    await systemUserService.assignRoles(req.params.id, role_ids, organizer_id, req.currentUser._id)
     res.jsonify('Gán vai trò thành công.')
 }
 
@@ -178,14 +187,14 @@ export async function assignRoles(req, res) {
  * Remove roles from system user
  */
 export async function removeRoles(req, res) {
-    const {role_ids} = req.body
+    const {role_ids, organizer_id = null} = req.body
 
     if (!Array.isArray(role_ids) || role_ids.length === 0) {
         abort(400, 'role_ids phải là một mảng không rỗng')
     }
 
     await canModifyUser(req.currentUser, req.params.id)
-    await systemUserService.removeRoles(req.params.id, role_ids)
+    await systemUserService.removeRoles(req.params.id, role_ids, organizer_id)
     res.jsonify('Xóa vai trò thành công.')
 }
 

@@ -1,23 +1,31 @@
 import {Router} from 'express'
 import {asyncHandler} from '@/utils/helpers'
-import requireAuthentication from '@/app/middleware/common/require-authentication'
+import * as rbacMiddleware from '@/app/middleware/rbac.middleware'
 import * as organizerRepo from '@/db/organizer_repo'
 import {buildStaticUrl} from '@/utils/url-builder'
 
 const router = Router()
 
+// All routes require authentication
+router.use(rbacMiddleware.verifySystemUserToken)
+
 // List organizers (supports q search, page, limit)
 router.get(
     '/',
-    asyncHandler(requireAuthentication),
+    rbacMiddleware.requirePermission('ORGANIZER:READ', 'ORGANIZER:MANAGE'),
     asyncHandler(async (req, res) => {
         const page = parseInt(req.query.page || 1)
         const limit = parseInt(req.query.limit || 20)
         const q = req.query.q ? String(req.query.q).trim() : ''
 
+        // Get user's allowed organizer IDs
+        const allowedOrganizerIds = rbacMiddleware.getUserOrganizerIds(req.currentUser)
+
         const [items, total] = await Promise.all([
-            q ? organizerRepo.searchOrganizers(q, page, limit) : organizerRepo.findAllOrganizers(page, limit),
-            organizerRepo.countOrganizers(),
+            q
+                ? organizerRepo.searchOrganizers(q, page, limit, allowedOrganizerIds)
+                : organizerRepo.findAllOrganizers(page, limit, allowedOrganizerIds),
+            organizerRepo.countOrganizers(allowedOrganizerIds),
         ])
 
         const organizers = (items || []).map((o) => ({...o, avatar: buildStaticUrl(o.avatar)}))
@@ -28,10 +36,14 @@ router.get(
 // Get organizer by id
 router.get(
     '/:id',
-    asyncHandler(requireAuthentication),
+    rbacMiddleware.requirePermission('ORGANIZER:READ', 'ORGANIZER:MANAGE'),
     asyncHandler(async (req, res) => {
         const organizer = await organizerRepo.findOrganizerById(req.params.id)
         if (!organizer) return res.status(404).jsonify('Không tìm thấy tổ chức.')
+
+        // Validate organizer access
+        rbacMiddleware.validateOrganizerAccess(req.currentUser, req.params.id)
+
         res.jsonify({...organizer, avatar: buildStaticUrl(organizer.avatar)})
     })
 )
@@ -39,7 +51,7 @@ router.get(
 // Create organizer
 router.post(
     '/',
-    asyncHandler(requireAuthentication),
+    rbacMiddleware.requirePermission('ORGANIZER:CREATE', 'ORGANIZER:MANAGE'),
     asyncHandler(async (req, res) => {
         const {name, email, phone, password, avatar} = req.body || {}
         if (!name || !email || !phone || !password) {
@@ -77,9 +89,13 @@ router.post(
 // Update organizer
 router.put(
     '/:id',
-    asyncHandler(requireAuthentication),
+    rbacMiddleware.requirePermission('ORGANIZER:UPDATE', 'ORGANIZER:MANAGE'),
     asyncHandler(async (req, res) => {
         const id = req.params.id
+
+        // Validate organizer access
+        rbacMiddleware.validateOrganizerAccess(req.currentUser, id)
+
         const updateData = {...(req.body || {})}
         if (updateData.password) {
             const bcrypt = (await import('bcrypt')).default
@@ -98,9 +114,13 @@ router.put(
 // Disable / enable organizer (soft toggle)
 router.patch(
     '/:id/disable',
-    asyncHandler(requireAuthentication),
+    rbacMiddleware.requirePermission('ORGANIZER:ACTIVATE', 'ORGANIZER:MANAGE'),
     asyncHandler(async (req, res) => {
         const id = req.params.id
+
+        // Validate organizer access
+        rbacMiddleware.validateOrganizerAccess(req.currentUser, id)
+
         // expect body: { disabled: true } meaning set is_active = !disabled
         const disabled = req.body && typeof req.body.disabled !== 'undefined' ? !!req.body.disabled : true
         const is_active = !disabled
