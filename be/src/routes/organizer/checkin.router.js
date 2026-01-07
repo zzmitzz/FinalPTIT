@@ -1,7 +1,9 @@
-import { Router } from 'express'
-import { asyncHandler } from '@/utils/helpers'
+import {Router} from 'express'
+import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
-import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import requireOrganizerAuthentication, {
+    requireOrganizerPermission,
+} from '@/app/middleware/organizer/require-authentication'
 import * as checkinRequest from '@/app/requests/organizer/checkin.request'
 import * as checkinController from '@/app/controllers/organizer/checkin.controller'
 
@@ -48,9 +50,9 @@ checkinRouter.use(asyncHandler(requireOrganizerAuthentication))
  */
 checkinRouter.post(
     '/',
+    asyncHandler(requireOrganizerPermission('CHECKIN:VERIFY', 'CHECKIN:MANAGE')),
     asyncHandler(validate(checkinRequest.createCheckin)),
     asyncHandler(checkinController.createCheckin)
 )
 
 export default checkinRouter
-

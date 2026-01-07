@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { asyncHandler } from '@/utils/helpers'
+import {Router} from 'express'
+import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
 import * as eventController from '@/app/controllers/organizer/event.controller'
 import * as eventRequest from '@/app/requests/organizer/event.request'
@@ -8,7 +8,9 @@ import * as sessionController from '@/app/controllers/organizer/session.controll
 import * as formRequest from '@/app/requests/organizer/form.request'
 import * as formFieldController from '@/app/controllers/organizer/form-field.controller'
 import * as formFieldRequest from '@/app/requests/organizer/form-field.request'
-import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import requireOrganizerAuthentication, {
+    requireOrganizerPermission,
+} from '@/app/middleware/organizer/require-authentication'
 
 const eventRouter = Router()
 
@@ -93,6 +95,7 @@ eventRouter.use(asyncHandler(requireOrganizerAuthentication))
  */
 eventRouter.post(
     '/',
+    asyncHandler(requireOrganizerPermission('EVENT:CREATE', 'EVENT:MANAGE')),
     asyncHandler(validate(eventRequest.createItem)),
     asyncHandler(eventController.createEvent)
 )
@@ -126,6 +129,7 @@ eventRouter.post(
  */
 eventRouter.get(
     '/',
+    asyncHandler(requireOrganizerPermission('EVENT:READ', 'EVENT:MANAGE')),
     asyncHandler(eventController.listEvents)
 )
 
@@ -162,10 +166,7 @@ eventRouter.get(
  *       401:
  *         description: Unauthorized
  */
-eventRouter.get(
-    '/search',
-    asyncHandler(eventController.searchEvents)
-)
+eventRouter.get('/search', asyncHandler(eventController.searchEvents))
 
 /**
  * @swagger
@@ -182,16 +183,10 @@ eventRouter.get(
  *       401:
  *         description: Unauthorized
  */
-eventRouter.get(
-    '/my-events',
-    asyncHandler(eventController.getMyEventsGroupedByDate)
-)
+eventRouter.get('/my-events', asyncHandler(eventController.getMyEventsGroupedByDate))
 
 // Organizer dashboard aggregated statistics
-eventRouter.get(
-    '/dashboard-stats',
-    asyncHandler(eventController.getOrganizerDashboardStats)
-)
+eventRouter.get('/dashboard-stats', asyncHandler(eventController.getOrganizerDashboardStats))
 
 /**
  * @swagger
@@ -229,10 +224,7 @@ eventRouter.get(
  *       401:
  *         description: Unauthorized
  */
-eventRouter.get(
-    '/nearby',
-    asyncHandler(eventController.getNearbyEvents)
-)
+eventRouter.get('/nearby', asyncHandler(eventController.getNearbyEvents))
 
 /**
  * @swagger
@@ -257,11 +249,7 @@ eventRouter.get(
  *       404:
  *         description: Event not found
  */
-eventRouter.get(
-    '/pin/:pinCode',
-    asyncHandler(eventController.getEventByPinCode)
-)
-
+eventRouter.get('/pin/:pinCode', asyncHandler(eventController.getEventByPinCode))
 
 /**
  * @swagger
@@ -286,14 +274,12 @@ eventRouter.get(
  *       404:
  *         description: Event not found
  */
-eventRouter.get(
-    '/:id',
-    asyncHandler(eventController.getEventById)
-)
+eventRouter.get('/:id', asyncHandler(eventController.getEventById))
 
 // Get registrations (form responses) for an event (organizer)
 eventRouter.get(
     '/:id/registrations',
+    asyncHandler(requireOrganizerPermission('REGISTRATION:READ', 'REGISTRATION:MANAGE')),
     asyncHandler(eventController.getEventRegistrations)
 )
 
@@ -315,10 +301,7 @@ eventRouter.get(
 )
 
 // Event statistics (registrations + check-ins)
-eventRouter.get(
-    '/:id/statistics',
-    asyncHandler(eventController.getEventStatistics)
-)
+eventRouter.get('/:id/statistics', asyncHandler(eventController.getEventStatistics))
 
 /**
  * @swagger
@@ -388,6 +371,7 @@ eventRouter.get(
  */
 eventRouter.put(
     '/:id',
+    asyncHandler(requireOrganizerPermission('EVENT:UPDATE', 'EVENT:MANAGE')),
     asyncHandler(validate(eventRequest.updateItem)),
     asyncHandler(eventController.updateEvent)
 )
@@ -417,6 +401,7 @@ eventRouter.put(
  */
 eventRouter.delete(
     '/:id',
+    asyncHandler(requireOrganizerPermission('EVENT:DELETE', 'EVENT:MANAGE')),
     asyncHandler(eventController.deleteEvent)
 )
 
@@ -458,10 +443,7 @@ eventRouter.delete(
  *       404:
  *         description: Event not found
  */
-eventRouter.patch(
-    '/:id/publish',
-    asyncHandler(eventController.togglePublishEvent)
-)
+eventRouter.patch('/:id/publish', asyncHandler(eventController.togglePublishEvent))
 
 /**
  * @swagger
@@ -592,10 +574,7 @@ eventRouter.post(
  *       404:
  *         description: Form not found
  */
-eventRouter.get(
-    '/forms/:id',
-    asyncHandler(formController.getForm)
-)
+eventRouter.get('/forms/:id', asyncHandler(formController.getForm))
 
 /**
  * @swagger
@@ -669,10 +648,7 @@ eventRouter.put(
  *       404:
  *         description: Form not found
  */
-eventRouter.delete(
-    '/forms/:id',
-    asyncHandler(formController.deleteForm)
-)
+eventRouter.delete('/forms/:id', asyncHandler(formController.deleteForm))
 
 /**
  * @swagger
@@ -697,10 +673,7 @@ eventRouter.delete(
  *       404:
  *         description: Form field not found
  */
-eventRouter.get(
-    '/form-fields/:id',
-    asyncHandler(formFieldController.getItem)
-)
+eventRouter.get('/form-fields/:id', asyncHandler(formFieldController.getItem))
 
 /**
  * @swagger
@@ -801,9 +774,6 @@ eventRouter.put(
  *       404:
  *         description: Form field not found
  */
-eventRouter.delete(
-    '/form-fields/:id',
-    asyncHandler(formFieldController.deleteItem)
-)
+eventRouter.delete('/form-fields/:id', asyncHandler(formFieldController.deleteItem))
 
 export default eventRouter

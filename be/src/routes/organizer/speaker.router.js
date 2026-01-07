@@ -1,7 +1,9 @@
 import {Router} from 'express'
 import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
-import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import requireOrganizerAuthentication, {
+    requireOrganizerPermission,
+} from '@/app/middleware/organizer/require-authentication'
 import * as speakerRequest from '@/app/requests/organizer/speaker.request'
 import * as speakerController from '@/app/controllers/organizer/speaker.controller'
 import * as speakerMiddleware from '@/app/middleware/organizer/speaker.middleware'
@@ -88,6 +90,7 @@ speakerRouter.use(asyncHandler(requireOrganizerAuthentication))
  */
 speakerRouter.post(
     '/',
+    asyncHandler(requireOrganizerPermission('SPEAKER:CREATE', 'SPEAKER:MANAGE')),
     asyncHandler(speakerMiddleware.verifyEventOwnership),
     asyncHandler(validate(speakerRequest.createItem)),
     asyncHandler(speakerController.createItem)
@@ -148,10 +151,7 @@ speakerRouter.get(
  *       401:
  *         description: Unauthorized
  */
-speakerRouter.get(
-    '/keynote',
-    asyncHandler(speakerController.getKeynoteSpeakers)
-)
+speakerRouter.get('/keynote', asyncHandler(speakerController.getKeynoteSpeakers))
 
 /**
  * @swagger
@@ -167,10 +167,7 @@ speakerRouter.get(
  *       401:
  *         description: Unauthorized
  */
-speakerRouter.get(
-    '/active',
-    asyncHandler(speakerController.getActiveSpeakers)
-)
+speakerRouter.get('/active', asyncHandler(speakerController.getActiveSpeakers))
 
 /**
  * @swagger
@@ -226,10 +223,7 @@ speakerRouter.get(
  *       401:
  *         description: Unauthorized
  */
-speakerRouter.get(
-    '/organization/:organization',
-    asyncHandler(speakerController.getSpeakersByOrganization)
-)
+speakerRouter.get('/organization/:organization', asyncHandler(speakerController.getSpeakersByOrganization))
 
 /**
  * @swagger
@@ -359,6 +353,7 @@ speakerRouter.get(
  */
 speakerRouter.put(
     '/:id',
+    asyncHandler(requireOrganizerPermission('SPEAKER:UPDATE', 'SPEAKER:MANAGE')),
     asyncHandler(speakerMiddleware.checkSpeakerId),
     asyncHandler(speakerMiddleware.verifySpeakerOwnership),
     asyncHandler(validate(speakerRequest.updateItem)),
@@ -463,10 +458,10 @@ speakerRouter.patch(
  */
 speakerRouter.delete(
     '/:id',
+    asyncHandler(requireOrganizerPermission('SPEAKER:DELETE', 'SPEAKER:MANAGE')),
     asyncHandler(speakerMiddleware.checkSpeakerId),
     asyncHandler(speakerMiddleware.verifySpeakerOwnership),
     asyncHandler(speakerController.deleteItem)
 )
 
 export default speakerRouter
-
