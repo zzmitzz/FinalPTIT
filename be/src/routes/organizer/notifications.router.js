@@ -1,6 +1,9 @@
-import { Router } from 'express'
+import {Router} from 'express'
+import {asyncHandler} from '@/utils/helpers'
 import * as notificationController from '@/app/controllers/organizer/notification.controller.js'
-import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import requireOrganizerAuthentication, {
+    requireOrganizerPermission,
+} from '@/app/middleware/organizer/require-authentication'
 
 const router = Router()
 
@@ -8,13 +11,25 @@ const router = Router()
 router.use(requireOrganizerAuthentication)
 
 // Create notification (draft, scheduled, or recurring)
-router.post('/', notificationController.createNotification)
+router.post(
+    '/',
+    asyncHandler(requireOrganizerPermission('NOTIFICATION:CREATE', 'NOTIFICATION:MANAGE')),
+    notificationController.createNotification
+)
 
 // List notifications (organizer's own)
-router.get('/', notificationController.listNotifications)
+router.get(
+    '/',
+    asyncHandler(requireOrganizerPermission('NOTIFICATION:READ', 'NOTIFICATION:MANAGE')),
+    notificationController.listNotifications
+)
 
 // Get notification by ID (organizer's own)
-router.get('/:id', notificationController.getNotification)
+router.get(
+    '/:id',
+    asyncHandler(requireOrganizerPermission('NOTIFICATION:READ', 'NOTIFICATION:MANAGE')),
+    notificationController.getNotification
+)
 
 // Update notification (only draft and organizer's own)
 router.put('/:id', notificationController.updateNotification)

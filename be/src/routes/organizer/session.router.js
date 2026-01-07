@@ -1,7 +1,9 @@
-import { Router } from 'express'
-import { asyncHandler } from '@/utils/helpers'
+import {Router} from 'express'
+import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
-import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import requireOrganizerAuthentication, {
+    requireOrganizerPermission,
+} from '@/app/middleware/organizer/require-authentication'
 import * as sessionRequest from '@/app/requests/organizer/session.request'
 import * as sessionController from '@/app/controllers/organizer/session.controller'
 import * as sessionMiddleware from '@/app/middleware/organizer/session.middleware'
@@ -87,6 +89,7 @@ sessionRouter.use(asyncHandler(requireOrganizerAuthentication))
  */
 sessionRouter.post(
     '/',
+    asyncHandler(requireOrganizerPermission('SESSION:CREATE', 'SESSION:MANAGE')),
     asyncHandler(sessionMiddleware.verifyEventOwnership),
     asyncHandler(validate(sessionRequest.createItem)),
     asyncHandler(sessionController.createItem)
@@ -144,10 +147,7 @@ sessionRouter.get(
  *       401:
  *         description: Unauthorized
  */
-sessionRouter.get(
-    '/active',
-    asyncHandler(sessionController.getActiveSessions)
-)
+sessionRouter.get('/active', asyncHandler(sessionController.getActiveSessions))
 
 /**
  * @swagger
@@ -170,10 +170,7 @@ sessionRouter.get(
  *       401:
  *         description: Unauthorized
  */
-sessionRouter.get(
-    '/type/:type',
-    asyncHandler(sessionController.getByType)
-)
+sessionRouter.get('/type/:type', asyncHandler(sessionController.getByType))
 
 /**
  * @swagger
@@ -300,6 +297,7 @@ sessionRouter.get(
  */
 sessionRouter.put(
     '/:id',
+    asyncHandler(requireOrganizerPermission('SESSION:UPDATE', 'SESSION:MANAGE')),
     asyncHandler(sessionMiddleware.checkSessionId),
     asyncHandler(sessionMiddleware.verifySessionOwnership),
     asyncHandler(validate(sessionRequest.updateItem)),
@@ -403,10 +401,10 @@ sessionRouter.patch(
  */
 sessionRouter.delete(
     '/:id',
+    asyncHandler(requireOrganizerPermission('SESSION:DELETE', 'SESSION:MANAGE')),
     asyncHandler(sessionMiddleware.checkSessionId),
     asyncHandler(sessionMiddleware.verifySessionOwnership),
     asyncHandler(sessionController.deleteItem)
 )
 
 export default sessionRouter
-

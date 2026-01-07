@@ -1,7 +1,9 @@
-import { Router } from 'express'
-import { asyncHandler } from '@/utils/helpers'
+import {Router} from 'express'
+import {asyncHandler} from '@/utils/helpers'
 import validate from '@/app/middleware/common/validate'
-import requireOrganizerAuthentication from '@/app/middleware/organizer/require-authentication'
+import requireOrganizerAuthentication, {
+    requireOrganizerPermission,
+} from '@/app/middleware/organizer/require-authentication'
 import * as resourceRequest from '@/app/requests/organizer/resource.request'
 import * as resourceController from '@/app/controllers/organizer/resource.controller'
 import * as resourceMiddleware from '@/app/middleware/organizer/resource.middleware'
@@ -81,6 +83,7 @@ resourceRouter.use(asyncHandler(requireOrganizerAuthentication))
  */
 resourceRouter.post(
     '/',
+    asyncHandler(requireOrganizerPermission('RESOURCE:CREATE', 'RESOURCE:MANAGE')),
     asyncHandler(resourceMiddleware.verifyOwnershipForCreate),
     asyncHandler(validate(resourceRequest.createItem)),
     asyncHandler(resourceController.createItem)
@@ -176,6 +179,7 @@ resourceRouter.get(
  */
 resourceRouter.put(
     '/:id',
+    asyncHandler(requireOrganizerPermission('RESOURCE:UPDATE', 'RESOURCE:MANAGE')),
     asyncHandler(resourceMiddleware.verifyResourceId),
     asyncHandler(resourceMiddleware.verifyResourceOwnership),
     asyncHandler(validate(resourceRequest.updateItem)),
@@ -209,6 +213,7 @@ resourceRouter.put(
  */
 resourceRouter.delete(
     '/:id',
+    asyncHandler(requireOrganizerPermission('RESOURCE:DELETE', 'RESOURCE:MANAGE')),
     asyncHandler(resourceMiddleware.verifyResourceId),
     asyncHandler(resourceMiddleware.verifyResourceOwnership),
     asyncHandler(resourceController.deleteItem)
@@ -308,10 +313,6 @@ resourceRouter.get(
  *       401:
  *         description: Unauthorized
  */
-resourceRouter.get(
-    '/:id/check-activation',
-    asyncHandler(resourceController.checkActivation)
-)
+resourceRouter.get('/:id/check-activation', asyncHandler(resourceController.checkActivation))
 
 export default resourceRouter
-
