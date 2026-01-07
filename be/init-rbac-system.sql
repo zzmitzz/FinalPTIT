@@ -96,22 +96,34 @@ CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id
 CREATE INDEX IF NOT EXISTS idx_role_permissions_permission ON role_permissions(permission_id);
 
 -- ============================================================================
--- PART 2: CREATE PERMISSIONS (25 total)
+-- PART 2: CREATE PERMISSIONS (70+ total)
 -- ============================================================================
 -- NOTE: Permissions are SYSTEM-MANAGED and should NOT be editable by users.
 -- To add/modify permissions, update this file and re-run the migration.
+--
+-- PERMISSION SCOPES:
+--   GLOBAL: System administration permissions (Super Admin only)
+--   ORGANIZER: Organizer-level permissions (can be assigned to organizer-scoped roles)
+-- ============================================================================
 
--- User Management Permissions (5)
+-- ============================================================================
+-- GLOBAL SCOPE PERMISSIONS (System Administration)
+-- ============================================================================
+
+-- System User Management Permissions (6)
+-- For managing admin panel users
 INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
 VALUES 
-    (gen_random_uuid(), 'USER:MANAGE', 'User Management', 'USER', 'MANAGE', 'Full control over user management', NOW(), NOW()),
-    (gen_random_uuid(), 'USER:CREATE', 'Create User', 'USER', 'CREATE', 'Create new users', NOW(), NOW()),
-    (gen_random_uuid(), 'USER:READ', 'View User', 'USER', 'READ', 'View user information', NOW(), NOW()),
-    (gen_random_uuid(), 'USER:UPDATE', 'Update User', 'USER', 'UPDATE', 'Update user information', NOW(), NOW()),
-    (gen_random_uuid(), 'USER:DELETE', 'Delete User', 'USER', 'DELETE', 'Delete users', NOW(), NOW())
+    (gen_random_uuid(), 'SYSTEM_USER:MANAGE', 'System User Management', 'SYSTEM_USER', 'MANAGE', 'Full control over system user management', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM_USER:CREATE', 'Create System User', 'SYSTEM_USER', 'CREATE', 'Create new system users', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM_USER:READ', 'View System User', 'SYSTEM_USER', 'READ', 'View system user information', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM_USER:UPDATE', 'Update System User', 'SYSTEM_USER', 'UPDATE', 'Update system user information', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM_USER:DELETE', 'Delete System User', 'SYSTEM_USER', 'DELETE', 'Delete system users', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM_USER:ACTIVATE', 'Activate/Deactivate System User', 'SYSTEM_USER', 'ACTIVATE', 'Activate or deactivate system user accounts', NOW(), NOW())
 ON CONFLICT (code) DO NOTHING;
 
 -- Role Management Permissions (6)
+-- For managing roles and permissions
 INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
 VALUES 
     (gen_random_uuid(), 'ROLE:MANAGE', 'Role Management', 'ROLE', 'MANAGE', 'Full control over role management', NOW(), NOW()),
@@ -125,10 +137,63 @@ ON CONFLICT (code) DO NOTHING;
 -- Permission Management Permissions (1 - Read-only)
 INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
 VALUES 
-    (gen_random_uuid(), 'PERMISSION:READ', 'View Permission', 'PERMISSION', 'READ', 'View permission information for role assignment', NOW(), NOW())
+    (gen_random_uuid(), 'PERMISSION:READ', 'View Permission', 'PERMISSION', 'READ', 'View permission catalog for role assignment', NOW(), NOW())
 ON CONFLICT (code) DO NOTHING;
 
+-- Organizer Account Management Permissions (6)
+-- For managing organizer accounts (not their content)
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'ORGANIZER:MANAGE', 'Organizer Management', 'ORGANIZER', 'MANAGE', 'Full control over organizer account management', NOW(), NOW()),
+    (gen_random_uuid(), 'ORGANIZER:CREATE', 'Create Organizer', 'ORGANIZER', 'CREATE', 'Create new organizer accounts', NOW(), NOW()),
+    (gen_random_uuid(), 'ORGANIZER:READ', 'View Organizer', 'ORGANIZER', 'READ', 'View organizer account information', NOW(), NOW()),
+    (gen_random_uuid(), 'ORGANIZER:UPDATE', 'Update Organizer', 'ORGANIZER', 'UPDATE', 'Update organizer account information', NOW(), NOW()),
+    (gen_random_uuid(), 'ORGANIZER:DELETE', 'Delete Organizer', 'ORGANIZER', 'DELETE', 'Delete organizer accounts', NOW(), NOW()),
+    (gen_random_uuid(), 'ORGANIZER:ACTIVATE', 'Activate/Deactivate Organizer', 'ORGANIZER', 'ACTIVATE', 'Enable or disable organizer accounts', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Registration User Management Permissions (5)
+-- For managing mobile app end-users
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'REGISTRATION_USER:MANAGE', 'Registration User Management', 'REGISTRATION_USER', 'MANAGE', 'Full control over end-user management', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION_USER:READ', 'View Registration User', 'REGISTRATION_USER', 'READ', 'View end-user information', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION_USER:UPDATE', 'Update Registration User', 'REGISTRATION_USER', 'UPDATE', 'Update end-user information', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION_USER:DELETE', 'Delete Registration User', 'REGISTRATION_USER', 'DELETE', 'Delete end-user accounts', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION_USER:ACTIVATE', 'Activate/Deactivate User', 'REGISTRATION_USER', 'ACTIVATE', 'Enable or disable end-user accounts', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Event Approval Permissions (2)
+-- For system-level event approval workflow
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'EVENT:APPROVE', 'Approve Event', 'EVENT', 'APPROVE', 'Approve or reject events for publication', NOW(), NOW()),
+    (gen_random_uuid(), 'EVENT:REVIEW', 'Review Events', 'EVENT', 'REVIEW', 'Review all events across all organizers', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- System Analytics & Reporting Permissions (3)
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'ANALYTICS:VIEW', 'View Analytics', 'ANALYTICS', 'VIEW', 'View system-wide analytics and reports', NOW(), NOW()),
+    (gen_random_uuid(), 'ANALYTICS:EXPORT', 'Export Analytics', 'ANALYTICS', 'EXPORT', 'Export analytics data and reports', NOW(), NOW()),
+    (gen_random_uuid(), 'ANALYTICS:DASHBOARD', 'View Dashboard', 'ANALYTICS', 'DASHBOARD', 'Access admin dashboard with statistics', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- System Configuration Permissions (4)
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'SYSTEM:ADMIN', 'System Admin', 'SYSTEM', 'ADMIN', 'Full system administration access', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM:CONFIG', 'System Config', 'SYSTEM', 'CONFIG', 'Configure system settings and parameters', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM:VIEW_LOGS', 'View System Logs', 'SYSTEM', 'VIEW_LOGS', 'View system logs and audit trails', NOW(), NOW()),
+    (gen_random_uuid(), 'SYSTEM:NOTIFICATION', 'System Notifications', 'SYSTEM', 'NOTIFICATION', 'Send system-wide notifications to all users', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- ============================================================================
+-- ORGANIZER SCOPE PERMISSIONS (Organizer Content Management)
+-- ============================================================================
+
 -- Event Management Permissions (6)
+-- For managing events within organizer scope
 INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
 VALUES 
     (gen_random_uuid(), 'EVENT:MANAGE', 'Event Management', 'EVENT', 'MANAGE', 'Full control over event management', NOW(), NOW()),
@@ -136,25 +201,100 @@ VALUES
     (gen_random_uuid(), 'EVENT:READ', 'View Event', 'EVENT', 'READ', 'View event information', NOW(), NOW()),
     (gen_random_uuid(), 'EVENT:UPDATE', 'Update Event', 'EVENT', 'UPDATE', 'Update event information', NOW(), NOW()),
     (gen_random_uuid(), 'EVENT:DELETE', 'Delete Event', 'EVENT', 'DELETE', 'Delete events', NOW(), NOW()),
-    (gen_random_uuid(), 'EVENT:PUBLISH', 'Publish Event', 'EVENT', 'PUBLISH', 'Publish events', NOW(), NOW())
+    (gen_random_uuid(), 'EVENT:PUBLISH', 'Publish Event', 'EVENT', 'PUBLISH', 'Publish and unpublish events', NOW(), NOW())
 ON CONFLICT (code) DO NOTHING;
 
--- Organizer Management Permissions (5)
+-- Session Management Permissions (5)
+-- For managing sessions within events
 INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
 VALUES 
-    (gen_random_uuid(), 'ORGANIZER:MANAGE', 'Organizer Management', 'ORGANIZER', 'MANAGE', 'Full control over organizer management', NOW(), NOW()),
-    (gen_random_uuid(), 'ORGANIZER:CREATE', 'Create Organizer', 'ORGANIZER', 'CREATE', 'Create new organizers', NOW(), NOW()),
-    (gen_random_uuid(), 'ORGANIZER:READ', 'View Organizer', 'ORGANIZER', 'READ', 'View organizer information', NOW(), NOW()),
-    (gen_random_uuid(), 'ORGANIZER:UPDATE', 'Update Organizer', 'ORGANIZER', 'UPDATE', 'Update organizer information', NOW(), NOW()),
-    (gen_random_uuid(), 'ORGANIZER:DELETE', 'Delete Organizer', 'ORGANIZER', 'DELETE', 'Delete organizers', NOW(), NOW())
+    (gen_random_uuid(), 'SESSION:MANAGE', 'Session Management', 'SESSION', 'MANAGE', 'Full control over session management', NOW(), NOW()),
+    (gen_random_uuid(), 'SESSION:CREATE', 'Create Session', 'SESSION', 'CREATE', 'Create new sessions within events', NOW(), NOW()),
+    (gen_random_uuid(), 'SESSION:READ', 'View Session', 'SESSION', 'READ', 'View session information', NOW(), NOW()),
+    (gen_random_uuid(), 'SESSION:UPDATE', 'Update Session', 'SESSION', 'UPDATE', 'Update session information', NOW(), NOW()),
+    (gen_random_uuid(), 'SESSION:DELETE', 'Delete Session', 'SESSION', 'DELETE', 'Delete sessions', NOW(), NOW())
 ON CONFLICT (code) DO NOTHING;
 
--- System Permissions (3)
+-- Speaker Management Permissions (5)
+-- For managing speakers for events
 INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
 VALUES 
-    (gen_random_uuid(), 'SYSTEM:ADMIN', 'System Admin', 'SYSTEM', 'ADMIN', 'Full system administration access', NOW(), NOW()),
-    (gen_random_uuid(), 'SYSTEM:CONFIG', 'System Config', 'SYSTEM', 'CONFIG', 'Configure system settings', NOW(), NOW()),
-    (gen_random_uuid(), 'SYSTEM:VIEW_LOGS', 'View System Logs', 'SYSTEM', 'VIEW_LOGS', 'View system logs', NOW(), NOW())
+    (gen_random_uuid(), 'SPEAKER:MANAGE', 'Speaker Management', 'SPEAKER', 'MANAGE', 'Full control over speaker management', NOW(), NOW()),
+    (gen_random_uuid(), 'SPEAKER:CREATE', 'Create Speaker', 'SPEAKER', 'CREATE', 'Add speakers to events', NOW(), NOW()),
+    (gen_random_uuid(), 'SPEAKER:READ', 'View Speaker', 'SPEAKER', 'READ', 'View speaker information', NOW(), NOW()),
+    (gen_random_uuid(), 'SPEAKER:UPDATE', 'Update Speaker', 'SPEAKER', 'UPDATE', 'Update speaker information', NOW(), NOW()),
+    (gen_random_uuid(), 'SPEAKER:DELETE', 'Delete Speaker', 'SPEAKER', 'DELETE', 'Remove speakers from events', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Form Management Permissions (5)
+-- For managing registration forms
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'FORM:MANAGE', 'Form Management', 'FORM', 'MANAGE', 'Full control over registration form management', NOW(), NOW()),
+    (gen_random_uuid(), 'FORM:CREATE', 'Create Form', 'FORM', 'CREATE', 'Create new registration forms', NOW(), NOW()),
+    (gen_random_uuid(), 'FORM:READ', 'View Form', 'FORM', 'READ', 'View form information and submissions', NOW(), NOW()),
+    (gen_random_uuid(), 'FORM:UPDATE', 'Update Form', 'FORM', 'UPDATE', 'Update form structure and settings', NOW(), NOW()),
+    (gen_random_uuid(), 'FORM:DELETE', 'Delete Form', 'FORM', 'DELETE', 'Delete registration forms', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Resource Management Permissions (5)
+-- For managing event resources (files, maps)
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'RESOURCE:MANAGE', 'Resource Management', 'RESOURCE', 'MANAGE', 'Full control over resource management', NOW(), NOW()),
+    (gen_random_uuid(), 'RESOURCE:CREATE', 'Upload Resource', 'RESOURCE', 'CREATE', 'Upload files, maps, and other resources', NOW(), NOW()),
+    (gen_random_uuid(), 'RESOURCE:READ', 'View Resource', 'RESOURCE', 'READ', 'View and download resources', NOW(), NOW()),
+    (gen_random_uuid(), 'RESOURCE:UPDATE', 'Update Resource', 'RESOURCE', 'UPDATE', 'Update resource information', NOW(), NOW()),
+    (gen_random_uuid(), 'RESOURCE:DELETE', 'Delete Resource', 'RESOURCE', 'DELETE', 'Delete uploaded resources', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Place/Venue Management Permissions (5)
+-- For managing event venues
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'PLACE:MANAGE', 'Place Management', 'PLACE', 'MANAGE', 'Full control over venue management', NOW(), NOW()),
+    (gen_random_uuid(), 'PLACE:CREATE', 'Create Place', 'PLACE', 'CREATE', 'Create new venues for events', NOW(), NOW()),
+    (gen_random_uuid(), 'PLACE:READ', 'View Place', 'PLACE', 'READ', 'View venue information', NOW(), NOW()),
+    (gen_random_uuid(), 'PLACE:UPDATE', 'Update Place', 'PLACE', 'UPDATE', 'Update venue information', NOW(), NOW()),
+    (gen_random_uuid(), 'PLACE:DELETE', 'Delete Place', 'PLACE', 'DELETE', 'Delete venues', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Check-in Management Permissions (4)
+-- For managing event attendance
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'CHECKIN:MANAGE', 'Check-in Management', 'CHECKIN', 'MANAGE', 'Full control over check-in management', NOW(), NOW()),
+    (gen_random_uuid(), 'CHECKIN:VERIFY', 'Verify Check-in', 'CHECKIN', 'VERIFY', 'Verify and process attendee check-ins', NOW(), NOW()),
+    (gen_random_uuid(), 'CHECKIN:READ', 'View Check-in', 'CHECKIN', 'READ', 'View check-in records and history', NOW(), NOW()),
+    (gen_random_uuid(), 'CHECKIN:EXPORT', 'Export Check-in Data', 'CHECKIN', 'EXPORT', 'Export attendance reports', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Notification Management Permissions (4)
+-- For sending notifications to event attendees
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'NOTIFICATION:MANAGE', 'Notification Management', 'NOTIFICATION', 'MANAGE', 'Full control over notification management', NOW(), NOW()),
+    (gen_random_uuid(), 'NOTIFICATION:CREATE', 'Create Notification', 'NOTIFICATION', 'CREATE', 'Create and send notifications to event attendees', NOW(), NOW()),
+    (gen_random_uuid(), 'NOTIFICATION:READ', 'View Notification', 'NOTIFICATION', 'READ', 'View notification history and statistics', NOW(), NOW()),
+    (gen_random_uuid(), 'NOTIFICATION:DELETE', 'Delete Notification', 'NOTIFICATION', 'DELETE', 'Delete scheduled notifications', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Registration Management Permissions (4)
+-- For managing event registrations
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'REGISTRATION:MANAGE', 'Registration Management', 'REGISTRATION', 'MANAGE', 'Full control over registration management', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION:READ', 'View Registration', 'REGISTRATION', 'READ', 'View registration data and responses', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION:UPDATE', 'Update Registration', 'REGISTRATION', 'UPDATE', 'Update registration information', NOW(), NOW()),
+    (gen_random_uuid(), 'REGISTRATION:EXPORT', 'Export Registration', 'REGISTRATION', 'EXPORT', 'Export registration data and reports', NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Organizer Profile Management Permissions (2)
+-- For managing organizer's own profile
+INSERT INTO permissions (_id, code, name, resource, action, description, created_at, updated_at)
+VALUES 
+    (gen_random_uuid(), 'ORGANIZER_PROFILE:READ', 'View Organizer Profile', 'ORGANIZER_PROFILE', 'READ', 'View own organizer profile', NOW(), NOW()),
+    (gen_random_uuid(), 'ORGANIZER_PROFILE:UPDATE', 'Update Organizer Profile', 'ORGANIZER_PROFILE', 'UPDATE', 'Update own organizer profile and details', NOW(), NOW())
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================================

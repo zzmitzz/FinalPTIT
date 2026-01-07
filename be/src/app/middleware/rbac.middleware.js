@@ -245,3 +245,99 @@ export function requireUserManagement(req, res, next) {
 export function requireRoleManagement(req, res, next) {
     return requirePermission('ROLE:MANAGE')(req, res, next)
 }
+
+/**
+ * Get all organizer IDs that the current user has access to
+ * Returns array of organizer IDs, or null for global admins (unlimited access)
+ */
+export function getUserOrganizerIds(systemUser) {
+    if (!systemUser) return []
+
+    // Check if user is global admin (no organizer restriction)
+    if (systemUser.organizer_id === null) {
+        return null // null means unlimited access
+    }
+
+    // Get organizer IDs from role assignments
+    const organizerIds = new Set()
+
+    // Add the user's primary organizer_id
+    if (systemUser.organizer_id) {
+        organizerIds.add(systemUser.organizer_id)
+    }
+
+    // Add organizer_ids from role assignments in the junction table
+    const roles = systemUser.roles || []
+    for (const role of roles) {
+        // The through table data is attached to the role object with the junction table name
+        // Check both possible locations: role.SystemUserRole and role.system_user_roles
+        const junctionData = role.SystemUserRole || role.system_user_roles
+        if (junctionData && junctionData.organizer_id) {
+            organizerIds.add(junctionData.organizer_id)
+        }
+    }
+
+    return Array.from(organizerIds)
+}
+
+/**
+ * Middleware to enforce organizer-scoped resource access
+ * Use this for endpoints that operate on organizer-owned resources (events, sessions, etc.)
+ *
+ * @param {string} resourceOrganizerIdField - Field name that contains organizer_id (e.g., 'organizer_id' or 'event.organizer_id')
+ */
+export function requireOrganizerResourceAccess(resourceOrganizerIdField = 'organizer_id') {
+    return async (req, res, next) => {
+        try {
+            const systemUser = req.currentUser
+
+            if (!systemUser) {
+                abort(401, 'Chưa xác thực')
+            }
+
+            const userOrganizerIds = getUserOrganizerIds(systemUser)
+
+            // Global admins have unlimited access
+            if (userOrganizerIds === null) {
+                next()
+                return
+            }
+
+            // If user has no organizers assigned, deny access
+            if (userOrganizerIds.length === 0) {
+                abort(403, 'Không có quyền truy cập tổ chức nào')
+            }
+
+            // Store allowed organizer IDs in request for service layer to use
+            req.allowedOrganizerIds = userOrganizerIds
+
+            next()
+        } catch (error) {
+            next(error)
+        }
+    }
+}
+
+/**
+ * Validate that a specific organizer_id is accessible by the current user
+ * Call this in controllers/services when you know the organizer_id
+ */
+export function validateOrganizerAccess(systemUser, organizerId) {
+    if (!systemUser) {
+        abort(401, 'Chưa xác thực')
+    }
+
+    const userOrganizerIds = getUserOrganizerIds(systemUser)
+
+    // Global admins can access any organizer
+    if (userOrganizerIds === null) {
+        return true
+    }
+
+    // Check if user has access to this organizer
+    if (!userOrganizerIds.includes(organizerId)) {
+        abort(403, 'Không có quyền truy cập tổ chức này')
+    }
+
+    return true
+}

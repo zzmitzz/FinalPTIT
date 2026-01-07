@@ -56,10 +56,23 @@ export function authToken(systemUser) {
     )
     const decode = jwt.decode(accessToken)
     const expireIn = decode.exp - decode.iat
+
+    // Determine user scope for frontend routing
+    const isGlobalAdmin = systemUser.organizer_id === null
+    const scope = isGlobalAdmin ? 'GLOBAL' : 'ORGANIZER'
+
     return {
         access_token: accessToken,
         expire_in: expireIn,
         auth_type: 'Bearer Token',
+        user: {
+            _id: systemUser._id,
+            name: systemUser.name,
+            email: systemUser.email,
+            organizer_id: systemUser.organizer_id,
+            scope: scope,
+            is_global_admin: isGlobalAdmin,
+        },
     }
 }
 
@@ -169,16 +182,16 @@ export async function activateSystemUser(userId) {
 /**
  * Assign roles to system user
  */
-export async function assignRoles(userId, roleIds) {
-    await assignRolesToAdmin(userId, roleIds)
+export async function assignRoles(userId, roleIds, organizerId = null, assignedBy = null) {
+    await assignRolesToAdmin(userId, roleIds, organizerId, assignedBy)
     return true
 }
 
 /**
  * Remove roles from system user
  */
-export async function removeRoles(userId, roleIds) {
-    await removeRolesFromAdmin(userId, roleIds)
+export async function removeRoles(userId, roleIds, organizerId = null) {
+    await removeRolesFromAdmin(userId, roleIds, organizerId)
     return true
 }
 
