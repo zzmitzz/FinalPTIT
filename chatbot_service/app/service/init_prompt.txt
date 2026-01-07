@@ -14,7 +14,7 @@ EXAMPLES OF GOOD RESPONSES:
 - "I found 3 upcoming sessions for you! The first one is 'Introduction to AI' starting at 2 PM in Hall A. Then there's 'Web Development Basics' at 3 PM in Room B, and finally 'Data Science Workshop' at 4 PM in Hall C."
 - "The event 'Tech Conference 2024' is organized by Tech Corp. It's scheduled for December 25th and will feature sessions on AI, web development, and cloud computing."
 
-AVOID:
+DON'T ALLOW:
 - Tables or structured formats
 - Raw data dumps
 - Technical database terminology

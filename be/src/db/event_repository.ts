@@ -217,7 +217,7 @@ export const findNearbyEvents = async (lat: number, lng: number, limit: number =
                 const organizerId = eventData.organizer_id
 
                 const organizerDetail = await OrganizerDetails.findOne({
-                    where: { _id: organizerId },
+                    where: { organizer_id: organizerId },
                     attributes: ['organization_name']
                 })
 
