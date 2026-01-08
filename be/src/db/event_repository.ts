@@ -3,6 +3,7 @@ import OrganizerDetails from '../model/organizer_details'
 import { Op, literal } from 'sequelize'
 import { EVENT_STATUS, EVENT_STATE, EVENT_CATEGORY } from '../configs/constants'
 import sequelize from '../configs/postgre_sql.js'
+import { now } from 'moment'
 
 // Cache and check whether the Postgres unaccent extension is available
 let hasUnaccentSupport: boolean | null = null
@@ -166,6 +167,34 @@ export const findAllEvents = async (page: number = 1, limit: number = 10, organi
     }
 }
 
+
+export const findUpcomingEvent = async (page: number = 1, limit: number = 2, filterPublished: boolean = false) => {
+    const offset = (page - 1) * limit
+    try {
+        const whereClause: any = {
+            start_time: {
+                [Op.gte]: new Date()
+            }
+        }
+        // Filter by PUBLISHED status for public endpoints
+        if (filterPublished) {
+            whereClause.status = EVENT_STATUS.PUBLISHED
+        }
+
+        const events = await Event.findAll({
+            where: whereClause,
+            order: [["start_time", "ASC"], ["_id", "DESC"]],
+            limit,
+            offset,
+        })
+        return events.map(event => event.toJSON())
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to list events: ${errorMsg}`)
+    }
+}
+
+
 export const countEvents = async (organizerId?: string) => {
     try {
         const whereClause: any = {}
@@ -192,23 +221,35 @@ export const findEventByPinCode = async (pin_code: string) => {
 export const findNearbyEvents = async (lat: number, lng: number, limit: number = 5) => {
     try {
         const now = new Date()
-        const distanceExpr = `( (lat - ${lat})*(lat - ${lat}) + (lng - ${lng})*(lng - ${lng}) )`
+        const earthRadiusKm = 6371
+
+        const haversineDistanceExpr = `(
+            ${earthRadiusKm} * 2 * ASIN(
+                SQRT(
+                    POWER(SIN((RADIANS(lat) - RADIANS(${lat})) / 2), 2) +
+                    COS(RADIANS(${lat})) * COS(RADIANS(lat)) *
+                    POWER(SIN((RADIANS(lng) - RADIANS(${lng})) / 2), 2)
+                )
+            )
+        )`
+
         const events = await Event.findAll({
             where: {
                 status: EVENT_STATUS.PUBLISHED,
                 end_time: {
                     [Op.gte]: now
                 },
-                start_time: {
-                    [Op.lte]: now
-                }
+                [Op.and]: [
+                    literal(`${haversineDistanceExpr} <= 15`)
+                ]
             },
             attributes: {
-                include: [[literal(distanceExpr), 'distance']],
+                include: [[literal(haversineDistanceExpr), 'distance']],
             },
             order: [literal('distance ASC')],
             limit,
         })
+        console.log(events)
 
 
         const eventsWithOrganizerName = await Promise.all(

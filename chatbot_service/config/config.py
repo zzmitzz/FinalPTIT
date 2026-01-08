@@ -13,7 +13,7 @@ class Config:
     
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-    DB_URL = os.getenv("DB_URL", "postgresql://iec:123456789%40@localhost:5432/event_db")
+    DB_URL = os.getenv("DB_URL", "postgresql://iec:123456789%40@db.ptit-boot-checkin.site:5432/event_db")
     
     @classmethod
     def validate(cls):

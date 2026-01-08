@@ -19,11 +19,7 @@ def get_sessions_by_event(event_id: str, date: str = None) -> dict:
             FROM sessions s
             WHERE s.event_id = :event_id 
         """
-        params = {"event_id": event_id} # cast to int or str depending on schema, schema says event_id int ref events._id which is ObjectId... potential mismatch in schema description but assuming it works as FK
-        # Wait, the schema in prompt says:
-        # Table sessions { id int [pk] event_id int [ref: > events._id] ... }
-        # But events._id is ObjectId. This is a common SQL/NoSQL mix or just a representation.
-        # I will assume event_id is passed as is.
+        params = {"event_id": event_id} 
         
         if date:
             base_query += " AND DATE(s.start_time) = :date"
