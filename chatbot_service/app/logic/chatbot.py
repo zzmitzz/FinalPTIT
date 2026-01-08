@@ -112,6 +112,17 @@ def _handle_general_chat(user_message: str, chat_history: List[Dict], verbose: b
 
 
 def _handle_sql_agent(user_message: str, chat_history: List[Dict], verbose: bool):
+    CONFIDENCE_THRESHOLD = 0.8
+    
+    def _parse_llm_response(content: str) -> tuple[str, float]:
+        try:
+            parsed = json.loads(content)
+            response_text = parsed.get("response", content)
+            confidence = float(parsed.get("confidence", 0.0))
+            return response_text, confidence
+        except (json.JSONDecodeError, ValueError, TypeError):
+            return content, 0.0
+    
     try:
         messages = []
         messages.append({"role": "system", "content": sql_agent_prompt()})
@@ -124,7 +135,7 @@ def _handle_sql_agent(user_message: str, chat_history: List[Dict], verbose: bool
         messages.append({"role": "user", "content": user_message})
         
         tools = get_tool_declarations()
-        max_iterations = 5
+        max_iterations = 10
         iteration = 0
         openai_client = _get_client()
         
@@ -203,17 +214,34 @@ def _handle_sql_agent(user_message: str, chat_history: List[Dict], verbose: bool
                         "content": json.dumps(result)
                     })
             else:
-                final_response = assistant_message.content or ""
+                raw_content = assistant_message.content or ""
+                final_response, confidence = _parse_llm_response(raw_content)
                 
                 if verbose:
                     print(f"\n🤖 [SQLAgent]: {final_response}")
+                    print(f"📊 Confidence: {confidence:.2f}")
                     print(f"{'='*60}\n")
                 
-                logger.info("SQLAgent response generated successfully")
-                return {
-                    "response": final_response,
-                    "chat_history": chat_history
-                }
+                logger.info(f"SQLAgent response generated with confidence: {confidence:.2f}")
+                
+                if confidence > CONFIDENCE_THRESHOLD:
+                    logger.info(f"Confidence {confidence:.2f} exceeds threshold {CONFIDENCE_THRESHOLD}, stopping iteration")
+                    return {
+                        "response": final_response,
+                        "chat_history": chat_history
+                    }
+                
+                if iteration >= max_iterations:
+                    return {
+                        "response": final_response,
+                        "chat_history": chat_history
+                    }
+                
+                messages.append({"role": "assistant", "content": raw_content})
+                messages.append({
+                    "role": "user", 
+                    "content": "Please try to improve your response or gather more information to better address my request."
+                })
         
         logger.warning("SQLAgent reached maximum iterations")
         return {
@@ -226,6 +254,7 @@ def _handle_sql_agent(user_message: str, chat_history: List[Dict], verbose: bool
             "response": "An error occurred while processing your request.",
             "chat_history": chat_history or []
         }
+
 
 
 def summarizeChatHistory(chat_history: List[Dict[str, Any]]) -> str:
